@@ -11,7 +11,7 @@ func uploadCommonData(err error, client *nex.Client, callID uint32, commonData [
 
 	rmcResponseBytes := rmcResponse.Bytes()
 
-	responsePacket, _ := nex.NewPacketV1(client, nil)
+	responsePacket, _ := nex.NewPacketV0(client, nil)
 
 	responsePacket.SetVersion(1)
 	responsePacket.SetSource(0xA1)
