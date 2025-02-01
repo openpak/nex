@@ -12,7 +12,7 @@ import (
 func PasswordFromPID(pid *types.PID) (string, uint32) {
 	ctx := metadata.NewOutgoingContext(context.Background(), GRPCAccountCommonMetadata)
 
-	response, err := GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(*pid)})
+	response, err := GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: pid.LegacyValue()})
 	if err != nil {
 		Logger.Error(err.Error())
 		return "", nex.ResultCodes.RendezVous.InvalidUsername

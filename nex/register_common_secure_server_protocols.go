@@ -26,7 +26,7 @@ import (
 	local_matchmakeextension "github.com/PretendoNetwork/yo-kai-watch-blasters/nex/matchmake-extension"
 )
 
-func updateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType types.UInt32, uiParam1 types.UInt32, uiParam2 types.UInt32, strParam types.String) (*nex.RMCMessage, *nex.Error) {
+func updateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType *types.PrimitiveU32, uiParam1 *types.PrimitiveU32, uiParam2 *types.PrimitiveU32, strParam *types.String) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		common_globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, "change_error")
@@ -40,7 +40,7 @@ func updateNotificationData(err error, packet nex.PacketInterface, callID uint32
 	rmcResponse.CallID = callID
 	return rmcResponse, nil
 }
-func getFriendNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType types.Int32) (*nex.RMCMessage, *nex.Error) {
+func getFriendNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType *types.PrimitiveS32) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		common_globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, "change_error")
@@ -67,14 +67,13 @@ func getFriendNotificationData(err error, packet nex.PacketInterface, callID uin
 
 // Is this needed? -Ash
 func cleanupSearchMatchmakeSessionHandler(matchmakeSession *matchmakingtypes.MatchmakeSession) {
-	matchmakeSession.Attributes[2] = types.NewUInt32(0)
+	_ = matchmakeSession.Attributes.SetIndex(2, types.NewPrimitiveU32(0))
 	matchmakeSession.MatchmakeParam = matchmakingtypes.NewMatchmakeParam()
 	matchmakeSession.ApplicationBuffer = types.NewBuffer(make([]byte, 0))
-	matchmakeSession.GameMode = types.NewUInt32(33)
 	globals.Logger.Info(matchmakeSession.String())
 }
 
-func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
+func CreateReportDBRecord(_ *types.PID, _ *types.PrimitiveU32, _ *types.QBuffer) error {
 	return nil
 }
 
@@ -107,12 +106,32 @@ func compareSearchCriteria[T ~uint16 | ~uint32](original T, search string) bool 
 	}
 }
 
+func gameSpecificMatchmakeSessionSearchCriteriaChecksHandler(searchCriteria *matchmakingtypes.MatchmakeSessionSearchCriteria, matchmakeSession *matchmakingtypes.MatchmakeSession) bool {
+	original := matchmakeSession.Attributes.Slice()
+	search := searchCriteria.Attribs.Slice()
+	if len(original) != len(search) {
+		return false
+	}
+
+	for index, originalAttribute := range original {
+		// ignore dummy criterias for matchmaking
+		// everyone ends up in different rooms if you don't skip these
+		if index == 1 || index == 4 {
+			continue
+		}
+		searchAttribute := search[index]
+
+		if !compareSearchCriteria(originalAttribute.Value, searchAttribute.Value) {
+			return false
+		}
+	}
+	return true
+}
+
 func registerCommonSecureServerProtocols() {
 	secureProtocol := secure.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(secureProtocol)
 	commonSecureProtocol := commonsecure.NewCommonProtocol(secureProtocol)
-
-	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 
 	commonSecureProtocol.CreateReportDBRecord = CreateReportDBRecord
 
@@ -122,11 +141,11 @@ func registerCommonSecureServerProtocols() {
 
 	matchMakingProtocol := matchmaking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingProtocol)
-	commonmatchmaking.NewCommonProtocol(matchMakingProtocol).SetManager(globals.MatchmakingManager)
+	commonmatchmaking.NewCommonProtocol(matchMakingProtocol)
 
 	matchMakingExtProtocol := matchmakingext.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingExtProtocol)
-	commonmatchmakingext.NewCommonProtocol(matchMakingExtProtocol).SetManager(globals.MatchmakingManager)
+	commonmatchmakingext.NewCommonProtocol(matchMakingExtProtocol)
 
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
@@ -134,17 +153,11 @@ func registerCommonSecureServerProtocols() {
 	matchmakeExtensionProtocol := matchmakeextension.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
-	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
 	matchmakeExtensionProtocol.SetHandlerGetFriendNotificationData(getFriendNotificationData)
 	matchmakeExtensionProtocol.SetHandlerUpdateNotificationData(updateNotificationData)
 	matchmakeExtensionProtocol.GetPlayingSession = local_matchmakeextension.GetPlayingSession
 
 	commonMatchmakeExtensionProtocol.CleanupSearchMatchmakeSession = cleanupSearchMatchmakeSessionHandler
-	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[matchmakingtypes.MatchmakeSessionSearchCriteria]) {
-		for _, searchCriteria := range searchCriterias {
-			searchCriteria.Attribs[2] = types.NewString("")
-		}
-
-	}
+	commonMatchmakeExtensionProtocol.GameSpecificMatchmakeSessionSearchCriteriaChecks = gameSpecificMatchmakeSessionSearchCriteriaChecksHandler
 
 }

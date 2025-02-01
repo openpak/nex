@@ -7,8 +7,6 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/yo-kai-watch-blasters/globals"
-	"github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
-
 )
 
 func StartSecureServer() {
@@ -28,8 +26,7 @@ func StartSecureServer() {
 	globals.SecureEndpoint.OnData(func(packet nex.PacketInterface) {
 		request := packet.RMCMessage()
 
-		//trace is never getting what they want
-		fmt.Println("==Yo-kai Watch Blasters- Secure==")
+		fmt.Println("==yo-kai watch blasters 3- Secure==")
 		fmt.Printf("Protocol ID: %d\n", request.ProtocolID)
 		fmt.Printf("Method ID: %d\n", request.MethodID)
 		fmt.Println("===============")
@@ -38,9 +35,6 @@ func StartSecureServer() {
 	globals.SecureEndpoint.OnError(func(err *nex.Error) {
 		globals.Logger.Errorf("Secure: %v", err)
 	})
-
-	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, globals.Postgres)
-
 
 	registerCommonSecureServerProtocols()
 
