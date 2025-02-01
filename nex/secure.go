@@ -26,7 +26,7 @@ func StartSecureServer() {
 	globals.SecureEndpoint.OnData(func(packet nex.PacketInterface) {
 		request := packet.RMCMessage()
 
-		fmt.Println("==yo-kai watch blasters 3- Secure==")
+		fmt.Println("==Yo-kai Watch Blasters- Secure==")
 		fmt.Printf("Protocol ID: %d\n", request.ProtocolID)
 		fmt.Printf("Method ID: %d\n", request.MethodID)
 		fmt.Println("===============")
