@@ -17,6 +17,7 @@ import (
 
 	"strconv"
 	"strings"
+	"context"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -159,6 +160,15 @@ func registerCommonSecureServerProtocols() {
 	matchmakeExtensionProtocol.ClearMyBlockList = local_matchmakeextension.ClearMyBlockList
 
 	commonMatchmakeExtensionProtocol.CleanupSearchMatchmakeSession = cleanupSearchMatchmakeSessionHandler
+<<<<<<< HEAD
+	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[matchmakingtypes.MatchmakeSessionSearchCriteria]) {}
+	//makes the games find each other
+	commonMatchmakeExtensionProtocol.OnAfterCreateMatchmakeSession = func(packet nex.PacketInterface, anyGathering matchmakingtypes.GatheringHolder, message types.String, participationCount types.UInt16) {
+		globals.MatchmakingManager.Database.ExecContext(context.Background(), "UPDATE matchmaking.matchmake_sessions SET user_password_enabled=false WHERE game_mode=4129")
+
+	}
+=======
 	commonMatchmakeExtensionProtocol.GameSpecificMatchmakeSessionSearchCriteriaChecks = gameSpecificMatchmakeSessionSearchCriteriaChecksHandler
+>>>>>>> 19b52a911966c2797dcc747e224fc5f8963d5f61
 
 }
