@@ -2,19 +2,20 @@ package globals
 
 import (
 	"context"
-	"github.com/PretendoNetwork/nex-go/v2/types"
 
 	pb "github.com/PretendoNetwork/grpc-go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2/types"
+	"github.com/PretendoNetwork/nex-protocols-go/v2/globals"
 	"google.golang.org/grpc/metadata"
 )
 
-func PasswordFromPID(pid *types.PID) (string, uint32) {
+func PasswordFromPID(pid types.PID) (string, uint32) {
 	ctx := metadata.NewOutgoingContext(context.Background(), GRPCAccountCommonMetadata)
 
-	response, err := GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: pid.LegacyValue()})
+	response, err := GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
-		Logger.Error(err.Error())
+		globals.Logger.Error(err.Error())
 		return "", nex.ResultCodes.RendezVous.InvalidUsername
 	}
 

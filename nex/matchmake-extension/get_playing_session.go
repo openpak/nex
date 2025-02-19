@@ -10,10 +10,10 @@ import (
 )
 
 // replace later
-func GetPlayingSession(err error, packet nex.PacketInterface, callID uint32, lstPid *nex_types.List[*nex_types.PID]) (*nex.RMCMessage, *nex.Error) {
+func GetPlayingSession(err error, packet nex.PacketInterface, callID uint32, lstPid nex_types.List[nex_types.PID]) (*nex.RMCMessage, *nex.Error) {
 	fmt.Println(lstPid)
 
-	l := nex_types.NewPrimitiveU32(0)
+	l := nex_types.NewUInt32(0)
 
 	rmcResponseStream := nex.NewByteStreamOut(globals.SecureServer.LibraryVersions, globals.SecureServer.ByteStreamSettings)
 
