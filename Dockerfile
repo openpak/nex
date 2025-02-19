@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 	go mod download -x
 
 COPY . .
-ARG BUILD_STRING=pretendo.yokaiwatch2.docker
+ARG BUILD_STRING=pretendo.yokaiwatchblasters.docker
 RUN --mount=type=cache,target=/go/pkg/mod/ \
 	CGO_ENABLED=0 go build -ldflags "-X 'main.serverBuildString=${BUILD_STRING}'" -v -o ${app_dir}/build/server
 
