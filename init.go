@@ -11,6 +11,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
+	"github.com/PretendoNetwork/yo-kai-watch-blasters/database"
 	"github.com/PretendoNetwork/yo-kai-watch-blasters/globals"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -116,4 +117,6 @@ func init() {
 	globals.GRPCAccountCommonMetadata = metadata.Pairs(
 		"X-API-Key", accountGRPCAPIKey,
 	)
+
+	database.ConnectPostgres()
 }
