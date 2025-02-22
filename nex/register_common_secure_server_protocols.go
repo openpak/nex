@@ -6,6 +6,7 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/PretendoNetwork/yo-kai-watch-blasters/database"
 	"github.com/PretendoNetwork/yo-kai-watch-blasters/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
@@ -15,6 +16,7 @@ import (
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 
+	"context"
 	"strconv"
 	"strings"
 
@@ -26,7 +28,7 @@ import (
 	local_matchmakeextension "github.com/PretendoNetwork/yo-kai-watch-blasters/nex/matchmake-extension"
 )
 
-func updateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType *types.PrimitiveU32, uiParam1 *types.PrimitiveU32, uiParam2 *types.PrimitiveU32, strParam *types.String) (*nex.RMCMessage, *nex.Error) {
+func updateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType types.UInt32, uiParam1 types.UInt32, uiParam2 types.UInt32, strParam types.String) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		common_globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, "change_error")
@@ -40,7 +42,7 @@ func updateNotificationData(err error, packet nex.PacketInterface, callID uint32
 	rmcResponse.CallID = callID
 	return rmcResponse, nil
 }
-func getFriendNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType *types.PrimitiveS32) (*nex.RMCMessage, *nex.Error) {
+func getFriendNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType types.Int32) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		common_globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, "change_error")
@@ -67,13 +69,13 @@ func getFriendNotificationData(err error, packet nex.PacketInterface, callID uin
 
 // Is this needed? -Ash
 func cleanupSearchMatchmakeSessionHandler(matchmakeSession *matchmakingtypes.MatchmakeSession) {
-	_ = matchmakeSession.Attributes.SetIndex(2, types.NewPrimitiveU32(0))
+	matchmakeSession.Attributes[2] = types.NewUInt32(0)
 	matchmakeSession.MatchmakeParam = matchmakingtypes.NewMatchmakeParam()
 	matchmakeSession.ApplicationBuffer = types.NewBuffer(make([]byte, 0))
 	globals.Logger.Info(matchmakeSession.String())
 }
 
-func CreateReportDBRecord(_ *types.PID, _ *types.PrimitiveU32, _ *types.QBuffer) error {
+func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
 	return nil
 }
 
@@ -106,28 +108,6 @@ func compareSearchCriteria[T ~uint16 | ~uint32](original T, search string) bool 
 	}
 }
 
-func gameSpecificMatchmakeSessionSearchCriteriaChecksHandler(searchCriteria *matchmakingtypes.MatchmakeSessionSearchCriteria, matchmakeSession *matchmakingtypes.MatchmakeSession) bool {
-	original := matchmakeSession.Attributes.Slice()
-	search := searchCriteria.Attribs.Slice()
-	if len(original) != len(search) {
-		return false
-	}
-
-	for index, originalAttribute := range original {
-		// ignore dummy criterias for matchmaking
-		// everyone ends up in different rooms if you don't skip these
-		if index == 1 || index == 4 {
-			continue
-		}
-		searchAttribute := search[index]
-
-		if !compareSearchCriteria(originalAttribute.Value, searchAttribute.Value) {
-			return false
-		}
-	}
-	return true
-}
-
 func registerCommonSecureServerProtocols() {
 	secureProtocol := secure.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(secureProtocol)
@@ -135,17 +115,19 @@ func registerCommonSecureServerProtocols() {
 
 	commonSecureProtocol.CreateReportDBRecord = CreateReportDBRecord
 
+	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, database.Postgres)
+
 	natTraversalProtocol := nattraversal.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(natTraversalProtocol)
 	commonnattraversal.NewCommonProtocol(natTraversalProtocol)
 
 	matchMakingProtocol := matchmaking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingProtocol)
-	commonmatchmaking.NewCommonProtocol(matchMakingProtocol)
+	commonmatchmaking.NewCommonProtocol(matchMakingProtocol).SetManager(globals.MatchmakingManager)
 
 	matchMakingExtProtocol := matchmakingext.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingExtProtocol)
-	commonmatchmakingext.NewCommonProtocol(matchMakingExtProtocol)
+	commonmatchmakingext.NewCommonProtocol(matchMakingExtProtocol).SetManager(globals.MatchmakingManager)
 
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
@@ -157,8 +139,14 @@ func registerCommonSecureServerProtocols() {
 	matchmakeExtensionProtocol.SetHandlerUpdateNotificationData(updateNotificationData)
 	matchmakeExtensionProtocol.GetPlayingSession = local_matchmakeextension.GetPlayingSession
 	matchmakeExtensionProtocol.ClearMyBlockList = local_matchmakeextension.ClearMyBlockList
+	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
 
 	commonMatchmakeExtensionProtocol.CleanupSearchMatchmakeSession = cleanupSearchMatchmakeSessionHandler
-	commonMatchmakeExtensionProtocol.GameSpecificMatchmakeSessionSearchCriteriaChecks = gameSpecificMatchmakeSessionSearchCriteriaChecksHandler
+	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[matchmakingtypes.MatchmakeSessionSearchCriteria]) {}
+	//makes the games find each other
+	commonMatchmakeExtensionProtocol.OnAfterCreateMatchmakeSession = func(packet nex.PacketInterface, anyGathering matchmakingtypes.GatheringHolder, message types.String, participationCount types.UInt16) {
+		globals.MatchmakingManager.Database.ExecContext(context.Background(), "UPDATE matchmaking.matchmake_sessions SET user_password_enabled=false WHERE game_mode=4129")
+
+	}
 
 }
