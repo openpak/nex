@@ -1,29 +1,29 @@
 package nex_subscription
 
 import (
-	nex "github.com/PretendoNetwork/nex-go"
+	nex "github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/pokemon-gen6/globals"
-	"github.com/PretendoNetwork/nex-protocols-go/subscription"
+	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
 )
 
-func UpdateMySubscriptionData(err error, client *nex.Client, callID uint32, unk uint32, content []byte) {
-	globals.Timeline[client.PID()] = content
+func UpdateMySubscriptionData(err error, packet nex.PacketInterface, callID uint32, unk types.UInt32, content []byte) (*nex.RMCMessage, *nex.Error) {
+	if err != nil {
+		globals.Logger.Error(err.Error())
+		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, err.Error())
+	}
 
-	rmcResponse := nex.NewRMCResponse(subscription.ProtocolID, callID)
-	rmcResponse.SetSuccess(subscription.MethodUpdateMySubscriptionData, nil)
+	client := packet.Sender()
 
-	rmcResponseBytes := rmcResponse.Bytes()
+	endpoint := client.Endpoint().(*nex.PRUDPEndPoint)
 
-	responsePacket, _ := nex.NewPacketV1(client, nil)
+	globals.Timeline[uint32(client.PID())] = content
 
-	responsePacket.SetVersion(1)
-	responsePacket.SetSource(0xA1)
-	responsePacket.SetDestination(0xAF)
-	responsePacket.SetType(nex.DataPacket)
-	responsePacket.SetPayload(rmcResponseBytes)
+	rmcResponse := nex.NewRMCSuccess(endpoint, nil)
+	rmcResponse.ProtocolID = subscription.ProtocolID
+	rmcResponse.MethodID = subscription.MethodUpdateMySubscriptionData
+	rmcResponse.CallID = callID
 
-	responsePacket.AddFlag(nex.FlagNeedsAck)
-	responsePacket.AddFlag(nex.FlagReliable)
-
-	globals.SecureServer.Send(responsePacket)
+	return rmcResponse, nil
 }
+
