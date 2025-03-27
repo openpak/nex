@@ -25,7 +25,7 @@ func StartAuthenticationServer() {
 	globals.AuthenticationEndpoint.OnData(func(packet nex.PacketInterface) {
 		request := packet.RMCMessage()
 
-		fmt.Println("==Yo-kai Watch 2- Auth==")
+		fmt.Println("==animal crossing new leaf- Auth==")
 		fmt.Printf("Protocol ID: %d\n", request.ProtocolID)
 		fmt.Printf("Method ID: %d\n", request.MethodID)
 		fmt.Println("===============")
