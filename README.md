@@ -1,4 +1,4 @@
-# Yo-kai Watch 2 (3DS) replacement server
+# Animal crossing new leaf (3DS) replacement server
 Includes both the authentication and secure servers
 
 ## Compiling
