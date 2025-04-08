@@ -14,10 +14,12 @@ import (
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	commonmatchmakeextension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	commonutility "github.com/PretendoNetwork/nex-protocols-common-go/v2/utility"
+	commondatastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
+	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 
 	"strconv"
 	"strings"
@@ -128,6 +130,10 @@ func registerCommonSecureServerProtocols() {
 	matchMakingProtocol := matchmaking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingProtocol)
 	commonmatchmaking.NewCommonProtocol(matchMakingProtocol).SetManager(globals.MatchmakingManager)
+
+	dataStoreProtocol := datastore.NewProtocol()
+	globals.SecureEndpoint.RegisterServiceProtocol(dataStoreProtocol)
+	commondatastore.NewCommonProtocol(dataStoreProtocol)
 
 	matchMakingExtProtocol := matchmakingext.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingExtProtocol)
