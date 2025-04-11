@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ matrix.repo }}
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
   SHOULD_PUSH_IMAGE: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')) || github.event_name == 'workflow_dispatch' }}
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=edge,enable=${{ github.ref == 'refs/heads/dev' }}
@@ -84,7 +84,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest-arm,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=edge-arm,enable=${{ github.ref == 'refs/heads/dev' }}
