@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"encoding/hex"
 
 	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
 	pb "github.com/PretendoNetwork/grpc-go/account"
@@ -27,6 +28,7 @@ func init() {
 		globals.Logger.Warning("Error loading .env file")
 	}
 
+	aesKey := os.Getenv("PN_ACNL_AES_KEY")
 	kerberosPassword := os.Getenv("PN_ACNL_KERBEROS_PASSWORD")
 	authenticationServerPort := os.Getenv("PN_ACNL_AUTHENTICATION_SERVER_PORT")
 	secureServerHost := os.Getenv("PN_ACNL_SECURE_SERVER_HOST")
@@ -45,6 +47,17 @@ func init() {
 	}
 
 	globals.InitAccounts()
+
+	if strings.TrimSpace(aesKey) == "" {
+		globals.Logger.Error("PN_YKW2_AES_KEY environment variable not set")
+		os.Exit(0)
+	} else {
+		globals.AESKey, err = hex.DecodeString(aesKey)
+		if err != nil {
+			globals.Logger.Criticalf("Failed to decode AES key: %v", err)
+			os.Exit(0)
+		}
+	}
 
 	if strings.TrimSpace(authenticationServerPort) == "" {
 		globals.Logger.Error("PN_ACNL_AUTHENTICATION_SERVER_PORT environment variable not set")
