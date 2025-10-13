@@ -3,6 +3,7 @@ package nex
 import (
 	"github.com/PretendoNetwork/metroid-prime-federation-force/database"
 	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -10,6 +11,7 @@ import (
 	common_nat_traversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	common_secure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
+	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
@@ -43,4 +45,7 @@ func registerCommonSecureServerProtocols() {
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := common_matchmake_extension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.SetManager(matchmakingManager)
+
+	// TODO - Remove when updating to new version of common protocols
+	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = func(searchCriterias types.List[match_making_types.MatchmakeSessionSearchCriteria]) {}
 }
