@@ -1,16 +1,14 @@
 package nex_subscription
 
 import (
-	"encoding/hex"
-
-	nex "github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
+	subscription_types "github.com/PretendoNetwork/nex-protocols-go/v2/subscription/types"
 	"github.com/PretendoNetwork/pokemon-gen6/globals"
-	subscription_types "github.com/PretendoNetwork/pokemon-gen6/nex/subscription/types"
 )
 
-func GetSubscriptionData(err error, packet nex.PacketInterface, callID uint32, pids types.List[types.UInt32]) (*nex.RMCMessage, *nex.Error) {
+func GetSubscriptionData(err error, packet nex.PacketInterface, callID uint32, pids types.List[types.PID]) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, err.Error())
@@ -25,12 +23,12 @@ func GetSubscriptionData(err error, packet nex.PacketInterface, callID uint32, p
 	subscriptionDataList := types.NewList[subscription_types.SubscriptionData]()
 
 	for _, pid := range pids {
-		globals.Logger.Infof("%d", pid)
+		globals.Logger.Infof("GetSubscriptionData pid: %d", pid)
 
 		subscriptionData := subscription_types.NewSubscriptionData()
 
-		subscriptionData.OwnerPID = pid
-		subscriptionData.Data = globals.Timeline[uint32(pid)]
+		subscriptionData.PrincipalID = pid
+		subscriptionData.Unknown = globals.Timeline.GetData(pid).Data.Unknown
 
 		subscriptionDataList = append(subscriptionDataList, subscriptionData)
 	}
@@ -38,8 +36,6 @@ func GetSubscriptionData(err error, packet nex.PacketInterface, callID uint32, p
 	subscriptionDataList.WriteTo(rmcResponseStream)
 
 	rmcResponseBody := rmcResponseStream.Bytes()
-
-	globals.Logger.Info(hex.EncodeToString(rmcResponseBody))
 
 	rmcResponse := nex.NewRMCSuccess(endpoint, rmcResponseBody)
 	rmcResponse.ProtocolID = subscription.ProtocolID
