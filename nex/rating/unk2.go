@@ -1,12 +1,13 @@
 package nex_subscription
 
 import (
-	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/PretendoNetwork/nex-go/v2"
 	rating "github.com/PretendoNetwork/nex-protocols-go/v2/rating"
+	rating_types "github.com/PretendoNetwork/nex-protocols-go/v2/rating/types"
+	"github.com/PretendoNetwork/pokemon-gen6/globals"
 )
 
-func Unk2(err error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage, *nex.Error) {
+func Unk2(err error, packet nex.PacketInterface, callID uint32, sessionToken rating_types.RatingSessionToken) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		globals.Logger.Error(err.Error())
 		return nil, nex.NewError(nex.ResultCodes.Core.InvalidArgument, err.Error())
@@ -23,4 +24,3 @@ func Unk2(err error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage
 
 	return rmcResponse, nil
 }
-
