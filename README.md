@@ -72,7 +72,6 @@ All configuration options are handled via environment variables
 | Name                                 | Description                                                                                                         | Required                            |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------------|-------------------------------------|
 | `PN_MPFF_POSTGRES_URI`               | Fully qualified URI to your Postgres server (Example `postgres://username:password@localhost/mpff?sslmode=disable`) | Yes                                 |
-| `PN_MPFF_AES_KEY`                    | AES key used in tokens provided by the account server                                                               | Yes                                 |
 | `PN_MPFF_AUTHENTICATION_SERVER_PORT` | Port for the authentication server                                                                                  | Yes                                 |
 | `PN_MPFF_SECURE_SERVER_HOST`         | Host name for the secure server (should point to the same address as the authentication server)                     | Yes                                 |
 | `PN_MPFF_SECURE_SERVER_PORT`         | Port for the secure server                                                                                          | Yes                                 |
