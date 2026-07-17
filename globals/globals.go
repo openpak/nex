@@ -1,7 +1,6 @@
 package globals
 
 import (
-	pb_account "github.com/PretendoNetwork/grpc/go/account"
 	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
@@ -19,10 +18,6 @@ var AuthenticationEndpoint *nex.PRUDPEndPoint
 var SecureServer *nex.PRUDPServer
 var SecureEndpoint *nex.PRUDPEndPoint
 
-var GRPCAccountClientConnection *grpc.ClientConn
-var GRPCAccountClient pb_account.AccountClient
-var GRPCAccountCommonMetadata metadata.MD
-
 var GRPCFriendsClientConnection *grpc.ClientConn
 var GRPCFriendsClient pb_friends.FriendsClient
 var GRPCFriendsCommonMetadata metadata.MD
@@ -34,5 +29,4 @@ var S3Url string
 var MinIOClient *minio.Client
 var Presigner *S3Presigner
 
-var TokenAESKey []byte
 var LocalAuthMode bool

@@ -60,5 +60,4 @@ All configuration options are handled via environment variables
 | `PN_SSB3DS_DATASTORE_S3KEY`            | Access key for S3 service                                                                                             | Yes                                 |
 | `PN_SSB3DS_DATASTORE_S3SECRET`         | Access secret for S3 service                                                                                          | Yes                                 |
 | `PN_SSB3DS_DATASTORE_S3URL`            | URL to reach S3 service                                                                                               | Yes                                 |
-| `PN_SSB3DS_AES_KEY`                    | AES key for token decryption                                                                                          | Yes (unless local auth used)        |
 | `PN_SSB3DS_LOCAL_AUTH`                 | Whether to read NEX keys from a local settings.json file (insecure!)                                                  | No (Assumed false)                  |
