@@ -3,13 +3,13 @@ module github.com/PretendoNetwork/ice-station-z
 go 1.25.0
 
 require (
-	github.com/PretendoNetwork/grpc-go v1.0.2
-	github.com/PretendoNetwork/nex-go/v2 v2.3.0
-	github.com/PretendoNetwork/nex-protocols-common-go/v2 v2.4.1-0.20260102010505-8e7b52aa783f
-	github.com/PretendoNetwork/nex-protocols-go/v2 v2.2.3-0.20260102010948-4da234149098
+	github.com/PretendoNetwork/grpc/go v0.0.0-20260501210425-981c793afb28
+	github.com/PretendoNetwork/nex-go/v2 v2.3.1
+	github.com/PretendoNetwork/nex-protocols-common-go/v2 v2.6.1-0.20260717140140-3771b1194aad
+	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.5
 	github.com/PretendoNetwork/plogger-go v1.1.0
 	github.com/joho/godotenv v1.5.1
-	google.golang.org/grpc v1.72.1
+	google.golang.org/grpc v1.82.1
 )
 
 require (
@@ -34,11 +34,11 @@ require (
 	github.com/superwhiskers/crunch/v3 v3.5.7 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
-	golang.org/x/mod v0.26.0 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250519155744-55703ea1f237 // indirect
-	google.golang.org/protobuf v1.36.8 // indirect
+	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/term v0.42.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
