@@ -1,14 +1,15 @@
 package nex
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticketgranting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
 	"github.com/PretendoNetwork/splatoon/globals"
-	"os"
-	"strconv"
 )
 
 func registerCommonAuthenticationServerProtocols() {
@@ -37,6 +38,6 @@ func registerCommonAuthenticationServerProtocols() {
 			return nil
 		}
 	} else {
-		commonTicketGrantingProtocol.SetPretendoValidation(globals.TokenAESKey)
+		commonTicketGrantingProtocol.ConfigurePNValidation([]string{"10162B00"})
 	}
 }
