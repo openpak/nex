@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
+	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 
 	"github.com/PretendoNetwork/plogger-go"
@@ -39,6 +40,7 @@ func init() {
 	friendsGRPCPort := os.Getenv("PN_SPLATOON_FRIENDS_GRPC_PORT")
 	friendsGRPCAPIKey := os.Getenv("PN_SPLATOON_FRIENDS_GRPC_API_KEY")
 	localAuthMode := os.Getenv("PN_SPLATOON_LOCAL_AUTH")
+	healthCheckPort := os.Getenv("PN_SPLATOON_HEALTH_CHECK_PORT")
 
 	kerberosPassword := make([]byte, 0x10)
 	_, err = rand.Read(kerberosPassword)
@@ -151,4 +153,16 @@ func init() {
 		globals.Logger.Critical(err.Error())
 	}
 	globals.Logger.Success("Connected to Postgres!")
+
+	if strings.TrimSpace(healthCheckPort) == "" {
+		globals.Logger.Warning("Basic UDP health check will not be enabled. PN_SPLATOON_HEALTH_CHECK_PORT environment variable not set")
+	} else if port, err := strconv.Atoi(healthCheckPort); err != nil {
+		globals.Logger.Errorf("PN_SPLATOON_HEALTH_CHECK_PORT is not a valid port. Expected 0-65535, got %s", healthCheckPort)
+		os.Exit(0)
+	} else if port < 0 || port > 65535 {
+		globals.Logger.Errorf("PN_SPLATOON_HEALTH_CHECK_PORT is not a valid port. Expected 0-65535, got %s", healthCheckPort)
+		os.Exit(0)
+	} else {
+		nex.EnableBasicUDPHealthCheck(port)
+	}
 }
