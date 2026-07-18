@@ -33,7 +33,8 @@ func registerCommonSecureServerProtocols() {
 	secureProtocol := secure.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(secureProtocol)
 	commonSecureProtocol := commonsecure.NewCommonProtocol(secureProtocol)
-	commonSecureProtocol.SetPretendoValidation(globals.AESKey)
+	// TODO re-enable once mhxx branch is rebased up to latest
+	// commonSecureProtocol.SetPretendoValidation(globals.AESKey)
 
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 
