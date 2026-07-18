@@ -16,7 +16,8 @@ func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol.SetUseCrossplay(true)
 	globals.AuthenticationEndpoint.RegisterServiceProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol := commonticketgranting.NewCommonProtocol(ticketGrantingProtocol)
-	commonTicketGrantingProtocol.SetPretendoValidation(globals.AESKey)
+	// TODO re-enable once the ticket-granting changes are rebased up
+	// commonTicketGrantingProtocol.SetPretendoValidation(globals.AESKey)
 
 	port, _ := strconv.Atoi(os.Getenv("PN_ISZ_SECURE_SERVER_PORT"))
 
