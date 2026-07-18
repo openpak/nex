@@ -54,5 +54,4 @@ All configuration options are handled via environment variables
 | `PN_RETM_FRIENDS_GRPC_HOST`          | Host name for your friends server gRPC service                                                                      | Yes                                           |
 | `PN_RETM_FRIENDS_GRPC_PORT`          | Port for your friends server gRPC service                                                                           | Yes                                           |
 | `PN_RETM_FRIENDS_GRPC_API_KEY`       | API key for your friends server gRPC service                                                                        | No (Assumed to be an open gRPC API)           |
-| `PN_RETM_AES_KEY`                    | AES key from the account server                                                                                     | Yes                                           |
 | `PN_RETM_HEALTH_CHECK_PORT`          | Port for the UDP health check                                                                                       | No                                            |
