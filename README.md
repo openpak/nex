@@ -42,7 +42,7 @@ Other tools and systems can also make use of this image, including Docker Compos
 To compile using Go, `go get` the required modules and then `go build` to your desired location. You may also want to tidy the go modules, though this is optional
 
 ```bash
-$ go get -u
+$ go get
 $ go mod tidy
 $ go build -o build/f1-2011
 ```
