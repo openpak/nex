@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
-	pbfriends "github.com/PretendoNetwork/grpc-go/friends"
+	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
+	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals"
 	"github.com/joho/godotenv"
@@ -92,28 +92,20 @@ func init() {
 		os.Exit(0)
 	}
 
-	if port, err := strconv.Atoi(accountGRPCPort); err != nil {
-		globals.Logger.Errorf("PN_RETM_ACCOUNT_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
+	accountPort, err := strconv.Atoi(accountGRPCPort)
+	if err != nil {
+		globals.Logger.Errorf("PN_TETR_ACCOUNT_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
 		os.Exit(0)
-	} else if port < 0 || port > 65535 {
-		globals.Logger.Errorf("PN_RETM_ACCOUNT_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
+	} else if accountPort < 0 || accountPort > 65535 {
+		globals.Logger.Errorf("PN_TETR_ACCOUNT_GRPC_PORT is not a valid port. Expected 0-65535, got %s", accountGRPCPort)
 		os.Exit(0)
 	}
 
 	if strings.TrimSpace(accountGRPCAPIKey) == "" {
-		globals.Logger.Warning("Insecure gRPC server detected. PN_RETM_ACCOUNT_GRPC_API_KEY environment variable not set")
+		globals.Logger.Warning("Insecure gRPC server detected. PN_TETR_ACCOUNT_GRPC_API_KEY environment variable not set")
 	}
 
-	globals.GRPCAccountClientConnection, err = grpc.Dial(fmt.Sprintf("%s:%s", accountGRPCHost, accountGRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		globals.Logger.Criticalf("Failed to connect to account gRPC server: %v", err)
-		os.Exit(0)
-	}
-
-	globals.GRPCAccountClient = pb.NewAccountClient(globals.GRPCAccountClientConnection)
-	globals.GRPCAccountCommonMetadata = metadata.Pairs(
-		"X-API-Key", accountGRPCAPIKey,
-	)
+	common_globals.ConnectToAccountGRPC(accountGRPCHost, uint16(accountPort), accountGRPCAPIKey)
 
 	if strings.TrimSpace(friendsGRPCHost) == "" {
 		globals.Logger.Error("PN_RETM_FRIENDS_GRPC_HOST environment variable not set")
