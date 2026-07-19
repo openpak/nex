@@ -13,11 +13,9 @@ import (
 
 func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol := ticketgranting.NewProtocol()
-	ticketGrantingProtocol.SetUseCrossplay(true)
 	globals.AuthenticationEndpoint.RegisterServiceProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol := commonticketgranting.NewCommonProtocol(ticketGrantingProtocol)
-	// TODO re-enable once mhxx branch is rebased up to master
-	// commonTicketGrantingProtocol.SetPretendoValidation(globals.AESKey)
+	commonTicketGrantingProtocol.ConfigurePNValidation([]string{"00039E00"})
 
 	port, _ := strconv.Atoi(os.Getenv("PN_TETR_SECURE_SERVER_PORT"))
 
