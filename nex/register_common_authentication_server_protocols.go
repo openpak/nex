@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
@@ -16,8 +17,10 @@ func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol.SetUseCrossplay(true)
 	globals.AuthenticationEndpoint.RegisterServiceProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol := commonticketgranting.NewCommonProtocol(ticketGrantingProtocol)
-	// TODO re-enable this once mhxx branch is rebased up to latest
-	// commonTicketGrantingProtocol.SetPretendoValidation(globals.AESKey)
+	// HACK: replace with ConfigurePNValidation once MHXX branch is rebased up to latest
+	commonTicketGrantingProtocol.ValidateLoginData = func(pid types.PID, loginData types.DataHolder) *nex.Error {
+		return nil
+	}
 
 	port, _ := strconv.Atoi(os.Getenv("PN_MHXX_SECURE_SERVER_PORT"))
 
