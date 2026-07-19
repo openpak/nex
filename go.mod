@@ -18,7 +18,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/jwalton/go-supportscolor v1.2.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
