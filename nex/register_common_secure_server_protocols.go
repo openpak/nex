@@ -33,7 +33,7 @@ func registerCommonSecureServerProtocols() {
 	secureProtocol := secure.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(secureProtocol)
 	commonSecureProtocol := commonsecure.NewCommonProtocol(secureProtocol)
-	commonSecureProtocol.SetPretendoValidation(globals.AESKey)
+	commonSecureProtocol.ConfigurePNValidation([]string{"00043E00"})
 
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 

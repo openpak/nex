@@ -13,7 +13,6 @@ import (
 
 func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol := ticketgranting.NewProtocol()
-	ticketGrantingProtocol.SetUseCrossplay(true)
 	globals.AuthenticationEndpoint.RegisterServiceProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol := commonticketgranting.NewCommonProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol.EnableInsecureLogin()
