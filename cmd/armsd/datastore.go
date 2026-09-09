@@ -10,6 +10,15 @@ package main
 // ever passes through this process.
 //
 // Only the ARMS update links a DataStore client; the base game has none.
+//
+// LIFT CANDIDATE. This backend is agreed to move into the shared
+// github.com/openpak/nex/datastore subpackage, behind a one-call store.Wire(common, host).
+// Nothing here is ARMS-shaped -- the only title-specific values are the schema name and the
+// S3 key bases, and the columns are a transcription of NEX's own DataStoreMetaInfo. Delete
+// this file and search.go when the shared store lands and nex-base says it is ready; do not
+// grow ARMS-specific behaviour in here in the meantime. What must change on the way across
+// is scoping: this uses a per-title Postgres schema, the shared store uses a title key so
+// one database can hold several titles. See docs/design.md.
 
 import (
 	"database/sql"

@@ -1,6 +1,6 @@
 package main
 
-// SearchObject's WHERE clause.
+// SearchObject's WHERE clause. LIFT CANDIDATE -- see the header of datastore.go.
 //
 // Everything a console sends arrives here as a placeholder argument. The one part of the
 // query a console influences textually is the ORDER BY column, and that comes out of a
