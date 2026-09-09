@@ -375,3 +375,22 @@ func TestFriendPIDsDoesNotTruncate(t *testing.T) {
 		t.Errorf("friend list leaked on a failed lookup: %v", leaked)
 	}
 }
+
+// TestSecureConnectionIsReachable: Register is refused by default and only a title's own
+// capture can say whether its Pia calls Register or RegisterEx, so the switch has to be
+// reachable from outside this package.
+func TestSecureConnectionIsReachable(t *testing.T) {
+	host, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if host.SecureConnection == nil {
+		t.Fatal("a title cannot reach the SecureConnection protocol")
+	}
+	host.SecureConnection.EnableInsecureRegister()
+
+	// The default must stay accept-everything, since the ticket already proved the PID.
+	if err := host.SecureConnection.ValidateLoginData(types.NewPID(1800000042), types.NewDataHolder()); err != nil {
+		t.Errorf("default login-data check refused a ticket-authenticated caller: %v", err)
+	}
+}

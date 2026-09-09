@@ -205,6 +205,17 @@ type Host struct {
 	Auth   *nex.PRUDPEndPoint
 	Secure *nex.PRUDPEndPoint
 
+	// SecureConnection is the common SecureConnection protocol, kept so a title can reach it.
+	// Two things on it are title decisions this package must not make:
+	//
+	//   - EnableInsecureRegister(). Register (0x0B.1) is refused by default and only
+	//     RegisterEx (0x0B.4) works. A title on an older Pia may call plain Register, and
+	//     only its own capture can say so.
+	//   - ValidateLoginData. It is set here to accept, because by the time a packet reaches
+	//     the secure endpoint the caller's PID came out of a kerberos ticket this process
+	//     minted minutes ago. A title that finds something it must check can replace it.
+	SecureConnection *common_secure_connection.CommonProtocol
+
 	// SecureStationURL is what the login response tells the console about the secure server.
 	// A title may overwrite it before Run to match a retail-observed shape; the default is
 	// built from the configuration and is a placeholder in single-listener mode, because
@@ -301,10 +312,10 @@ func (h *Host) registerSecureConnection() {
 	common := common_secure_connection.NewCommonProtocol(protocol)
 	// RegisterEx re-checks the login data. By the time a packet reaches the secure endpoint
 	// the caller's PID came out of a kerberos ticket this process minted minutes ago, so
-	// there is nothing left for a second token check to prove.
-	// ponytail: accept it; tighten if a capture ever shows a title sending something here
-	// that we must act on.
+	// there is nothing left for a second token check to prove. A title that disagrees
+	// replaces this through Host.SecureConnection.
 	common.ValidateLoginData = func(types.PID, types.DataHolder) *nex.Error { return nil }
+	h.SecureConnection = common
 	h.Secure.RegisterServiceProtocol(protocol)
 }
 
