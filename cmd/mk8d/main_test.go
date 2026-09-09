@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 // TestConfigDefaults pins the four per-title values. They are the difference between a
@@ -44,43 +44,5 @@ func TestConfigEnvWins(t *testing.T) {
 	cfg := config()
 	if cfg.Version != "4.4.0" || cfg.Transport != "udp" || cfg.StationScheme != "prudps" {
 		t.Errorf("environment overridden by title defaults: %+v", cfg)
-	}
-}
-
-// TestSwitchByteStream is the one that matters most: a NEX 4 Switch title reads 8-byte PIDs
-// and a header in front of every structure, and nex-go defaults to neither.
-func TestSwitchByteStream(t *testing.T) {
-	host, err := nexhost.New(testConfig())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if host.Auth.Server.ByteStreamSettings.PIDSize == 8 || host.Auth.Server.ByteStreamSettings.UseStructureHeader {
-		t.Fatal("something already applies the Switch profile; switchByteStream and this test can go")
-	}
-
-	switchByteStream(host)
-
-	for name, settings := range map[string]*struct {
-		size   int
-		header bool
-	}{
-		"auth":   {host.Auth.Server.ByteStreamSettings.PIDSize, host.Auth.Server.ByteStreamSettings.UseStructureHeader},
-		"secure": {host.Secure.Server.ByteStreamSettings.PIDSize, host.Secure.Server.ByteStreamSettings.UseStructureHeader},
-	} {
-		if settings.size != 8 {
-			t.Errorf("%s PID size = %d, want 8", name, settings.size)
-		}
-		if !settings.header {
-			t.Errorf("%s endpoint is not writing structure headers", name)
-		}
-	}
-}
-
-func testConfig() nexhost.Config {
-	return nexhost.Config{
-		Title: "mk8d-test", PortBase: 22150, AccessKey: "09c1c475", Version: "4.0.0",
-		SecureHost: "127.0.0.1", StationScheme: "prudp", Transport: "websocket",
-		StreamID: 1, SecureStreamID: 1, SecurePID: 2, HTTPAddr: ":0",
-		InternalURL: "http://127.0.0.1:1", InternalKey: "k",
 	}
 }

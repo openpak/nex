@@ -36,7 +36,7 @@ import (
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 	_ "github.com/lib/pq"
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 func main() {
@@ -44,7 +44,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	switchByteStream(host)
 
 	db, err := sql.Open("postgres", os.Getenv("MK8D_DATABASE_URL"))
 	if err != nil {
@@ -85,20 +84,6 @@ func config() nexhost.Config {
 		cfg.StationScheme = "prudp"
 	}
 	return cfg
-}
-
-// switchByteStream applies the two wire settings a NEX 4 Switch title needs and that nex-go
-// defaults the other way for Wii U and 3DS: 8-byte PIDs, and a version+length header in
-// front of every structure. Get either wrong and every field after the first is read at the
-// wrong offset.
-//
-// ponytail: set here because openpak/nex builds the servers itself and has no Switch
-// profile yet. Delete it once servers/nex does this -- it is per-console, not per-title.
-func switchByteStream(host *nexhost.Host) {
-	for _, endpoint := range []*nex.PRUDPEndPoint{host.Auth, host.Secure} {
-		endpoint.Server.ByteStreamSettings.PIDSize = 8
-		endpoint.Server.ByteStreamSettings.UseStructureHeader = true
-	}
 }
 
 // registerProtocols gives the secure endpoint everything MK8D's online mode touches.
