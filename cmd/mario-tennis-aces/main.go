@@ -30,7 +30,7 @@ import (
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 	_ "github.com/lib/pq"
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 func main() {
