@@ -117,9 +117,35 @@ identity; the name is recorded at login instead, because titles go on to ask for
 the name they logged in with and nothing else can translate it back
 (`Host.PIDForLoginName`).
 
-### 3. Ports, health, deploy
+### 3. Transport and the shape of the two endpoints
 
-One block of ten per title from `ports.md`: `+0` authentication, `+1` secure, `+2` HTTP.
+A Switch NEX title does not speak PRUDP over UDP. It speaks **PRUDP over WebSocket**, and it
+reaches both the authentication and the secure service **on one connection**, separated by
+PRUDP virtual port: authentication on stream 1, secure on stream 2. The console never opens a
+second socket, so the secure station URL in the login response is a placeholder — retail shape
+is address `0.0.0.1`, port 1, with `sid=2` doing the actual steering.
+
+nex-go already supports all of this: `ListenWebSocket` beside `Listen`, and a server that
+routes each packet to the endpoint whose stream ID it is addressed to. So the single-listener
+mode is *less* code than two servers, not more — it is one server with two endpoints bound.
+
+`NEX_TRANSPORT` picks the transport and TLS stays with the front proxy, matching every other
+console-facing listener in OpenPak. `NEX_SECURE_STREAM_ID` picks the shape: leave it equal to
+`NEX_STREAM_ID` for two listeners on `+0` and `+1`, or set it different for one listener on
+`+0`. They cannot both be one listener and the same stream, because nex-go refuses to bind two
+endpoints with the same stream ID — so the one knob says everything, and the station URL
+default follows it.
+
+`NEX_SECURE_PID` exists because the secure server's PID is not always the conventional 2; it
+is the ticket target, the station URL's `PID=`, and the source of pushed notifications. A
+title that knows its retail constant sets it. A title that needs the whole URL to match
+something observed overwrites `Host.SecureStationURL` before `Run`.
+
+### 4. Ports, health, deploy
+
+One block of ten per title from `ports.md`: `+0` authentication, `+1` secure, `+2` HTTP. In
+single-listener mode `+1` is reserved and nothing binds it; the block still belongs to the
+title.
 `NEX_PORT_BASE` is validated at startup against the two NEX ranges, so a typo fails loudly
 instead of listening somewhere harmless-looking.
 

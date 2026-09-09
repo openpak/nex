@@ -12,6 +12,8 @@ Sources are abbreviated:
 - **PL** — Pretendo's AGPL libraries, read as source we may depend on.
 - **N** — a earlier network repository, read for facts only.
 - **O** — our own repositories.
+- **KS** — [kinnay/SMB35](https://github.com/kinnay/SMB35), a public AGPL-3.0 reference server
+  known to work with a retail Switch client (`source/main.py`).
 
 ## Protocol
 
@@ -30,6 +32,12 @@ Sources are abbreviated:
 | Switch internal ticket format: random key in the clear beside the encrypted body, final key `MD5(target key + random key)` | `KerberosTicketVersion = 1` | K; PL implements both formats |
 | Session key length | 32 bytes | K |
 | PRUDP virtual ports are **learned from the SYN** — the server answers as the port the client targeted; there is no fixed value | — | N `earlier-nex/endpoint.go` |
+| **Switch NEX is PRUDP over WebSocket**, not over UDP | — | KS serves a WebSocket transport; corroborated by N's SMB35 server using a WSS listener |
+| **Authentication and secure share one listener, separated by stream ID.** Authentication is stream 1, secure is stream 2, both on the same transport | — | KS |
+| Because of that, the secure station URL in the login response is a **placeholder** — the console does not dial it, it switches virtual port on the connection it already has | `address=0.0.0.1`, `port=1`, `sid=2` | KS |
+| Full retail secure station URL shape for a Switch title | `prudps`, address `0.0.0.1`, port 1, `PID=<secure pid>`, `CID=1`, `type=2`, `sid=2`, `stream=10` | KS |
+| A secure server PID need not be 2; a retail-observed constant exists | `257049437023956657` (SMB35) | KS |
+| The login response's source key is 16 random bytes, hex-encoded — independently confirming the key inversion | — | KS |
 | PRUDP-Lite CONNECT signature is a pure function of the access key and connection signature: `HMAC-MD5(MD5(accessKey), MD5(accessKey) + connectionSig)` | — | N `mario-party-superstars/README.md`, `mario-golf-super-rush/README.md` |
 | Some consoles send a **ticketless (empty) CONNECT** to the secure server | — | N `earlier-nex/endpoint.go` |
 
@@ -54,6 +62,7 @@ Sources are abbreviated:
 | The `g<hex>-lp1.s.n.srv.nintendo.net` hostname encodes a **Game Server ID, not the access key** — the two are different values for the same title | — | N `mario-party-superstars/README.md` (records an earlier wrong theory and its correction) |
 | NEX version is carried as an integer: `40605` is NEX 4.6.5 | `major*10000 + minor*100 + patch` | N title configuration across the fleet |
 | Observed NEX versions span 4.0.0 to 4.6.5 across Switch titles | — | N title `main.go`/dashboard values |
+| Super Mario Bros. 35 uses **method 6**, NEX version 40600, access key `0a69c592` | — | KS |
 | The secure station URL scheme is per title: `prudps` for most, `prudp` for at least one major title. The wrong one lets menus work and then fails when the session is actually needed | — | N `arms/main.go`, `mario-party-superstars/main.go` |
 | Pia's wire shape changed at Pia 5.19; titles before and after differ | — | N `mario-party-superstars/README.md` |
 
@@ -77,6 +86,8 @@ because it asks for friends by 32-bit PID. OpenPak has the friend graph from nx-
   dependency and the next blocking item.**
 - Pia minor-version and station-scheme behaviour per title: `NEX_STATION_SCHEME` is exposed,
   but no OpenPak title has connected yet to confirm a value.
-- Whether any Switch title targets a PRUDP stream ID other than 1. `NEX_STREAM_ID` exists
-  because nex-go drops packets for an unbound stream, logging "trying to connect to unbound
-  PRUDPEndPoint".
+- Whether any Switch title uses a secure stream other than 2, or an authentication stream
+  other than 1. Both are configurable; the retail-observed pair is 1 and 2.
+- Whether the placeholder station URL is universal across Switch titles or SMB35-specific. It
+  is the default only in single-listener mode, so a title that needs a real address gets one
+  by leaving the stream IDs equal, or by overwriting `Host.SecureStationURL`.

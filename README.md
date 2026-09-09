@@ -47,7 +47,15 @@ log.Fatal(host.Run())
 
 `host.Auth` and `host.Secure` are plain `nex.PRUDPEndPoint`s — register nex-go protocols on
 them directly. `host.PlayerByPID` answers the one question nex-go cannot: who this PID is on
-OpenPak. See [`docs/design.md`](docs/design.md) for the full worked example.
+OpenPak. `host.SecureStationURL` is what the login response tells the console about the secure
+server; overwrite it before `Run` to match a retail-observed shape. See
+[`docs/design.md`](docs/design.md) for the full worked example.
+
+A Switch title typically wants:
+
+```sh
+NEX_TRANSPORT=websocket NEX_SECURE_STREAM_ID=2   # one listener, secure on stream 2
+```
 
 In a title server's `go.mod`:
 
@@ -74,7 +82,10 @@ whether a console reaches us and gets through the handshake, before any title wo
 | `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Accepts `4.6.5` or the integer form the console reports, `40605`. Decides which login method the client uses and how structures are serialised |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on, default `127.0.0.1` |
 | `NEX_STATION_SCHEME` | `prudps` (default) or `prudp`, per title. Whether the console treats the secure server as a Pia station. The wrong value is not a clean failure: menus keep working and the title gives up later |
-| `NEX_STREAM_ID` | PRUDP virtual port both endpoints bind, default `1`. nex-go drops packets addressed to an unbound stream, logging "trying to connect to unbound PRUDPEndPoint" |
+| `NEX_TRANSPORT` | `udp` (default) or `websocket`. **Switch NEX titles speak PRUDP over WebSocket**; UDP is the Wii U/3DS form. TLS is the front proxy's job, so this listens plain `ws` |
+| `NEX_STREAM_ID` | PRUDP virtual port the authentication endpoint binds, default `1` |
+| `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. **Set it different (retail Switch shape: 2) and both endpoints share one listener on `+0`** — the console never opens a second socket, it switches virtual port on the connection it has. `+1` then stays reserved and unused |
+| `NEX_SECURE_PID` | secure server's principal ID, default `2`: the kerberos ticket target, the station URL `PID=`, and the source of pushed notifications. Some titles have a retail-observed constant |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
 | `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key` |

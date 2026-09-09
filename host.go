@@ -50,10 +50,30 @@ type Config struct {
 	// treats the secure server as a Pia station. The wrong one is not a clean failure:
 	// menus keep working and the title gives up later, when it actually needs the session.
 	StationScheme string
-	// StreamID is the PRUDP virtual port both endpoints bind. nex-go routes a packet by the
-	// stream ID it is addressed to and silently drops anything for an unbound one, logging
-	// "trying to connect to unbound PRUDPEndPoint". 1 is the standard value.
-	StreamID    uint8
+	// StreamID is the PRUDP virtual port the authentication endpoint binds, and
+	// SecureStreamID the one the secure endpoint binds. nex-go routes a packet by the stream
+	// ID it is addressed to and silently drops anything for an unbound one, logging "trying
+	// to connect to unbound PRUDPEndPoint".
+	//
+	// Whether the two are equal decides the shape of the server, because nex-go cannot bind
+	// two endpoints with the same stream ID to one listener:
+	//
+	//   - equal (both 1, the default): two listeners, authentication on +0 and secure on +1,
+	//     and the console dials the secure port from the station URL it is given.
+	//   - different: ONE listener on +0 carrying both endpoints. This is what a Switch title
+	//     expects — the console never opens a second socket, it switches virtual port on the
+	//     connection it already has — so the station URL it is handed is a placeholder.
+	//     Observed retail shape: authentication on stream 1, secure on stream 2. The block's
+	//     +1 port stays reserved and unused.
+	StreamID       uint8
+	SecureStreamID uint8
+	// SecurePID is the secure server's principal ID: the kerberos ticket's target, the PID in
+	// the secure station URL, and the source of any notification the server pushes. 2 is the
+	// conventional value; some titles have a retail-observed constant instead.
+	SecurePID uint64
+	// Transport is "udp" or "websocket". Switch NEX titles speak PRUDP over WebSocket; the
+	// UDP form is what Wii U and 3DS era titles use. TLS is left to the front proxy.
+	Transport   string
 	HTTPAddr    string // /healthz listener
 	InternalURL string // nx-baas game/internal API
 	InternalKey string // nx-baas NX_INTERNAL_KEY, sent as X-Internal-Key
@@ -63,16 +83,19 @@ type Config struct {
 func FromEnv() Config {
 	base, _ := strconv.Atoi(os.Getenv("NEX_PORT_BASE"))
 	return Config{
-		Title:         env("NEX_TITLE", "nex"),
-		PortBase:      base,
-		AccessKey:     os.Getenv("NEX_ACCESS_KEY"),
-		Version:       env("NEX_VERSION", "4.4.0"),
-		SecureHost:    env("NEX_SECURE_HOST", "127.0.0.1"),
-		StationScheme: env("NEX_STATION_SCHEME", "prudps"),
-		StreamID:      uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
-		HTTPAddr:      env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
-		InternalURL:   env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
-		InternalKey:   os.Getenv("NX_INTERNAL_KEY"),
+		Title:          env("NEX_TITLE", "nex"),
+		PortBase:       base,
+		AccessKey:      os.Getenv("NEX_ACCESS_KEY"),
+		Version:        env("NEX_VERSION", "4.4.0"),
+		SecureHost:     env("NEX_SECURE_HOST", "127.0.0.1"),
+		StationScheme:  env("NEX_STATION_SCHEME", "prudps"),
+		StreamID:       uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
+		SecureStreamID: uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), 1)),
+		SecurePID:      uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), 2)),
+		Transport:      env("NEX_TRANSPORT", "udp"),
+		HTTPAddr:       env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
+		InternalURL:    env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
+		InternalKey:    os.Getenv("NX_INTERNAL_KEY"),
 	}
 }
 
@@ -90,9 +113,14 @@ func env(name, fallback string) string {
 	return fallback
 }
 
-// AuthPort and SecurePort are the two listeners of the title's block (ports.md: +0 auth, +1 secure).
+// AuthPort and SecurePort are the two listeners of the title's block (ports.md: +0 auth, +1
+// secure). In single-listener mode SecurePort is reserved but nothing binds it.
 func (c Config) AuthPort() int   { return c.PortBase }
 func (c Config) SecurePort() int { return c.PortBase + 1 }
+
+// SingleListener reports whether both endpoints share one listener, which they do exactly
+// when they are on different streams -- see StreamID.
+func (c Config) SingleListener() bool { return c.SecureStreamID != c.StreamID }
 
 // validate fails loudly at startup rather than quietly serving on the wrong port.
 func (c Config) validate() error {
@@ -106,6 +134,13 @@ func (c Config) validate() error {
 		return errors.New("NX_INTERNAL_KEY is required: without it every login is refused by nx-baas")
 	case c.StationScheme != "prudps" && c.StationScheme != "prudp":
 		return fmt.Errorf("NEX_STATION_SCHEME=%q: want prudps or prudp", c.StationScheme)
+	case c.Transport != "udp" && c.Transport != "websocket":
+		return fmt.Errorf("NEX_TRANSPORT=%q: want udp or websocket", c.Transport)
+	case c.StreamID == 0 || c.StreamID > 15 || c.SecureStreamID == 0 || c.SecureStreamID > 15:
+		// PRUDP v0 and v1 carry the stream ID in four bits.
+		return fmt.Errorf("stream IDs must be 1-15, got auth %d secure %d", c.StreamID, c.SecureStreamID)
+	case c.SecurePID == 0:
+		return errors.New("NEX_SECURE_PID must not be 0: it is the kerberos ticket's target")
 	}
 	if _, err := parseVersion(c.Version); err != nil {
 		return err
@@ -145,6 +180,12 @@ type Host struct {
 	Auth   *nex.PRUDPEndPoint
 	Secure *nex.PRUDPEndPoint
 
+	// SecureStationURL is what the login response tells the console about the secure server.
+	// A title may overwrite it before Run to match a retail-observed shape; the default is
+	// built from the configuration and is a placeholder in single-listener mode, because
+	// there is nothing for the console to dial.
+	SecureStationURL types.StationURL
+
 	authServer   *nex.PRUDPServer
 	secureServer *nex.PRUDPServer
 
@@ -154,6 +195,10 @@ type Host struct {
 	// that nex-go would already have rejected as older than two minutes.
 	authAccount   *nex.Account
 	secureAccount *nex.Account
+
+	// Kept so Run can hand the final station URL to the Wii U-era handlers too, after a
+	// title has had its chance to overwrite it.
+	commonTicketGranting *common_ticket_granting.CommonProtocol
 }
 
 // New builds the host. It does not listen; call Run.
@@ -168,18 +213,34 @@ func New(cfg Config) (*Host, error) {
 		// The two non-user accounts every NEX server has. The names are the ones NEX
 		// itself uses; see the Pretendo wiki's kerberos page.
 		authAccount:   nex.NewAccount(types.NewPID(1), "Quazal Authentication", randomPassword(), false),
-		secureAccount: nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", randomPassword(), false),
+		secureAccount: nex.NewAccount(types.NewPID(cfg.SecurePID), "Quazal Rendez-Vous", randomPassword(), false),
 	}
 
 	h.authServer, h.Auth = h.newServer(version, cfg.StreamID)
-	h.secureServer, h.Secure = h.newServer(version, cfg.StreamID)
+	if cfg.SingleListener() {
+		// One listener, two endpoints. nex-go already routes a packet to the endpoint whose
+		// stream ID it is addressed to, so this is the whole of it.
+		h.secureServer = h.authServer
+		h.Secure = h.bindEndpoint(h.authServer, cfg.SecureStreamID)
+	} else {
+		h.secureServer, h.Secure = h.newServer(version, cfg.SecureStreamID)
+	}
 	h.Auth.ServerAccount = h.authAccount
 	h.Secure.ServerAccount = h.secureAccount
 	h.Secure.IsSecureEndPoint = true
+	h.SecureStationURL = h.defaultSecureStationURL()
 
 	h.registerTicketGranting()
 	h.registerSecureConnection()
 	return h, nil
+}
+
+func (h *Host) bindEndpoint(server *nex.PRUDPServer, streamID uint8) *nex.PRUDPEndPoint {
+	endpoint := nex.NewPRUDPEndPoint(streamID)
+	endpoint.AccountDetailsByPID = h.accountByPID
+	endpoint.AccountDetailsByUsername = h.accountByUsername
+	server.BindPRUDPEndPoint(endpoint)
+	return endpoint
 }
 
 func (h *Host) newServer(version *nex.LibraryVersion, streamID uint8) (*nex.PRUDPServer, *nex.PRUDPEndPoint) {
@@ -191,11 +252,7 @@ func (h *Host) newServer(version *nex.LibraryVersion, streamID uint8) (*nex.PRUD
 	server.KerberosTicketVersion = 1
 	server.SessionKeyLength = 32
 
-	endpoint := nex.NewPRUDPEndPoint(streamID)
-	endpoint.AccountDetailsByPID = h.accountByPID
-	endpoint.AccountDetailsByUsername = h.accountByUsername
-	server.BindPRUDPEndPoint(endpoint)
-	return server, endpoint
+	return server, h.bindEndpoint(server, streamID)
 }
 
 func (h *Host) registerTicketGranting() {
@@ -203,8 +260,8 @@ func (h *Host) registerTicketGranting() {
 	common := common_ticket_granting.NewCommonProtocol(protocol)
 	common.SecureServerAccount = h.secureAccount
 	common.SessionKeyLength = h.authServer.SessionKeyLength
-	common.SecureStationURL = h.secureStationURL()
 	common.BuildName = types.NewString("OpenPak " + h.Config.Title)
+	h.commonTicketGranting = common
 
 	// The Switch login methods. nex-protocols-common-go leaves both unset, so on a NEX 4
 	// title its ticket-granting protocol answers "not implemented" to every login.
@@ -226,18 +283,27 @@ func (h *Host) registerSecureConnection() {
 	h.Secure.RegisterServiceProtocol(protocol)
 }
 
-func (h *Host) secureStationURL() types.StationURL {
+// defaultSecureStationURL builds what the login response says about the secure server.
+//
+// In single-listener mode the address and port are a placeholder rather than a mistake: the
+// console does not dial them, it switches to the secure stream on the connection it already
+// has. Only the stream id in this URL actually steers it there.
+func (h *Host) defaultSecureStationURL() types.StationURL {
+	address, port := h.Config.SecureHost, uint16(h.Config.SecurePort())
+	if h.Config.SingleListener() {
+		address, port = "0.0.0.1", 1
+	}
 	url := types.NewStationURL("")
 	urlType := constants.StationURLPRUDPS
 	if h.Config.StationScheme == "prudp" {
 		urlType = constants.StationURLPRUDP
 	}
 	url.SetURLType(urlType)
-	url.SetAddress(h.Config.SecureHost)
-	url.SetPortNumber(uint16(h.Config.SecurePort()))
+	url.SetAddress(address)
+	url.SetPortNumber(port)
 	url.SetConnectionID(1)
 	url.SetPrincipalID(h.secureAccount.PID)
-	url.SetStreamID(1)
+	url.SetStreamID(h.Config.SecureStreamID)
 	url.SetStreamType(constants.StreamTypeRVSecure)
 	url.SetType(2)
 	return url
@@ -247,14 +313,42 @@ func (h *Host) secureStationURL() types.StationURL {
 func (h *Host) Run() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprintf(w, "ok %s auth=%d secure=%d\n", h.Config.Title, h.Config.AuthPort(), h.Config.SecurePort())
+		if h.Config.SingleListener() {
+			fmt.Fprintf(w, "ok %s %s=%d auth-stream=%d secure-stream=%d\n", h.Config.Title,
+				h.Config.Transport, h.Config.AuthPort(), h.Config.StreamID, h.Config.SecureStreamID)
+			return
+		}
+		fmt.Fprintf(w, "ok %s %s auth=%d secure=%d\n", h.Config.Title, h.Config.Transport,
+			h.Config.AuthPort(), h.Config.SecurePort())
 	})
 	srv := &http.Server{Addr: h.Config.HTTPAddr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 
-	log.Printf("[%s] auth :%d secure :%d healthz %s nex %s",
-		h.Config.Title, h.Config.AuthPort(), h.Config.SecurePort(), h.Config.HTTPAddr, h.Config.Version)
+	// A title may have overwritten SecureStationURL since New; the Wii U-era handlers hold
+	// their own copy, so hand them the final one now rather than the one built at New.
+	h.commonTicketGranting.SecureStationURL = h.SecureStationURL
 
-	go h.authServer.Listen(h.Config.AuthPort())
-	go h.secureServer.Listen(h.Config.SecurePort())
+	if h.Config.SingleListener() {
+		log.Printf("[%s] %s :%d (auth stream %d, secure stream %d) healthz %s nex %s",
+			h.Config.Title, h.Config.Transport, h.Config.AuthPort(),
+			h.Config.StreamID, h.Config.SecureStreamID, h.Config.HTTPAddr, h.Config.Version)
+		go h.listen(h.authServer, h.Config.AuthPort())
+	} else {
+		log.Printf("[%s] %s auth :%d secure :%d healthz %s nex %s",
+			h.Config.Title, h.Config.Transport, h.Config.AuthPort(), h.Config.SecurePort(),
+			h.Config.HTTPAddr, h.Config.Version)
+		go h.listen(h.authServer, h.Config.AuthPort())
+		go h.listen(h.secureServer, h.Config.SecurePort())
+	}
 	return srv.ListenAndServe()
+}
+
+// listen blocks; both callers run it in a goroutine.
+func (h *Host) listen(server *nex.PRUDPServer, port int) {
+	if h.Config.Transport == "websocket" {
+		// Plain ws: TLS belongs to the front proxy, which is where every other console-facing
+		// listener in OpenPak terminates it.
+		server.ListenWebSocket(port)
+		return
+	}
+	server.Listen(port)
 }

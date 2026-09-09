@@ -56,7 +56,7 @@ func (h *Host) validateAndRequestTicketWithParam(err error, packet nex.PacketInt
 	result.StructureVersion = 1
 	result.SourcePID = types.NewPID(pid)
 	result.BufResponse = types.NewBuffer(ticket)
-	result.ServiceNodeURL = h.secureStationURL()
+	result.ServiceNodeURL = h.SecureStationURL
 	result.CurrentUTCTime = types.NewDateTime(0).Now()
 	result.ReturnMsg = types.NewString("OpenPak " + h.Config.Title)
 	result.SourceKey = types.NewString(hex.EncodeToString(sourceKey))
@@ -85,7 +85,7 @@ func (h *Host) validateAndRequestTicketWithCustomData(err error, packet nex.Pack
 	}
 
 	connectionData := types.NewRVConnectionData()
-	connectionData.StationURL = h.secureStationURL()
+	connectionData.StationURL = h.SecureStationURL
 	connectionData.SpecialProtocols = types.List[types.UInt8]{}
 	connectionData.StationURLSpecialProtocols = types.NewStationURL("")
 	connectionData.Time = types.NewDateTime(0).Now()

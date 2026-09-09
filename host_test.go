@@ -17,7 +17,8 @@ import (
 func testConfig() Config {
 	return Config{
 		Title: "test", PortBase: 22100, AccessKey: "ridfebb9", Version: "4.4.0",
-		SecureHost: "127.0.0.1", StationScheme: "prudps", StreamID: 1, HTTPAddr: ":0",
+		SecureHost: "127.0.0.1", StationScheme: "prudps", HTTPAddr: ":0",
+		StreamID: 1, SecureStreamID: 1, SecurePID: 2, Transport: "udp",
 		InternalURL: "http://127.0.0.1:1", InternalKey: "k",
 	}
 }
@@ -33,6 +34,10 @@ func TestConfigValidate(t *testing.T) {
 		"no internal key":            func(c *Config) { c.InternalKey = "" },
 		"bad version":                func(c *Config) { c.Version = "4.4" },
 		"bad station scheme":         func(c *Config) { c.StationScheme = "https" },
+		"bad transport":              func(c *Config) { c.Transport = "quic" },
+		"stream id zero":             func(c *Config) { c.StreamID = 0 },
+		"stream id above four bits":  func(c *Config) { c.SecureStreamID = 16 },
+		"secure pid zero":            func(c *Config) { c.SecurePID = 0 },
 	} {
 		cfg := testConfig()
 		mutate(&cfg)
@@ -216,7 +221,7 @@ func TestSecureStationURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := plain.secureStationURL().URL(); !strings.HasPrefix(got, "prudp:") || strings.HasPrefix(got, "prudps:") {
+	if got := plain.SecureStationURL.URL(); !strings.HasPrefix(got, "prudp:") || strings.HasPrefix(got, "prudps:") {
 		t.Errorf("prudp scheme not honoured: %s", got)
 	}
 
@@ -224,11 +229,73 @@ func TestSecureStationURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	url := host.secureStationURL().URL()
+	url := host.SecureStationURL.URL()
 	if !strings.HasPrefix(url, "prudps:") {
 		t.Errorf("prudps scheme not honoured: %s", url)
 	}
 	if !strings.Contains(url, "port=22101") || !strings.Contains(url, "address=127.0.0.1") {
 		t.Errorf("secure station url does not point at the block's secure port: %s", url)
+	}
+}
+
+// TestSingleListener pins the shape a Switch title needs: both endpoints on one listener,
+// separated by stream id, with a placeholder station URL because the console never dials it.
+func TestSingleListener(t *testing.T) {
+	cfg := testConfig()
+	cfg.SecureStreamID = 2
+	cfg.SecurePID = 257049437023956657 // retail-observed constant, not a NEX PID
+	host, err := New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !cfg.SingleListener() {
+		t.Fatal("different stream ids must mean one listener")
+	}
+	if host.authServer != host.secureServer {
+		t.Error("both endpoints must share one PRUDP server, or the console cannot switch to the secure stream")
+	}
+	if host.Auth.StreamID != 1 || host.Secure.StreamID != 2 {
+		t.Errorf("streams: auth %d secure %d", host.Auth.StreamID, host.Secure.StreamID)
+	}
+	if !host.Secure.IsSecureEndPoint {
+		t.Error("the secure endpoint lost its flag")
+	}
+
+	url := host.SecureStationURL.URL()
+	for _, want := range []string{"prudps:/", "address=0.0.0.1", "port=1", "sid=2", "stream=10", "type=2", "CID=1",
+		"PID=257049437023956657"} {
+		if !strings.Contains(url, want) {
+			t.Errorf("station url missing %s: %s", want, url)
+		}
+	}
+
+	// The default two-listener shape must still advertise something dialable.
+	twoPort, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := twoPort.SecureStationURL.URL(); !strings.Contains(got, "address=127.0.0.1") || !strings.Contains(got, "port=22101") {
+		t.Errorf("two-listener station url is not dialable: %s", got)
+	}
+}
+
+// TestSecureStationURLOverride: a title may replace the whole URL before Run, and both the
+// Switch login paths and the Wii U-era handlers must end up using the replacement.
+func TestSecureStationURLOverride(t *testing.T) {
+	host, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	replacement := types.NewStationURL("prudps:/address=10.0.0.9;port=1234")
+	host.SecureStationURL = replacement
+
+	if got := host.SecureStationURL.URL(); !strings.Contains(got, "10.0.0.9") {
+		t.Fatalf("override not held: %s", got)
+	}
+	// Run syncs it into the common protocol; do that step alone rather than starting listeners.
+	host.commonTicketGranting.SecureStationURL = host.SecureStationURL
+	if got := host.commonTicketGranting.SecureStationURL.URL(); !strings.Contains(got, "10.0.0.9") {
+		t.Errorf("common ticket-granting kept a stale station url: %s", got)
 	}
 }
