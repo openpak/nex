@@ -252,7 +252,8 @@ type Host struct {
 
 	// Kept so Run can hand the final station URL to the Wii U-era handlers too, after a
 	// title has had its chance to overwrite it.
-	commonTicketGranting *common_ticket_granting.CommonProtocol
+	commonTicketGranting     *common_ticket_granting.CommonProtocol
+	secureConnectionProtocol *secure_connection.Protocol
 }
 
 // New builds the host. It does not listen; call Run.
@@ -350,7 +351,24 @@ func (h *Host) registerSecureConnection() {
 	// there is nothing left for a second token check to prove. A title that disagrees
 	// replaces this through Host.SecureConnection.
 	common.ValidateLoginData = func(types.PID, types.DataHolder) *nex.Error { return nil }
+
+	// TestConnectivity (0x0B.5) takes nothing and returns nothing; the console is asking
+	// whether the socket still carries RMC, and the answer is the reply arriving at all.
+	// nex-protocols-common-go leaves it unset, so it answers Core::NotImplemented -- one
+	// title was measured calling it 23 times in six hours, and it was that title's only
+	// error. Nothing here is title-specific, so it is answered for everyone rather than
+	// left for forty titles to set identically.
+	protocol.TestConnectivity = func(_ error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage, *nex.Error) {
+		endpoint := packet.Sender().Endpoint()
+		response := nex.NewRMCSuccess(endpoint, nil)
+		response.ProtocolID = secure_connection.ProtocolID
+		response.MethodID = secure_connection.MethodTestConnectivity
+		response.CallID = callID
+		return response, nil
+	}
+
 	h.SecureConnection = common
+	h.secureConnectionProtocol = protocol
 	h.Secure.RegisterServiceProtocol(protocol)
 }
 

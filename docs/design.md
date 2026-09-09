@@ -244,7 +244,7 @@ signal that they have outgrown the upstream callbacks.
 
 ### The shared object store (agreed, not yet built)
 
-Three titles have now each written their own Postgres+S3 DataStore, which is the divergence
+Four titles have now each written their own Postgres+S3 DataStore, which is the divergence
 this repository exists to prevent. The backend moves here. What makes that reasonable is that
 the schema is not ours to invent: `DataStoreMetaInfo` is defined by NEX — data id, owner PID,
 size, name, data type, meta binary, permissions, ratings, tags, periods — so a generic store
@@ -297,6 +297,15 @@ confirmed in `nex-protocols-common-go` v2.6.1:
   called with `param.Period`; the second takes one spelled `period` and is called with
   `param.DataType`. The call sites are right and the signatures are misleading, so implement
   by callback name and ignore the parameter name, or the two columns get written swapped.
+- **The persistence slot has no "not persistent" sentinel.** Pretendo's constructors default
+  it to 0, which is also a legitimate slot, so the store has to choose a representation. One
+  implementation used `0xFFFF` and flagged it as an assumption. If it is wrong and a title
+  posts ordinary objects to slot 0, every object evicts the previous one — so this needs a
+  real `PreparePostObject` to settle before the shared store commits to it.
+- **The search sort column cannot be a bound parameter**, since it lands in `ORDER BY`. It
+  must map onto a fixed set of known columns, with a stable fallback for the sort values that
+  have no column at all (rating slots), or the ordering is both unstable and an injection
+  surface. Whitelist it and test every value.
 - **`GetObjectInfoByDataID` must return an error for an object that has not been
   upload-completed.** `CompletePostObject` uses "did this return data" as its test for
   "already uploaded" and answers `PermissionDenied` when it does — so a store that happily

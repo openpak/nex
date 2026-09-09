@@ -392,6 +392,12 @@ func TestSecureConnectionIsReachable(t *testing.T) {
 	}
 	host.SecureConnection.EnableInsecureRegister()
 
+	// TestConnectivity must be answered by default: unset means Core::NotImplemented, and a
+	// title that polls it gets a steady drip of errors for a call that asks nothing.
+	if host.secureConnectionProtocol.TestConnectivity == nil {
+		t.Error("TestConnectivity left unimplemented")
+	}
+
 	// The default must stay accept-everything, since the ticket already proved the PID.
 	if err := host.SecureConnection.ValidateLoginData(types.NewPID(1800000042), types.NewDataHolder()); err != nil {
 		t.Errorf("default login-data check refused a ticket-authenticated caller: %v", err)
