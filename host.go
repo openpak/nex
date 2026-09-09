@@ -60,19 +60,27 @@ type Config struct {
 	//
 	//   - equal (both 1, the default): two listeners, authentication on +0 and secure on +1,
 	//     and the console dials the secure port from the station URL it is given.
-	//   - different: ONE listener on +0 carrying both endpoints. This is what a Switch title
-	//     expects — the console never opens a second socket, it switches virtual port on the
-	//     connection it already has — so the station URL it is handed is a placeholder.
-	//     Observed retail shape: authentication on stream 1, secure on stream 2. The block's
-	//     +1 port stays reserved and unused.
+	//   - different: ONE listener on +0 carrying both endpoints. The console never opens a
+	//     second socket, it switches virtual port on the connection it already has, so the
+	//     station URL it is handed is a placeholder. Retail shape here is stream 1 and
+	//     stream 2. The block's +1 port stays reserved and unused.
+	//
+	// This one is genuinely per title and there is no safe default: working servers exist for
+	// both shapes. Set it from what the title is known to do, and see the README table.
+	//
+	// The symptom of getting it wrong is not silence, despite appearances: nex-go logs
+	// "trying to connect to unbound PRUDPEndPoint 2" for every packet a console sends to a
+	// stream nothing is bound to. That line means "set NEX_SECURE_STREAM_ID=2".
 	StreamID       uint8
 	SecureStreamID uint8
 	// SecurePID is the secure server's principal ID: the kerberos ticket's target, the PID in
 	// the secure station URL, and the source of any notification the server pushes. 2 is the
 	// conventional value; some titles have a retail-observed constant instead.
 	SecurePID uint64
-	// Transport is "udp" or "websocket". Switch NEX titles speak PRUDP over WebSocket; the
-	// UDP form is what Wii U and 3DS era titles use.
+	// Transport is "websocket" (the default) or "udp". Every title that imports this package
+	// is a Switch title and every Switch title speaks PRUDP over WebSocket, so the default is
+	// the one that works; "udp" is the Wii U and 3DS era form and is here for a caller that
+	// does not exist yet.
 	//
 	// Selecting websocket also selects PRUDP Lite: nex-go reads a packet as Lite only when a
 	// websocket server is present, so the transport and the packet format are one choice.
@@ -103,7 +111,7 @@ func FromEnv() Config {
 		StreamID:       uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
 		SecureStreamID: uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), 1)),
 		SecurePID:      uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), 2)),
-		Transport:      env("NEX_TRANSPORT", "udp"),
+		Transport:      env("NEX_TRANSPORT", "websocket"),
 		TLSCert:        os.Getenv("NEX_TLS_CERT"),
 		TLSKey:         os.Getenv("NEX_TLS_KEY"),
 		HTTPAddr:       env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),

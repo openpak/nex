@@ -35,7 +35,8 @@ Sources are abbreviated:
 | **Switch NEX is PRUDP over WebSocket**, not over UDP, and the console reaches it over `wss` | — | KS serves a WebSocket transport; corroborated by N's SMB35 server using a WSS listener, and by Golf's live SNI hostname being forwarded by Traefik |
 | WebSocket transport and PRUDP Lite are one choice, not two: nex-go reads a packet as Lite only when a websocket server is present | — | PL `nex-go/prudp_server.go`, reported by the Golf title agent |
 | PRUDP Lite's SYN/CONNECT ack never sets a minor version, so it answers 0 — which matches the retail secure server, and needs no knob | — | PL `nex-go`, reported by the Golf title agent; N had to force minor 0 because its own default was 5 |
-| **Authentication and secure share one listener, separated by stream ID.** Authentication is stream 1, secure is stream 2, both on the same transport | — | KS |
+| **Some titles put authentication and secure on one listener, separated by stream ID** — authentication stream 1, secure stream 2, same transport | — | KS (SMB35) |
+| **Other titles use two WSS listeners on two ports**, with a real dialable secure station URL. So the shape is per title, not universal, and both are known to work | ARMS auth 443 / secure 60006; Golf auth 8457 / secure 61000 | N `arms/main.go`, `mario-golf-super-rush/main.go` — both live, Golf marked playable |
 | Because of that, the secure station URL in the login response is a **placeholder** — the console does not dial it, it switches virtual port on the connection it already has | `address=0.0.0.1`, `port=1`, `sid=2` | KS |
 | Full retail secure station URL shape for a Switch title | `prudps`, address `0.0.0.1`, port 1, `PID=<secure pid>`, `CID=1`, `type=2`, `sid=2`, `stream=10` | KS |
 | A secure server PID need not be 2; a retail-observed constant exists | `257049437023956657` (SMB35) | KS |

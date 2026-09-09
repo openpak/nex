@@ -54,10 +54,24 @@ server; overwrite it before `Run` to match a retail-observed shape. See
 A Switch title typically wants:
 
 ```sh
-NEX_TRANSPORT=websocket NEX_SECURE_STREAM_ID=2   # one listener, secure on stream 2
-# and, if Traefik passes the SNI through rather than terminating it:
+# websocket is already the default; if Traefik passes the SNI through rather than
+# terminating it, this server needs the cert:
 NEX_TLS_CERT=/certs/title.crt NEX_TLS_KEY=/certs/title.key
 ```
+
+### One listener or two: `NEX_SECURE_STREAM_ID`
+
+This one is per title and has **no safe default**, because working servers exist for both
+shapes:
+
+| Shape | Set | Known to work for |
+| --- | --- | --- |
+| Two listeners, `+0` auth and `+1` secure, real dialable secure URL | leave `1` (default) | ARMS, Mario Golf, Mario Party Superstars |
+| One listener on `+0`, secure on stream 2, placeholder secure URL | `NEX_SECURE_STREAM_ID=2` | Super Mario Bros. 35 |
+
+Set it from what your title is known to do rather than guessing. Getting it wrong is *not*
+silent: nex-go logs `trying to connect to unbound PRUDPEndPoint 2` for every packet a console
+sends to a stream nothing is bound to. **That line means set it to `2`.**
 
 The startup line says which of the three shapes is running (`udp`, `ws (TLS at the front
 proxy)`, `wss (TLS terminated here)`), because a console failing a TLS handshake against a
@@ -88,10 +102,10 @@ whether a console reaches us and gets through the handshake, before any title wo
 | `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Accepts `4.6.5` or the integer form the console reports, `40605`. Decides which login method the client uses and how structures are serialised |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on, default `127.0.0.1` |
 | `NEX_STATION_SCHEME` | `prudps` (default) or `prudp`, per title. Whether the console treats the secure server as a Pia station. The wrong value is not a clean failure: menus keep working and the title gives up later |
-| `NEX_TRANSPORT` | `udp` (default) or `websocket`. **Switch NEX titles speak PRUDP over WebSocket**; UDP is the Wii U/3DS form. Choosing websocket also selects PRUDP Lite — in nex-go they are the same switch |
+| `NEX_TRANSPORT` | `websocket` (default) or `udp`. Every Switch title speaks PRUDP over WebSocket, which is why it is the default; `udp` is the Wii U/3DS form. Choosing websocket also selects PRUDP Lite — in nex-go they are the same switch |
 | `NEX_TLS_CERT`, `NEX_TLS_KEY` | terminate TLS on the websocket listener. A console connects over `wss`, so either Traefik terminates and forwards plain `ws` (leave both empty) or Traefik passes the SNI through and this server terminates (set both). Setting exactly one is refused |
 | `NEX_STREAM_ID` | PRUDP virtual port the authentication endpoint binds, default `1` |
-| `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. **Set it different (retail Switch shape: 2) and both endpoints share one listener on `+0`** — the console never opens a second socket, it switches virtual port on the connection it has. `+1` then stays reserved and unused |
+| `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. Set it different (e.g. `2`) and both endpoints share one listener on `+0`, with `+1` reserved and unused. **Per title — see below** |
 | `NEX_SECURE_PID` | secure server's principal ID, default `2`: the kerberos ticket target, the station URL `PID=`, and the source of pushed notifications. Some titles have a retail-observed constant |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
 | `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |

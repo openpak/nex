@@ -139,7 +139,9 @@ listening plain fails as silence rather than as an error.
 
 `NEX_SECURE_STREAM_ID` picks the shape: leave it equal to
 `NEX_STREAM_ID` for two listeners on `+0` and `+1`, or set it different for one listener on
-`+0`. They cannot both be one listener and the same stream, because nex-go refuses to bind two
+`+0`. That one is per title with no safe default — SMB35 uses the single listener, while ARMS,
+Golf and Mario Party Superstars run two WSS listeners on two ports with a real secure URL, and
+all four are known-working servers. They cannot both be one listener and the same stream, because nex-go refuses to bind two
 endpoints with the same stream ID — so the one knob says everything, and the station URL
 default follows it.
 
