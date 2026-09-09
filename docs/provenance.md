@@ -84,15 +84,20 @@ These were first filed here as "earlier network deployment details that do not c
 That was wrong: they are facts about the game, and `servers/nex` now has knobs for all of
 them. Recorded precisely, because this title is one of the fleet's better-documented ones.
 
-| Fact | Value for this title | Source |
-| --- | --- | --- |
-| Transport | **WebSocket**, not UDP | NN/mps runs both endpoints with `ListenSecure`, a WSS listener. `servers/nex` now defaults to `websocket` for exactly this reason |
-| Listener shape | **Two listeners** — authentication and secure on separate ports | NN/mps `main.go`: `AUTH_PORT` and `SECURE_PORT` are separate, `:443` and `:60011`/`:60012` |
-| Secure stream ID | **1** | NN/mps station URL sets `sid=1`. This is the two-listener shape: `NEX_SECURE_STREAM_ID=1`, the default. **Not 2.** |
-| Station scheme | **`prudps`** | NN/mps `example.env`, as a measurement with the failure mode recorded: under `prudp` the handshake completes but CONNECT carries an *empty* payload — no ticket, no session key — and the title dies when it first needs the session |
-| Secure station URL | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | NN/mps `main.go`. `stream=10` is `StreamTypeRVSecure`; `PID=2` is the conventional secure PID. Both are what `servers/nex` already defaults to |
-| Session key length | 32 | NN/mps `main.go`; same as the host's default |
-| Kerberos **source key** length | **32 bytes** | NN/mps `main.go` `resolveUser` derives it with SHA-256 and hands back all 32 bytes, commented "It MUST be 32 bytes (the Switch kerberos key size)". Measured from a working server for this title |
+| Fact | Value for this title | Failure mode when wrong | Source |
+| --- | --- | --- | --- |
+| Transport | **WebSocket**, not UDP | Silence. A console failing a handshake against the wrong transport looks exactly like a console that never arrived | NN/mps runs both endpoints with `ListenSecure`, a WSS listener. `servers/nex` now defaults to `websocket` for exactly this reason |
+| Listener shape | **Two listeners** — authentication and secure on separate ports | nex-go logs `trying to connect to unbound PRUDPEndPoint` for every packet to a stream nothing is bound to. Checkable, not silent | NN/mps `main.go`: `AUTH_PORT` and `SECURE_PORT` are separate, `:443` and `:60011`/`:60012` |
+| Secure stream ID | **1** | As above | NN/mps station URL sets `sid=1`. This is the two-listener shape: `NEX_SECURE_STREAM_ID=1`, the default. **Not 2.** |
+| Station scheme | **`prudps`** | **Late.** Under `prudp` the handshake completes but CONNECT carries an *empty* payload — no ticket, no session key — so menus keep working and the title dies when it first needs the session | NN/mps `example.env`, recorded as a measurement with that failure mode |
+| Kerberos **source key** length | **32 bytes** | **Silent.** The login simply does not work, with nothing logged on either side | NN/mps `main.go` `resolveUser` derives it with SHA-256 and hands back all 32 bytes, commented "It MUST be 32 bytes (the Switch kerberos key size)" — see below |
+| Secure station URL | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | — | NN/mps `main.go`. `stream=10` is `StreamTypeRVSecure`; `PID=2` is the conventional secure PID. Both are what `servers/nex` already defaults to |
+| Session key length | 32 | — | NN/mps `main.go`; same as the host's default |
+
+The three with a failure mode are pinned as constants in `server.go` rather than inherited
+from the host's defaults. A default is a reasonable starting point for a title that has not
+measured; it is the wrong thing to rely on for a value whose failure is silent or late, and
+whose measurement lives in this repository.
 
 On the source key: the comment in NN/mps calls 32 "the Switch kerberos key size", and that
 generalisation is **wrong** — `servers/nex` records a public reference server working against
@@ -134,6 +139,15 @@ persistence slot has ever been observed for this title.
 So there is nothing title-specific to record here yet, and nothing to build an object store
 against. When a session survives long enough to call DataStore, what it asks for belongs in
 this section, and the store it needs belongs in `servers/nex` (fleet decision), not here.
+
+One question this title raised and could not answer: DataStore's persistence slot has no
+"none" sentinel in Pretendo's types, whose constructors default it to 0 — which is also a
+legitimate slot. Guess wrong and every object silently evicts the last. `servers/nex` chased
+it and found that **no server on either side has ever exercised the persistence path**: Super
+Mario Maker 2's implementation, the most DataStore-heavy one anywhere, implements
+title-specific methods only and defers generic persistence explicitly. So it cannot be settled
+by reading anyone's source. It needs a real `PreparePostObject` off a console, and the shared
+store holds the assumption behind one named constant until then.
 
 One correction worth keeping while it is fresh: the SSBU failure was that `earlier-nex`
 **silently dropped** calls to an unregistered protocol. `nex-go` answers
