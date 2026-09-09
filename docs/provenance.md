@@ -23,14 +23,17 @@ Sources are abbreviated:
 | Method IDs 1/2/3/6 carry two name sets; the Switch names apply from NEX 4.0.0 | `ValidateAndRequestTicket`, `…WithCustomData`, `RequestTicket`, `…WithParam` | K "Authentication Protocol"; dispatch confirmed in PL `nex-protocols-go` |
 | Method 6 request is a `ValidateAndRequestTicketParam` structure: platformType, userName, extraData, ignoreApiVersionCheck, apiVersionGeneral, apiVersionCustom | — | K; type present in PL |
 | Method 6 response is a `ValidateAndRequestTicketResult` structure with **no leading `%retval%`** | sourcePid, bufResponse, serviceNodeUrl, currentUtcTime, returnMsg, sourceKey | K |
-| **Method 6's response must be wrapped in a structure header with version 1.** Returning the flat method-2 layout is rejected by the client as `Core::InvalidArgument`, console error **2306-0116** | `StructureVersion = 1` | N `earlier-nex/ticketgranting.go` — stated as a hard-won result of a live client rejecting the flat layout |
+| **Method 6's response must be wrapped in a structure header with version 1**, which requires the Switch byte-stream profile above to be on — setting the version alone writes no header at all. Returning the flat method-2 layout is rejected by the client as `Core::InvalidArgument`, console error **2306-0116** | `StructureVersion = 1` + `UseStructureHeader` | N `earlier-nex/ticketgranting.go` — stated as a hard-won result of a live client rejecting the flat layout |
 | Method 2 keeps the older flat layout with `pSourceKey` appended | — | K; PL `nex-protocols-common-go/ticket-granting/login_ex.go` |
 | Which method a title uses follows its NEX version. NEX 4.6+ titles (e.g. SSBU) use method 6; earlier 4.x titles use method 2 | — | N `earlier-nex/ticketgranting.go`; per-title versions below |
 | Switch users log in with an id token, not a password; the response's `sourceKey`, when present, replaces key derivation | — | K "Kerberos Authentication", P "nex/kerberos" |
 | Wii U/3DS kerberos key derivation | MD5 of the password, `65000 + pid % 1024` times | K, P; implemented in PL as `DeriveKerberosKey` |
 | Switch password-based derivation (special accounts only) | `MD5(MD5(password) + pack("<Q", pid))` | K, P |
 | Switch internal ticket format: random key in the clear beside the encrypted body, final key `MD5(target key + random key)` | `KerberosTicketVersion = 1` | K; PL implements both formats |
-| Session key length | 32 bytes | K |
+| Session key length | 32 bytes | K, KS |
+| The source key's length is **not** a protocol constant. What must hold is that the key the ticket is encrypted with is the key advertised in the response; RC4 takes any length and the console is told the key rather than deriving it | 16 bytes in KS, 32 bytes in N `mario-kart-8-deluxe/main.go` — both against retail consoles | KS, N |
+| **The Switch byte-stream profile: 8-byte PIDs and structure headers on.** nex-go defaults to 4-byte PIDs and headers off, which is the Wii U/3DS wire. Per console, not per title | `PIDSize=8`, `UseStructureHeader=true` | N `mario-kart-8-deluxe`, reported by the mk8d title agent; the mechanism is visible in PL `nex-go/types/structure.go` |
+| `UseStructureHeader` gates the structure header in **both** directions: `WriteHeaderTo` writes nothing when it is off, and `ExtractHeaderFrom` consumes nothing | — | PL `nex-go/types/structure.go` |
 | PRUDP virtual ports are **learned from the SYN** — the server answers as the port the client targeted; there is no fixed value | — | N `earlier-nex/endpoint.go` |
 | **Switch NEX is PRUDP over WebSocket**, not over UDP, and the console reaches it over `wss` | — | KS serves a WebSocket transport; corroborated by N's SMB35 server using a WSS listener, and by Golf's live SNI hostname being forwarded by Traefik |
 | WebSocket transport and PRUDP Lite are one choice, not two: nex-go reads a packet as Lite only when a websocket server is present | — | PL `nex-go/prudp_server.go`, reported by the Golf title agent |

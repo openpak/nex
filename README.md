@@ -41,9 +41,13 @@ host, err := nexhost.New(nexhost.FromEnv())
 if err != nil {
 	log.Fatal(err)
 }
-host.Secure.RegisterServiceProtocol(myMatchmakeExtensionProtocol)
+host.Secure.RegisterServiceProtocol(myProtocol) // register BEFORE NewCommonProtocol
 log.Fatal(host.Run())
 ```
+
+Order matters: `nex-protocols-common-go`'s `NewCommonProtocol` reads the endpoint off the
+protocol, and `RegisterServiceProtocol` is what sets it. Building the common protocol first
+panics with `interface conversion: nex.EndpointInterface is nil`.
 
 `host.Auth` and `host.Secure` are plain `nex.PRUDPEndPoint`s — register nex-go protocols on
 them directly. `host.PlayerByPID` answers the one question nex-go cannot: who this PID is on

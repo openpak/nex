@@ -33,11 +33,16 @@ import (
 	ticket_granting_types "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting/types"
 )
 
-// sourceKeyLength is the length of the source key a Switch console is handed as pSourceKey
-// to decrypt its ticket. It must be 32 bytes: the Switch kerberos key size. The 16-byte
-// MD5-digest size (right for Wii U/3DS derived keys) makes the console reject the ticket
-// when it decrypts, which surfaces as a silent login failure with nothing logged server-side.
-// Confirmed against a live Switch NEX ticket-granting implementation (sha256 -> 32 bytes).
+// sourceKeyLength is how many random bytes the source key is — the key a Switch is handed as
+// pSourceKey and decrypts its ticket with.
+//
+// The invariant that actually matters is that the key we encrypt the ticket with is the key
+// we advertise. RC4 takes any length and the console is told the key rather than deriving it,
+// so the length is free as long as the two agree. Both 16 and 32 are attested by servers
+// known to work against retail consoles, which is why this is not a protocol constant: a
+// mismatch between the two halves is what rejects a ticket, not the number itself.
+//
+// 32 because it is the larger attested value and nothing is known to reject it.
 const sourceKeyLength = 32
 
 // validateAndRequestTicketWithParam is method 6 on NEX 4.4.0 and later.

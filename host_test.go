@@ -12,6 +12,7 @@ import (
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
+	ticket_granting_types "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting/types"
 )
 
 func testConfig() Config {
@@ -392,5 +393,47 @@ func TestSecureConnectionIsReachable(t *testing.T) {
 	// The default must stay accept-everything, since the ticket already proved the PID.
 	if err := host.SecureConnection.ValidateLoginData(types.NewPID(1800000042), types.NewDataHolder()); err != nil {
 		t.Errorf("default login-data check refused a ticket-authenticated caller: %v", err)
+	}
+}
+
+// TestSwitchByteStreamProfile: nex-go defaults to the Wii U/3DS wire, and both defaults are
+// wrong for a Switch. The header flag is the one that matters most -- without it
+// WriteHeaderTo silently writes nothing, so the method 6 structure header never reaches the
+// wire however StructureVersion is set, and ExtractHeaderFrom never consumes the one the
+// console sent.
+func TestSwitchByteStreamProfile(t *testing.T) {
+	switchHost, err := New(testConfig()) // 4.4.0
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, endpoint := range map[string]*nex.PRUDPEndPoint{"auth": switchHost.Auth, "secure": switchHost.Secure} {
+		settings := endpoint.Server.ByteStreamSettings
+		if settings.PIDSize != 8 {
+			t.Errorf("%s: PID size %d, want 8", name, settings.PIDSize)
+		}
+		if !settings.UseStructureHeader {
+			t.Errorf("%s: structure headers off", name)
+		}
+	}
+
+	// The header actually reaching the wire is the point, so check the bytes rather than
+	// the flag: version 1 then a little-endian content length.
+	result := ticket_granting_types.NewValidateAndRequestTicketResult()
+	result.StructureVersion = 1
+	stream := nex.NewByteStreamOut(switchHost.Auth.LibraryVersions(), switchHost.Auth.ByteStreamSettings())
+	result.WriteTo(stream)
+	if written := stream.Bytes(); len(written) < 5 || written[0] != 1 {
+		t.Errorf("structure header not emitted, method 6 would be rejected: %v", written[:min(8, len(written))])
+	}
+
+	// A NEX 3 title must keep the old wire.
+	legacy := testConfig()
+	legacy.Version = "3.10.0"
+	legacyHost, err := New(legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if legacyHost.Auth.Server.ByteStreamSettings.PIDSize != 4 || legacyHost.Auth.Server.ByteStreamSettings.UseStructureHeader {
+		t.Error("the Switch profile was applied to a NEX 3 title")
 	}
 }

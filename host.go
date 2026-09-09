@@ -288,6 +288,23 @@ func (h *Host) newServer(version *nex.LibraryVersion, streamID uint8) (*nex.PRUD
 	server.KerberosTicketVersion = 1
 	server.SessionKeyLength = 32
 
+	// The Switch byte-stream profile. nex-go defaults to the Wii U/3DS wire: 4-byte PIDs and
+	// no structure headers. NEX 4 is the Switch generation and needs both changed, and this
+	// is per console, not per title, so it belongs here rather than in forty title mains.
+	//
+	// It is not cosmetic in either direction. Without the header flag, ExtractHeaderFrom
+	// does not consume the header the console sent, so every field of a login request is
+	// read one header out of place; and WriteHeaderTo silently writes nothing, so a
+	// response's StructureVersion never reaches the wire no matter what it is set to. That
+	// second half is what makes the method 6 structure header actually appear.
+	//
+	// A title that finds otherwise can still change these: Host.Auth and Host.Secure expose
+	// Server.ByteStreamSettings.
+	if version.GreaterOrEqual("4.0.0") {
+		server.ByteStreamSettings.PIDSize = 8
+		server.ByteStreamSettings.UseStructureHeader = true
+	}
+
 	return server, h.bindEndpoint(server, streamID)
 }
 

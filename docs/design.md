@@ -184,13 +184,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Register FIRST, then build the common protocol. NewCommonProtocol reads the endpoint
+	// off the protocol, and RegisterServiceProtocol is what sets it -- match-making type
+	// asserts it and panics on nil.
 	protocol := matchmake_extension.NewProtocol()
-	common_matchmake_extension.NewCommonProtocol(protocol)
 	host.Secure.RegisterServiceProtocol(protocol)
+	common_matchmake_extension.NewCommonProtocol(protocol)
 
 	log.Fatal(host.Run())
 }
 ```
+
+**Order matters, and getting it wrong is a panic, not an error.**
+`NewCommonProtocol` reads the endpoint off the protocol it is handed, and nothing sets that
+endpoint until `RegisterServiceProtocol` does. match-making type asserts it, so building the
+common protocol first dies with `interface conversion: nex.EndpointInterface is nil`. Register,
+then build.
 
 `host.Auth` and `host.Secure` are the bare nex-go endpoints. There is no wrapper around
 `RegisterServiceProtocol`, no plugin registry and no protocol abstraction: a title that needs
@@ -216,12 +225,12 @@ same gap for the same reason:
 
 ```go
 protocol := datastore.NewProtocol()
+host.Secure.RegisterServiceProtocol(protocol) // must come first, see above
 common := common_datastore.NewCommonProtocol(protocol)
 common.S3Bucket = os.Getenv("NEX_S3_BUCKET")
 common.S3Presigner = myPresigner              // ports.md 23010 locally
 common.GetUserFriendPIDs = host.FriendPIDs    // friends-only permissions now work
 common.GetObjectInfoByDataID = myStore.MetaByDataID // the title's own storage
-host.Secure.RegisterServiceProtocol(protocol)
 ```
 
 The remaining callbacks are the title's object storage and are title-specific by nature — a
