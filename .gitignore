@@ -46,3 +46,6 @@ dist/
 deploy/oci/.env
 deploy/oci/certs/
 shared-docs
+
+# Compiled binary from "go build ./..."
+/super-smash-bros-ultimate
