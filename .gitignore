@@ -38,6 +38,8 @@ exefs/
 # Build/editor output
 bin/
 dist/
+/golf
+log/
 .idea/
 .vscode/
 *.swp
