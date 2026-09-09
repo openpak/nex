@@ -242,6 +242,53 @@ Truncation would not lose a friend, it would name a *different* account and hand
 a friend's access. OpenPak PIDs are nowhere near that today; the log line it emits is the
 signal that they have outgrown the upstream callbacks.
 
+### The shared object store (agreed, not yet built)
+
+Three titles have now each written their own Postgres+S3 DataStore, which is the divergence
+this repository exists to prevent. The backend moves here. What makes that reasonable is that
+the schema is not ours to invent: `DataStoreMetaInfo` is defined by NEX — data id, owner PID,
+size, name, data type, meta binary, permissions, ratings, tags, periods — so a generic store
+over it is a faithful implementation, not a guess imposed on forty titles.
+
+It lands as a **subpackage**, `github.com/openpak/nex/datastore`, not in the root package.
+Titles like ARMS and Golf have no DataStore at all, and a Postgres and S3 client in the root
+would be in every title's dependency graph whether or not it stores an object.
+
+The intended API is one call. A title gets a working store and keeps only what is genuinely
+its own:
+
+```go
+store, err := nexds.Open(nexds.FromEnv())  // Postgres + S3 from env, migrations applied
+if err != nil {
+	log.Fatal(err)
+}
+defer store.Close()
+
+protocol := datastore.NewProtocol()
+host.Secure.RegisterServiceProtocol(protocol)          // register first, always
+common := common_datastore.NewCommonProtocol(protocol)
+store.Wire(common, host)                               // every generic callback, incl. FriendPIDs
+```
+
+`Wire` fills the whole generic surface: object metadata CRUD, search, ratings, permission
+checks against `Host.FriendPIDs`, S3 presigned get and post, and the upload-completion
+bookkeeping. It takes the `Host` because permissions and login-name translation both need it.
+
+What stays in the title repository, because it is genuinely title-shaped:
+
+- **The meaning of `metaBinary` and `dataType`.** The store carries those bytes and never
+  parses them. A course, a ghost and a photo differ only there.
+- **Custom protocol methods.** A title that extends DataStore registers its own handlers on
+  the same `protocol` after `Wire`; anything it sets afterwards wins.
+
+Rows are scoped by a title key so one Postgres can host several titles without objects
+leaking between them — a title's search must never return another's.
+
+Super Mario Maker 2 is the shape-defining case: it is the one title with a real implementation
+to read for facts (course upload, download and search), and it is also the one that proves the
+login-name point below, because its DataStore addresses players by the name they logged in
+with rather than by PID.
+
 `Host.PIDForLoginName` matters here too. A DataStore request for "this console's own objects"
 arrives naming the player by the name they logged in with, not by NEX PID, so a title that
 looks the request up by PID finds nothing and tells the player their uploads are gone. The

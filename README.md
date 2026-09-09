@@ -27,6 +27,9 @@ a genuine console's login is still refused. See the end of [`docs/design.md`](do
   the title the player's friend graph with it. It also records the name the console logged in
   under — its NSA id, which is not its NEX PID — because titles go on to ask for players by
   that name and nothing else can translate it (`Host.PIDForLoginName`).
+- Will host the shared DataStore object store (`github.com/openpak/nex/datastore`, agreed and
+  specified in [`docs/design.md`](docs/design.md), **not yet built** — three titles have their
+  own today and should not add a fourth).
 - Makes Pretendo's complete DataStore usable: `Host.FriendPIDs` fills the friends-only
   permission callback that upstream documents as not working on Switch for want of a friend
   graph. Titles whose whole online mode is DataStore depend on it.
