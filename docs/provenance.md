@@ -78,6 +78,10 @@ Sources are abbreviated:
 | --- | --- |
 | The Reference NEX core has **no general DataStore** — only one title-specific implementation. That stub is what leaves several DataStore-dependent titles incomplete there | N `earlier-nex` file listing; per-title READMEs describing DataStore as unstubbed |
 | Pretendo's `nex-protocols-common-go/v2` ships a complete DataStore (get/change meta, prepare and complete post/get, search, rate, delete, S3 presigning) | PL `nex-protocols-common-go/datastore` |
+| ARMS needs DataStore: its **update** links a DataStore client even though the base game does not, and the update is what goes online | N `arms/arms_stubs.go`, which carries a deliberate 0x73 stub for it; reported by the arms title agent |
+| DataStore protocol ID | `0x73` | N `arms/arms_stubs.go` |
+| `UpdateObjectPeriodByDataIDWithPassword` and `UpdateObjectDataTypeByDataIDWithPassword` declare **each other's** parameter names; the call sites pass the correct values, so implement by callback name | — | PL `nex-protocols-common-go/datastore/protocol.go` lines 26/28 vs `change_meta.go` lines 51/65, verified; found by the arms title agent |
+| `GetObjectInfoByDataID` must error for a not-yet-upload-completed object, because `CompletePostObject` uses "returns data" to mean "already uploaded" and otherwise answers `PermissionDenied` forever. `GetObjectOwnerByDataID` and `GetObjectSizeByDataID` must still work on those objects | — | PL `nex-protocols-common-go/datastore/complete_post_object.go` lines 51-56, verified; found by the arms title agent |
 
 Its permission check for "friends only" is documented upstream as not working on Switch,
 because it asks for friends by 32-bit PID. OpenPak has the friend graph from nx-baas, so

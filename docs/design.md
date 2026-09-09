@@ -250,9 +250,11 @@ the schema is not ours to invent: `DataStoreMetaInfo` is defined by NEX — data
 size, name, data type, meta binary, permissions, ratings, tags, periods — so a generic store
 over it is a faithful implementation, not a guess imposed on forty titles.
 
-It lands as a **subpackage**, `github.com/openpak/nex/datastore`, not in the root package.
-Titles like ARMS and Golf have no DataStore at all, and a Postgres and S3 client in the root
-would be in every title's dependency graph whether or not it stores an object.
+It lands as a **subpackage**, `github.com/openpak/nex/datastore`, not in the root package. Not
+every title stores objects — a purely match-making title should not carry a Postgres and S3
+client in its dependency graph because the root package imports one. (ARMS is *not* an example
+of that: its base game links no DataStore client but its update does, and the update is what
+goes online, so ARMS needs the store.)
 
 The intended API is one call. A title gets a working store and keeps only what is genuinely
 its own:
@@ -282,7 +284,25 @@ What stays in the title repository, because it is genuinely title-shaped:
   the same `protocol` after `Wire`; anything it sets afterwards wins.
 
 Rows are scoped by a title key so one Postgres can host several titles without objects
-leaking between them — a title's search must never return another's.
+leaking between them — a title's search must never return another's. A schema per title is the
+other way to get that, and it is what the first implementation did; a title key is preferred
+here so one database can serve several deployments.
+
+Two things in the upstream callback surface will silently corrupt or deadlock a store that
+implements them naively. Both were found the hard way by the first implementation and are
+confirmed in `nex-protocols-common-go` v2.6.1:
+
+- **`UpdateObjectPeriodByDataIDWithPassword` and `UpdateObjectDataTypeByDataIDWithPassword`
+  declare each other's parameter names.** The first takes a parameter spelled `dataType` and is
+  called with `param.Period`; the second takes one spelled `period` and is called with
+  `param.DataType`. The call sites are right and the signatures are misleading, so implement
+  by callback name and ignore the parameter name, or the two columns get written swapped.
+- **`GetObjectInfoByDataID` must return an error for an object that has not been
+  upload-completed.** `CompletePostObject` uses "did this return data" as its test for
+  "already uploaded" and answers `PermissionDenied` when it does — so a store that happily
+  returns incomplete objects makes completion fail forever. `GetObjectOwnerByDataID` and
+  `GetObjectSizeByDataID` must still work on those same incomplete objects, because completion
+  needs both.
 
 Super Mario Maker 2 is the shape-defining case: it is the one title with a real implementation
 to read for facts (course upload, download and search), and it is also the one that proves the
