@@ -46,3 +46,7 @@ dist/
 deploy/oci/.env
 deploy/oci/certs/
 shared-docs
+
+# Local multi-repo development (see README)
+go.work
+go.work.sum

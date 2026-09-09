@@ -81,12 +81,31 @@ The startup line says which of the three shapes is running (`udp`, `ws (TLS at t
 proxy)`, `wss (TLS terminated here)`), because a console failing a TLS handshake against a
 plain `ws` listener looks exactly like silence.
 
-In a title server's `go.mod`:
+### Depending on this module
+
+The import path is `github.com/openpak/nex`. A title server depends on it as a normal tagged
+module, so its Dockerfile and CI work with a single-repo checkout:
 
 ```
-require openpak/nex v0.0.0
-replace openpak/nex => ../nex
+require github.com/openpak/nex v0.1.0
 ```
+
+`replace ../nex` does **not** work: it builds locally and fails in every container and CI run,
+where the checkout is one repository. For local multi-repo development, use a `go.work` at
+`~/REPOS/Openpak/servers` instead — it does the same job without entering any repository's
+`go.mod`:
+
+```
+go 1.25.0
+
+use (
+	./nex
+	./your-title
+)
+```
+
+`go.work` is git-ignored per repository, so local edits to the host are picked up immediately
+while CI still resolves the tagged version.
 
 ## Run
 

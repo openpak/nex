@@ -1,4 +1,4 @@
-module openpak/nex
+module github.com/openpak/nex
 
 go 1.25.0
 

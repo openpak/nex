@@ -173,7 +173,7 @@ package main
 import (
 	"log"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 )

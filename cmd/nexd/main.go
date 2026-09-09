@@ -8,7 +8,7 @@ package main
 import (
 	"log"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 func main() {
