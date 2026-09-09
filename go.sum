@@ -52,8 +52,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/openpak/nex v0.1.0 h1:iCSQ6CXQyGBmmCXovFhdYlcHeK3eChaY9gH7gwfiHaY=
-github.com/openpak/nex v0.1.0/go.mod h1:anQM0bRWd7rwcTy1l79GJul/YtxmTYnDUPsHG6n0JwE=
+github.com/openpak/nex v0.2.1 h1:dGh4h80QV4rsWdkmkBASIhjSlORlQXr6p9vbsSgO/Bo=
+github.com/openpak/nex v0.2.1/go.mod h1:anQM0bRWd7rwcTy1l79GJul/YtxmTYnDUPsHG6n0JwE=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.23.2 h1:Je96obch5RDVy3FDMndoUsjAhG5Edi49h0RJWRi/o0o=
