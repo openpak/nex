@@ -139,20 +139,20 @@ func (s *Server) registerMatchmaking() {
 	// Order matters: match-making's SetManager creates the "matchmaking" schema the other
 	// two put their tables in.
 	mm := match_making.NewProtocol()
-	common_match_making.NewCommonProtocol(mm).SetManager(manager)
 	s.host.Secure.RegisterServiceProtocol(mm)
+	common_match_making.NewCommonProtocol(mm).SetManager(manager)
 
 	ext := matchmake_extension.NewProtocol()
+	s.host.Secure.RegisterServiceProtocol(ext)
 	commonExt := common_matchmake_extension.NewCommonProtocol(ext)
 	commonExt.SetManager(manager)
 	commonExt.OnAfterAutoMatchmakeWithParamPostpone = s.afterAutoMatchmake
 	commonExt.OnAfterJoinMatchmakeSessionWithParam = s.afterJoinWithParam
 	commonExt.OnAfterJoinMatchmakeSession = s.afterJoin
-	s.host.Secure.RegisterServiceProtocol(ext)
 
 	mmExt := match_making_ext.NewProtocol()
-	common_match_making_ext.NewCommonProtocol(mmExt).SetManager(manager)
 	s.host.Secure.RegisterServiceProtocol(mmExt)
+	common_match_making_ext.NewCommonProtocol(mmExt).SetManager(manager)
 }
 
 // registerMessaging wires MessageDelivery, the in-lobby relay for short text and binary
@@ -163,8 +163,8 @@ func (s *Server) registerMessaging() {
 	manager.MatchmakingManager = s.matchmaking
 
 	protocol := message_delivery.NewProtocol()
-	common_message_delivery.NewCommonProtocol(protocol).SetManager(manager)
 	s.host.Secure.RegisterServiceProtocol(protocol)
+	common_message_delivery.NewCommonProtocol(protocol).SetManager(manager)
 }
 
 // registerUtility wires the NEX unique-id methods and answers GetIntegerSettings with the
@@ -174,8 +174,8 @@ func (s *Server) registerUtility() {
 	manager.GetIntegerSettings = integerSettings
 
 	protocol := utility.NewProtocol()
-	common_utility.NewCommonProtocol(protocol).SetManager(manager)
 	s.host.Secure.RegisterServiceProtocol(protocol)
+	common_utility.NewCommonProtocol(protocol).SetManager(manager)
 }
 
 func (s *Server) registerRanking2() {
