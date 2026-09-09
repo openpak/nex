@@ -84,25 +84,25 @@ func registerProtocols(host *nexhost.Host, db *sql.DB) {
 	matchmaking.GetUserFriendPIDs = host.FriendPIDs
 
 	matchMakingProtocol := match_making.NewProtocol()
-	common_match_making.NewCommonProtocol(matchMakingProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchMakingProtocol)
+	common_match_making.NewCommonProtocol(matchMakingProtocol).SetManager(matchmaking)
 
 	matchmakeExtensionProtocol := matchmake_extension.NewProtocol()
-	common_matchmake_extension.NewCommonProtocol(matchmakeExtensionProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchmakeExtensionProtocol)
+	common_matchmake_extension.NewCommonProtocol(matchmakeExtensionProtocol).SetManager(matchmaking)
 
 	matchMakingExtProtocol := match_making_ext.NewProtocol()
-	common_match_making_ext.NewCommonProtocol(matchMakingExtProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchMakingExtProtocol)
+	common_match_making_ext.NewCommonProtocol(matchMakingExtProtocol).SetManager(matchmaking)
 
 	natTraversalProtocol := nat_traversal.NewProtocol()
-	common_nat_traversal.NewCommonProtocol(natTraversalProtocol)
 	host.Secure.RegisterServiceProtocol(natTraversalProtocol)
+	common_nat_traversal.NewCommonProtocol(natTraversalProtocol)
 
 	utilityProtocol := utility.NewProtocol()
+	host.Secure.RegisterServiceProtocol(utilityProtocol)
 	utilityCommon := common_utility.NewCommonProtocol(utilityProtocol)
 	utilityCommon.SetManager(common_globals.NewUtilityManager(host.Secure, db))
-	host.Secure.RegisterServiceProtocol(utilityProtocol)
 
 	// ponytail: Ranking (0x70) and DataStore (0x73) are deliberately not registered, because
 	// nothing has ever observed Golf calling either -- the OpenPak server for this title
