@@ -40,12 +40,14 @@ env $(grep -v '^#' .env | xargs) ./golf
 | Env | Meaning |
 | --- | --- |
 | `NEX_TITLE` | name in logs, default `mario-golf-super-rush` |
-| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](../../ports.md). Authentication listens on `+0`, secure on `+1` |
-| `NEX_ACCESS_KEY` | **required.** `1cb8027c` — Golf's NEX access key, confirmed. Configuration, never a literal in source |
-| `NEX_VERSION` | NEX library version the title was built against. `4.6.5` here, an era guess |
+| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](../../ports.md). One listener carries both endpoints on `+0`; `+1` stays reserved and unbound |
+| `NEX_ACCESS_KEY` | **required.** `1cb8027c` — Golf's NEX access key: eight hex digits, confirmed, and not the game server ID in the DNS name. Configuration, never a literal in source |
+| `NEX_VERSION` | NEX library version the title was built against. `4.6.5` here, an era guess. The integer form `40605` is accepted too |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on. A bare host or IP; the port comes from the block |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
-| `NEX_TRANSPORT` | `websocket` here, not the shared host's `udp` default: a Switch NEX title speaks PRUDPLite over `wss://`. The listeners are plain ws and TLS is the front proxy's |
+| `NEX_TRANSPORT` | `websocket`: a Switch NEX title speaks PRUDPLite over a WebSocket, never PRUDP over UDP |
+| `NEX_SECURE_STREAM_ID` | `2`, not the shared host's Wii U-era `1`. It gives the secure endpoint its own stream, which is also what puts both endpoints on one listener |
+| `NEX_TLS_CERT`, `NEX_TLS_KEY` | Golf is reached by Traefik SNI passthrough, so this server terminates TLS: set both. Both empty means the front proxy terminates and forwards plain `ws`; exactly one is refused at startup |
 | `NEX_STATION_SCHEME` | `prudps`, whether the console treats the secure server as a Pia station. Never measured for this title |
 | `GOLF_DATABASE_URL` | **required.** Postgres for matchmaking and NEX unique IDs. The tables are created on startup |
 | `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |
@@ -54,11 +56,9 @@ env $(grep -v '^#' .env | xargs) ./golf
 Startup fails loudly on a bad port block, a missing access key, a missing internal key or an
 unreachable database, rather than serving something that cannot work.
 
-Firewall: both game ports are TCP here, not UDP — `ufw allow 22130/tcp` and
-`ufw allow 22131/tcp`. Traefik terminates TLS for
-`g211a3f00-lp1.s.n.srv.nintendo.net` and forwards to 22130; the console then reaches the
-secure server at the address in the station URL, so 22131 needs the same treatment. The
-`/healthz` port stays internal.
+Firewall: one game port, TCP not UDP — `ufw allow 22130/tcp`. Traefik passes
+`g211a3f00-lp1.s.n.srv.nintendo.net` through by SNI to 22130, where this server terminates
+TLS itself. The `/healthz` port stays internal.
 
 ## Test
 

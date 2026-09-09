@@ -78,16 +78,24 @@ whose id token nx-baas proves — that is the whole of what can be claimed.
 
 A Switch NEX title does not speak PRUDP over UDP. It opens a `wss://` connection and speaks
 PRUDPLite over it, and the console reaches ours by the DNS name
-`g211a3f00-lp1.s.n.srv.nintendo.net` on 443. So Golf sets `NEX_TRANSPORT=websocket`, which
-is the only default it changes from the shared host: `servers/nex` defaults to `udp` for the
-Wii U and 3DS era titles.
+`g211a3f00-lp1.s.n.srv.nintendo.net` on 443. Two settings follow, and Golf sets both
+explicitly rather than inheriting them, because neither failure is visible from the server
+side — it comes up, answers `/healthz`, and no console ever completes a connection:
 
-The listeners themselves are plain `ws`. TLS is terminated by the front proxy, which is
-where every other console-facing listener in OpenPak terminates it, and is `servers/nex`'s
-decision rather than this repository's. It does mean the deployment has one more obligation
-than a UDP title: the console reaches the *secure* server at whatever address and port the
-station URL names, so 22131 needs a TLS front too, not only the 22130 the SNI route points
-at. Nothing on hardware has exercised that yet.
+- `NEX_TRANSPORT=websocket`. In nex-go this is one choice, not two: a packet is read as
+  PRUDPLite only when a websocket server is present, so the transport picks the packet
+  format with it.
+- `NEX_SECURE_STREAM_ID=2`. The Switch shape puts both endpoints behind a single listener,
+  and that is not a separate flag: nex-go cannot bind two endpoints with the same stream ID
+  to one server, so "the secure endpoint has its own stream" and "there is one listener" are
+  the same fact. The result is one TCP port at the block's `+0`, nothing at `+1`, no UDP.
+
+Golf's DNS name reaches us by Traefik SNI passthrough — the shape `ports.md`'s 21xxx range
+exists for — so this server terminates TLS itself: `NEX_TLS_CERT` and `NEX_TLS_KEY` are set.
+The shared host also supports the other deployment, where Traefik terminates and forwards
+plain `ws`; setting exactly one of the pair is refused at startup, and the startup line
+names which of the three shapes is running, because a console failing a TLS handshake
+against a plain `ws` listener looks like silence rather than an error.
 
 One thing this transport gives us for free. The earlier stack had to force the secure
 endpoint's PRUDP minor version to 0, because its library defaulted to 5 and a console that
@@ -97,12 +105,10 @@ carries 0. No knob, no configuration, nothing to get wrong.
 
 ## Ports
 
-Block 22130 from [`ports.md`](../../../ports.md): authentication 22130, secure 22131,
-`/healthz` 22132. Unlike the UDP titles, both game ports are TCP and carry TLS, so the
-firewall rules are `ufw allow 22130/tcp` and `ufw allow 22131/tcp`, and Traefik's SNI route
-for the DNS name above points at 22130. The console reaches the secure server at the address
-in the station URL — `NEX_SECURE_HOST` and 22131 — so that port is reachable from a console
-directly and needs a certificate the console will accept.
+Block 22130 from [`ports.md`](../../../ports.md), but only one game port of it: 22130 for
+both endpoints, `/healthz` on 22132, and 22131 reserved and unbound. It is TCP, not UDP, so
+the firewall rule is `ufw allow 22130/tcp`, and Traefik's SNI passthrough for the DNS name
+above points at it.
 
 ## What the next round needs
 
@@ -113,13 +119,15 @@ protocol is left unregistered.
 1. **`NEX_VERSION`.** 4.6.5 is an era guess inherited from the earlier server, which is
    explicit that it never measured it. Evidence needed: `apiVersionGeneral` from the first
    login packet.
-2. **Which login method.** Method 2 or method 6, which follows from the version.
-   `servers/nex` implements both, so this only decides which code path runs. Evidence
-   needed: the RMC method ID of the first ticket-granting call.
-3. **Does the token in `AuthenticationInfo` reach nx-baas?** The whole identity chain
-   assumes it is an nx-baas id token whose `openpak` claim we can prove. Evidence needed: the
-   token field's shape and byte length (`nex-protocols-go` notes an observed 918-byte
-   ceiling).
+2. ~~**Which login method.**~~ Settled fleet-wide since: method 6 is the live login path on
+   Switch, and its response needs a structure header at version 1 — handed the flat method-2
+   layout the console refuses the login with `Core::InvalidArgument`, console error
+   2306-0116. `servers/nex` implements it.
+3. **That a real console's token is provable.** Known blocker, not this repository's:
+   nx-baas can prove an emulator's bound claim but not yet a retail console's plain BAAS id
+   token, so a genuine console login is refused today with "id token not proven" in the log.
+   Someone else is on it; a clean refusal, not a hang, so it is distinguishable from wiring
+   trouble here.
 4. **`prudps` or `prudp`.** Golf's is the Reference default, never measured for this title.
    The failure is not clean: with the wrong one the menus work and the title dies later.
    Evidence needed: whether CONNECT to the secure endpoint carries a payload.

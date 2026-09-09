@@ -51,16 +51,21 @@ func main() {
 }
 
 // config is the shared host's environment configuration with Golf's two defaults applied:
-// its own name in the logs, and the WebSocket transport, because a Switch NEX title speaks
-// PRUDPLite over wss:// and never over UDP. Both stay overridable -- NEX_TRANSPORT=udp is
-// how you point an emulator or a test client at this without a proxy in front.
+// its own name in the logs, and the secure endpoint on stream 2.
+//
+// Stream 2 is the Switch shape and is not the shared host's default, which is still the Wii
+// U and 3DS one. It is also not only a stream number: nex-go cannot bind two endpoints with
+// the same stream ID to one server, so giving the secure endpoint its own stream is exactly
+// what puts both endpoints on a single listener -- one TCP port at the block's +0, nothing
+// at +1. Left at the default, this server would come up looking healthy on two ports and a
+// console would never complete a connection.
 func config() nexhost.Config {
 	cfg := nexhost.FromEnv()
 	if os.Getenv("NEX_TITLE") == "" {
 		cfg.Title = "mario-golf-super-rush"
 	}
-	if os.Getenv("NEX_TRANSPORT") == "" {
-		cfg.Transport = "websocket"
+	if os.Getenv("NEX_SECURE_STREAM_ID") == "" {
+		cfg.SecureStreamID = 2
 	}
 	return cfg
 }

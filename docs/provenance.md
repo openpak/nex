@@ -11,7 +11,7 @@ layout, type or function names, comments or docs were carried across.
 | --- | --- | --- |
 | Title ID (base) | `0100C9C00E25C000` | `earlier/mario-golf-super-rush` `README.md` and `main.go`, which record it as read off two NSP filenames — file dumps, not a guess |
 | Title ID (update) | `0100C9C00E25C800` | same |
-| Game server ID | `g211a3f00` | same; the value inside the DNS name below, and a separate thing from the access key |
+| Game server ID | `g211a3f00` | same. The value inside the DNS name below, and **not** the access key: a game server ID and an access key are different things and neither is derivable from the other. That mistake has already been made once in this fleet |
 | Online DNS name | `g211a3f00-lp1.s.n.srv.nintendo.net` | same, recorded there as the hostname a console asks to resolve when it attempts online play |
 | Release | June 2021 | public |
 
@@ -19,7 +19,7 @@ layout, type or function names, comments or docs were carried across.
 
 | Fact | Value | Confidence | Source |
 | --- | --- | --- | --- |
-| Access key | `1cb8027c` | **confirmed** | `earlier/mario-golf-super-rush` `main.go` and `README.md` (dated 2026-08-28). Neither the kinnay Game Server List nor the game binary yielded it; it was recovered from one real captured PRUDP-Lite `(connectionSig, client signature)` pair by exhausting the 2^32 8-hex-digit space, because the signature is `HMAC-MD5(MD5(accessKey), MD5(accessKey)+connectionSig)`. A brute force over the whole key space has exactly one answer, so this is a measurement, not an inference. It lives in `example.env`, never in source. |
+| Access key | `1cb8027c` (eight hex digits, as every NEX access key is) | **confirmed** | `earlier/mario-golf-super-rush` `main.go` and `README.md` (dated 2026-08-28). Neither the kinnay Game Server List nor the game binary yielded it; it was recovered from one real captured PRUDP-Lite `(connectionSig, client signature)` pair by exhausting the 2^32 8-hex-digit space, because the signature is `HMAC-MD5(MD5(accessKey), MD5(accessKey)+connectionSig)`. A brute force over the whole key space has exactly one answer, so this is a measurement, not an inference. It lives in `example.env`, never in source. |
 | NEX version | 4.6.5 (`apiVersionGeneral` 40605) | **guess** | same repo, which is explicit that this is an era guess: Golf (June 2021) sits near Mario Party Superstars (October 2021), whose 4.6.5 is confirmed. Nothing has measured Golf's. |
 | Secure server PID | 2 | convention | NEX's own `Quazal Rendez-Vous` account; matches the earlier server and Pretendo's own example |
 | Session key length | 32 bytes | corroborated | the earlier server uses 32; `servers/nex` independently sets 32 for Switch. Two sources, same value |
@@ -31,6 +31,8 @@ layout, type or function names, comments or docs were carried across.
 | Fact | Source |
 | --- | --- |
 | A Switch NEX title is reached over a secure WebSocket, not UDP | The earlier server for this title listens with TLS certificate and key on both endpoints and is fronted by an SNI router on 443 for the DNS name above. Independently, `nex-go` parses PRUDPLite (first byte `0x80`) only when a WebSocket server is running (`prudp_server.go`, `handleSocketMessage`), and PRUDPLite is the Switch packet format — so "websocket transport" and "Lite packets" are one switch, not two |
+| Both endpoints belong on one listener, with the secure endpoint on stream 2 | Fleet finding from `nex-base`, carried to every Switch title: nex-go cannot bind two endpoints with the same stream ID to one server, so a distinct secure stream and a single listener are the same fact. `servers/nex` still defaults to the Wii U/3DS shape (stream 1, two listeners), so this is set explicitly here |
+| Golf is reached by Traefik SNI passthrough, so this server terminates TLS | `ports.md`'s 21xxx range is the passthrough shape, and the earlier server for this title likewise holds its own certificate and key. The alternative — Traefik terminating and forwarding plain `ws` — is a real OpenPak deployment for other titles, so `servers/nex` supports both |
 | The secure endpoint must answer SYN with PRUDP minor version 0 | The earlier server carries a knob for exactly this and documents the failure: its own library defaulted to 5, and with 5 the console sends CONNECT with `plen=0` and never hands over the ticket. **We need no knob**: `nex-go` copies a minor version onto the ack only in its PRUDPPacketV1 branch (`prudp_endpoint.go`, `handleSyn`/`handleConnect`), so a Lite ack goes out with 0 already |
 | Never force a minor version on the *authentication* endpoint | same repository, recorded as a Smash Ultimate regression: its auth stopped receiving logins entirely. We do not force one anywhere |
 
@@ -59,7 +61,14 @@ Ticket-granting method IDs (1 `Login` / `ValidateAndRequestTicket`, 2 `LoginEx` 
 `ValidateAndRequestTicketWithParam`) and the rule that a library version `>= 4.0.0` routes
 1, 2 and 6 to the Switch names are from
 [Kinnay, Authentication Protocol](https://github.com/kinnay/NintendoClients/wiki/Authentication-Protocol);
-`servers/nex` implements 2 and 6 and cites them in its own design document.
+`servers/nex` implements 2 and 6 and cites them in its own design document. Two fleet
+findings from `nex-base` sharpen that, and both are its code to get right rather than this
+repository's: **method 6 is the live login path on Switch**, and its response needs a
+structure header at version 1 — handed the flat method-2 layout, a console refuses the login
+with `Core::InvalidArgument` and shows 2306-0116. And the `userName` field is the console's
+**NSA id**, not the NEX PID: Kinnay's wiki reads "Username (your pid)", which is a trap,
+because the two are never equal on Switch. A server that cross-checks the name against the
+token's PID refuses every real console.
 
 The method names the earlier server's monitoring bothered to label are a weak hint at what
 its author expected to see on the wire. Recorded because they cost nothing to keep, not
@@ -88,6 +97,6 @@ GetStringSettings; NAT Traversal `0x02` InitiateProbe, `0x03` RequestProbeInitia
 | Fact | Source |
 | --- | --- |
 | Identity, and the friend graph, come from nx-baas `POST /internal/switch/identity` | OpenPak's own `nx-baas` and `servers/nex` `account.go` |
-| Port block 22130 (auth 22130, secure 22131, healthz 22132) | [`ports.md`](../../../ports.md), claimed by this repository |
+| Port block 22130 — one listener on 22130 carrying both endpoints, healthz 22132, 22131 reserved and unbound | [`ports.md`](../../../ports.md), claimed by this repository |
 | Matchmaking, utility, NAT traversal handlers, and every table they use | Pretendo's AGPL-3.0 `nex-protocols-common-go/v2` v2.6.1, imported. The schemas are created by the library's own `SetManager`, not written by us |
-| `nex-protocols-go` v2.3.5 cannot wire Ranking: `ranking.Protocol.SetHandlerGetStats` takes `constants.StatsFlag`, `ranking.Interface` declares `types.UInt32`, so `common_ranking.NewCommonProtocol` does not compile. v2.3.7 fixes it | read from the two modules; the v2.3.7 build was tried and reverted here, since the pin belongs to `servers/nex` |
+| `nex-protocols-go` v2.3.5 cannot wire Ranking: `ranking.Protocol.SetHandlerGetStats` takes `constants.StatsFlag`, `ranking.Interface` declares `types.UInt32`, so `common_ranking.NewCommonProtocol` does not compile | read from the two modules here, verified against a v2.3.7 build, and reported to `servers/nex`, which has since bumped the pin to v2.3.7 |
