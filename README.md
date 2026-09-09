@@ -10,9 +10,11 @@ implementation.**
 
 Status (2026-09-09): the host builds, runs, serves `/healthz`, listens on a configured NEX
 block, and completes the ticket-granting handshake for a Switch login whose id token nx-baas
-proves. **Nothing has been run against a console or a real title.** The identity chain rests
-on assumptions that only a capture can settle; [`docs/design.md`](docs/design.md) lists them
-as open questions and the code fails closed on every one.
+proves. **Nothing has been run against a console or a real title.** The wire shapes are no
+longer guesses — they are taken from working servers and public documentation, each recorded
+with its source in [`docs/provenance.md`](docs/provenance.md) — but one dependency is open:
+nx-baas cannot yet prove a *real console's* BAAS id token, only an emulator's bound claim, so
+a genuine console's login is still refused. See the end of [`docs/design.md`](docs/design.md).
 
 ## What it does
 
@@ -22,7 +24,12 @@ as open questions and the code fails closed on every one.
   `Core::NotImplemented` to every login.
 - Resolves a console to an OpenPak account through [`nx-baas`](../../nx-baas)'s internal game
   API, the same door [`servers/stardew-valley`](../stardew-valley) uses for NPLN, and hands
-  the title the player's friend graph with it.
+  the title the player's friend graph with it. It also records the name the console logged in
+  under — its NSA id, which is not its NEX PID — because titles go on to ask for players by
+  that name and nothing else can translate it (`Host.PIDForLoginName`).
+- Makes Pretendo's complete DataStore usable: `Host.FriendPIDs` fills the friends-only
+  permission callback that upstream documents as not working on Switch for want of a friend
+  graph. Titles whose whole online mode is DataStore depend on it.
 - Runs the authentication and secure endpoints on one port block from
   [`ports.md`](../../ports.md), with an HTTP `/healthz` because nothing in OpenPak infers
   liveness from a UDP socket.
@@ -64,8 +71,10 @@ whether a console reaches us and gets through the handshake, before any title wo
 | `NEX_TITLE` | name in logs, default `nex` |
 | `NEX_PORT_BASE` | **required.** The title's NEX block base from [ports.md](../../ports.md): a multiple of ten in 22100–22199 or 22300–22599. Authentication listens on `+0`, secure on `+1` |
 | `NEX_ACCESS_KEY` | **required.** The title's NEX access key |
-| `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Decides which login method the client uses and how structures are serialised |
+| `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Accepts `4.6.5` or the integer form the console reports, `40605`. Decides which login method the client uses and how structures are serialised |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on, default `127.0.0.1` |
+| `NEX_STATION_SCHEME` | `prudps` (default) or `prudp`, per title. Whether the console treats the secure server as a Pia station. The wrong value is not a clean failure: menus keep working and the title gives up later |
+| `NEX_STREAM_ID` | PRUDP virtual port both endpoints bind, default `1`. nex-go drops packets addressed to an unbound stream, logging "trying to connect to unbound PRUDPEndPoint" |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
 | `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key` |
@@ -89,16 +98,26 @@ go test ./...
 go vet ./...
 ```
 
-The tests cover the parts that are not one-liners: config validation, pulling the `openpak`
-claim out of a BAAS id token, the nx-baas identity call including the refused-token case, and
-a full kerberos ticket round trip — minted by the authentication endpoint, opened with the
-source key the client is handed, and the internal ticket opened again by the secure server.
+The tests cover the parts that are not one-liners: config validation, both spellings of a NEX
+version, reading the binding claim out of a token *and* accepting a real console's token that
+has none, the nx-baas identity call including the refused-token case, that a login name is an
+NSA id rather than a PID, the per-title station scheme, and a full kerberos ticket round trip
+— minted by the authentication endpoint, opened with the source key the client is handed, and
+the internal ticket opened again by the secure server.
+
+## Provenance
+
+Wire-level facts in this repository come from public protocol documentation, from Pretendo's
+AGPL libraries, and from reading existing working servers for facts under the clean-room
+policy. Every one is listed with its source in [`docs/provenance.md`](docs/provenance.md).
+No code, comment, structure or naming was copied from a source-available implementation.
 
 ## Ground rules
 
 - Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
-  code are the only inputs. Every protocol fact in `docs/design.md` cites its source.
+  code are the only inputs, alongside facts read from the implementation being replaced.
+  Every protocol fact cites its source in `docs/provenance.md`.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
 - Ports come from [`ports.md`](../../ports.md). Claim your block in the PR that first needs it.
 

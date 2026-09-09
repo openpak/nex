@@ -80,14 +80,21 @@ the newer internal format — a random key in the clear beside the encrypted bod
 Method 6's response is the `ValidateAndRequestTicketResult` structure with no leading
 `%retval%`; errors come back as RMC errors. Method 2 keeps the older flat response
 (`%retval%`, `pidPrincipal`, `pbufResponse`, `pConnectionData`, `strReturnMsg`) with
-`pSourceKey` appended. Both are implemented; which one a title uses depends on whether it
-was built against NEX 4.4.0 or later, which we cannot know before we see the title.
+`pSourceKey` appended. Both are implemented; which one a title uses follows its NEX version,
+and the Switch fleet spans 4.0.0 to 4.6.5.
+
+One detail is not optional: **method 6's response must be wrapped in a structure header with
+version 1.** A client handed the flat method-2 layout rejects the login as
+`Core::InvalidArgument` and the console shows 2306-0116. The first version of this file got
+that wrong.
 
 ### 2. Identity
 
 `nx-baas` is the OpenPak Switch adapter and the only thing that can prove a console's BAAS id
-token: the token carries an `openpak` claim signed with nx-baas's key. Its internal game API on
-port 20070, guarded by `X-Internal-Key`, answers
+token — it holds the signing keys and this server deliberately does not. Two token shapes
+arrive: an emulator adds a binding claim only nx-baas can sign, while a real console sends a
+plain BAAS id token with no such claim. Both go to nx-baas. Its internal game API on port
+20070, guarded by `X-Internal-Key`, answers
 
 ```
 POST /internal/switch/identity   {"openpak": "nx2…"}  or  {"pid": 1800000042}
@@ -102,9 +109,13 @@ free — no per-title friend table.
 `RequiresTokenAuth: true` and a throwaway password, which is safe precisely because the token
 path never derives a key from it.
 
-The username a Switch sends in `userName` is documented as *"Username (your pid)"*. We treat
-the **token** as the authority and refuse a login whose username parses as a different PID,
-rather than trusting the client's claim. See the open questions.
+The wiki documents `userName` as *"Username (your pid)"*, and that reading is a trap. On a
+Switch the name is the console's **NSA id**, a decimal number that is never equal to the NEX
+PID. The first version of this file compared the two and refused the login when they
+disagreed, which would have refused every real console. The token is the only authority on
+identity; the name is recorded at login instead, because titles go on to ask for players by
+the name they logged in with and nothing else can translate it back
+(`Host.PIDForLoginName`).
 
 ### 3. Ports, health, deploy
 
@@ -154,38 +165,77 @@ nex-go cannot answer — who this PID is on OpenPak, and who their friends are.
 `cmd/nexd` is that same main minus the protocol registration, so a bare host can be deployed
 to answer "does a console reach us and complete the handshake" before any title work starts.
 
-## Open questions — what the next round needs
+## What DataStore needs, and why it is worth saying out loud
 
-Everything below is unverified because it needs a real console, a real title and a capture.
-None of it is guessed at in the code; where a fact is missing the code fails closed.
+Several Switch titles put their whole online mode in DataStore — user-generated levels,
+replays, ghost data, shared photos. `nex-protocols-common-go` ships a complete implementation
+of it: get and change meta, prepare and complete post and get, search, rate, delete, and S3
+presigned upload and download URLs. Nothing in this repository wraps it; a title constructs it
+and registers it on `host.Secure` like any other protocol.
 
-1. **Does a Switch NEX title actually send the BAAS id token we mint?** The whole identity
-   chain assumes the token in `AuthenticationInfo.Token` is an nx-baas id token whose `openpak`
-   claim we can prove. `openpakClaim` accepts either the full JWT or the bare claim, but if the
-   console sends something else entirely — a per-title token from a BAAS endpoint we do not
-   serve yet — the chain breaks at the first login. **Evidence needed:** a capture of the
-   ticket-granting login from a console against a title, with the token field's shape.
-2. **Token length.** `nex-protocols-go` notes an observed ceiling of 918 bytes on the token
-   field. A full BAAS id token JWT may exceed it. **Evidence needed:** the byte length of the
-   token in that same capture. If it does not fit, nx-baas must mint a short NEX-specific
-   token and the `openpak` claim becomes the thing the console carries.
-3. **The `userName` field.** We refuse a login whose username disagrees with the token's PID.
-   That is right if the console's PID comes from our BAAS, and wrong if the console sends
-   something derived from a Nintendo-side identifier. **Evidence needed:** the username string
-   from the capture, next to the PID nx-baas holds for that account.
-4. **Method 2 or method 6?** Depends on the title's NEX version, and each title differs.
-   **Evidence needed:** the RMC method ID in the first login packet, plus
-   `apiVersionGeneral` (e.g. 40601) so `NEX_VERSION` can be set correctly per title.
-5. **The access key.** Per title, and not derivable — it comes from the game binary or from
-   published reverse-engineering. **Evidence needed:** a documented access key per title we
-   intend to host, recorded in that title's repository, not here.
-6. **Whether the secure endpoint needs a stream ID other than 1.** Both endpoints use stream
-   1 today, matching the Wii U/3DS shape. **Evidence needed:** the CONNECT packet's virtual
-   port from the capture.
+The one callback that does not work out of the box upstream is friends-only object
+permissions, because it asks for a friend list by 32-bit PID and upstream has no Switch friend
+graph to answer with. OpenPak does, through nx-baas, so `Host.FriendPIDs` fills it:
 
-Until 1–4 are answered on hardware, "it starts, it serves `/healthz`, it completes a login
-whose token nx-baas proves" is exactly as much as this repository can claim, and the tests
-check only that.
+```go
+protocol := datastore.NewProtocol()
+common := common_datastore.NewCommonProtocol(protocol)
+common.S3Bucket = os.Getenv("NEX_S3_BUCKET")
+common.S3Presigner = myPresigner              // ports.md 23010 locally
+common.GetUserFriendPIDs = host.FriendPIDs    // friends-only permissions now work
+common.GetObjectInfoByDataID = myStore.MetaByDataID // the title's own storage
+host.Secure.RegisterServiceProtocol(protocol)
+```
+
+The remaining callbacks are the title's object storage and are title-specific by nature — a
+level's metadata is not shaped like a replay's. This repository deliberately does not invent a
+common schema for them.
+
+`Host.PIDForLoginName` matters here too. A DataStore request for "this console's own objects"
+arrives naming the player by the name they logged in with, not by NEX PID, so a title that
+looks the request up by PID finds nothing and tells the player their uploads are gone. The
+login records the translation; DataStore reads it back.
+
+## What is settled, and what is not
+
+Facts taken from the existing earlier servers, from Kinnay's wiki and from the Pretendo
+libraries are recorded with their sources in [`provenance.md`](provenance.md). The four
+questions that blocked the first round are answered there:
+
+- **The token.** `AuthenticationInfo.Token` is a JWT. An emulator adds a binding claim only
+  nx-baas can sign; a real console sends a plain BAAS id token with no such claim. Both are
+  forwarded to nx-baas. The 918-byte ceiling turned out to be documentation only — it is never
+  enforced, and whole JWTs are carried in practice — so no short token needs minting.
+- **The username.** It is the console's NSA id, not the NEX PID, and the two are never equal.
+  The first version refused a login when they disagreed, which would have refused every real
+  console. That check is gone; the name is recorded and translated instead.
+- **Method 2 or 6.** Both, depending on the title's NEX version, which spans 4.0.0 to 4.6.5
+  across the Switch fleet. Both are implemented. Method 6's response must carry a structure
+  header with version 1 — the flat method-2 layout is rejected as `Core::InvalidArgument`,
+  console error 2306-0116. That was the second bug, and it is fixed and pinned by a comment.
+- **Virtual ports.** Learned from the client's SYN rather than fixed. nex-go binds an endpoint
+  per stream ID and drops packets for an unbound one, so `NEX_STREAM_ID` exists and defaults
+  to 1.
+
+Two things per title cannot be settled here and belong in the title's own repository: its
+**access key** (always 8 hex digits; from Kinnay's public Game Server List, from the binary,
+or by brute-forcing one captured handshake pair against
+`HMAC-MD5(MD5(key), MD5(key)+connectionSig)`) and its **NEX version**. Note that the
+`g<hex>-lp1.s.n.srv.nintendo.net` hostname encodes a Game Server ID, which is a different
+value from the access key for the same title.
+
+`NEX_STATION_SCHEME` is per title and untested by us: `prudps` for most, `prudp` for at least
+one major title. Getting it wrong is not a clean failure — menus keep working and the title
+gives up later, when it actually needs the session.
+
+### The one blocking dependency
+
+`nx-baas` cannot yet prove a real console's BAAS id token. Its internal identity API takes the
+emulator's binding claim or an already-proven PID. `Host.PlayerByToken` already sends the whole
+token as `id_token` alongside the claim, so the wire is ready, but until nx-baas answers on
+that field a genuine console's login is refused — correctly, but refused. That is a change in
+the nx-baas repository, not this one, and it is the next thing standing between this host and
+a console completing a login.
 
 ## Sources
 

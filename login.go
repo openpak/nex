@@ -25,9 +25,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
-	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -52,6 +50,10 @@ func (h *Host) validateAndRequestTicketWithParam(err error, packet nex.PacketInt
 	}
 
 	result := ticket_granting_types.NewValidateAndRequestTicketResult()
+	// The structure header matters: a client handed the flat method-2 layout, or a header
+	// with the wrong version, rejects the login with Core::InvalidArgument (the console
+	// shows 2306-0116) rather than failing anywhere informative.
+	result.StructureVersion = 1
 	result.SourcePID = types.NewPID(pid)
 	result.BufResponse = types.NewBuffer(ticket)
 	result.ServiceNodeURL = h.secureStationURL()
@@ -125,12 +127,11 @@ func (h *Host) authorize(endpoint *nex.PRUDPEndPoint, username string, extraData
 		return 0, nil, nil, nex.NewError(nex.ResultCodes.Authentication.ValidationFailed, "no OpenPak account for this console")
 	}
 
-	// The username a Switch sends is its own PID. The token is the authority, so a
-	// disagreement is refused rather than resolved in the client's favour.
-	if claimed, parseErr := strconv.ParseUint(username, 10, 64); parseErr == nil && claimed != player.PID {
-		return 0, nil, nil, nex.NewError(nex.ResultCodes.Authentication.PrincipalIDUnmatched,
-			fmt.Sprintf("token is pid %d, login claimed %d", player.PID, claimed))
-	}
+	// The name a Switch logs in under is its NSA id, not its NEX PID, so the two never
+	// match and comparing them would refuse every real console. The token is the only
+	// authority on identity. Remember the name instead: titles go on to ask for players by
+	// the name they logged in with rather than by PID, and nothing else can translate it.
+	h.rememberLoginName(username, player.PID)
 
 	sourceKey := make([]byte, sourceKeyLength)
 	if _, keyErr := rand.Read(sourceKey); keyErr != nil {

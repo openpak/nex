@@ -41,11 +41,19 @@ import (
 // Config is the whole configuration of a NEX title server. Everything here is read from the
 // environment by FromEnv; a title server that wants a different value sets the field itself.
 type Config struct {
-	Title       string // name in logs only
-	PortBase    int    // NEX block base from ports.md: auth listens on +0, secure on +1
-	AccessKey   string // the title's NEX access key
-	Version     string // NEX library version the title was built against, e.g. "4.4.0"
-	SecureHost  string // address the console is told to reach the secure server on
+	Title      string // name in logs only
+	PortBase   int    // NEX block base from ports.md: auth listens on +0, secure on +1
+	AccessKey  string // the title's NEX access key
+	Version    string // NEX library version the title was built against, e.g. "4.4.0"
+	SecureHost string // address the console is told to reach the secure server on
+	// StationScheme is "prudps" or "prudp", per title. It decides whether the console
+	// treats the secure server as a Pia station. The wrong one is not a clean failure:
+	// menus keep working and the title gives up later, when it actually needs the session.
+	StationScheme string
+	// StreamID is the PRUDP virtual port both endpoints bind. nex-go routes a packet by the
+	// stream ID it is addressed to and silently drops anything for an unbound one, logging
+	// "trying to connect to unbound PRUDPEndPoint". 1 is the standard value.
+	StreamID    uint8
 	HTTPAddr    string // /healthz listener
 	InternalURL string // nx-baas game/internal API
 	InternalKey string // nx-baas NX_INTERNAL_KEY, sent as X-Internal-Key
@@ -55,15 +63,24 @@ type Config struct {
 func FromEnv() Config {
 	base, _ := strconv.Atoi(os.Getenv("NEX_PORT_BASE"))
 	return Config{
-		Title:       env("NEX_TITLE", "nex"),
-		PortBase:    base,
-		AccessKey:   os.Getenv("NEX_ACCESS_KEY"),
-		Version:     env("NEX_VERSION", "4.4.0"),
-		SecureHost:  env("NEX_SECURE_HOST", "127.0.0.1"),
-		HTTPAddr:    env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
-		InternalURL: env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
-		InternalKey: os.Getenv("NX_INTERNAL_KEY"),
+		Title:         env("NEX_TITLE", "nex"),
+		PortBase:      base,
+		AccessKey:     os.Getenv("NEX_ACCESS_KEY"),
+		Version:       env("NEX_VERSION", "4.4.0"),
+		SecureHost:    env("NEX_SECURE_HOST", "127.0.0.1"),
+		StationScheme: env("NEX_STATION_SCHEME", "prudps"),
+		StreamID:      uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
+		HTTPAddr:      env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
+		InternalURL:   env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
+		InternalKey:   os.Getenv("NX_INTERNAL_KEY"),
 	}
+}
+
+func atoiOr(s string, fallback int) int {
+	if n, err := strconv.Atoi(s); err == nil {
+		return n
+	}
+	return fallback
 }
 
 func env(name, fallback string) string {
@@ -87,6 +104,8 @@ func (c Config) validate() error {
 		return errors.New("NEX_ACCESS_KEY is required: it is the title's NEX access key")
 	case c.InternalKey == "":
 		return errors.New("NX_INTERNAL_KEY is required: without it every login is refused by nx-baas")
+	case c.StationScheme != "prudps" && c.StationScheme != "prudp":
+		return fmt.Errorf("NEX_STATION_SCHEME=%q: want prudps or prudp", c.StationScheme)
 	}
 	if _, err := parseVersion(c.Version); err != nil {
 		return err
@@ -94,7 +113,15 @@ func (c Config) validate() error {
 	return nil
 }
 
+// parseVersion accepts both spellings of a NEX version: "4.6.5", and the integer form the
+// console reports as apiVersionGeneral, 40605 = major*10000 + minor*100 + patch.
 func parseVersion(v string) (*nex.LibraryVersion, error) {
+	if n, err := strconv.Atoi(v); err == nil {
+		if n < 10000 || n > 999999 {
+			return nil, fmt.Errorf("NEX_VERSION=%q is not a NEX version integer like 40605", v)
+		}
+		return nex.NewLibraryVersion(n/10000, (n/100)%100, n%100), nil
+	}
 	parts := strings.SplitN(v, ".", 3)
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("NEX_VERSION=%q is not major.minor.patch", v)
@@ -144,8 +171,8 @@ func New(cfg Config) (*Host, error) {
 		secureAccount: nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", randomPassword(), false),
 	}
 
-	h.authServer, h.Auth = h.newServer(version, 1)
-	h.secureServer, h.Secure = h.newServer(version, 1)
+	h.authServer, h.Auth = h.newServer(version, cfg.StreamID)
+	h.secureServer, h.Secure = h.newServer(version, cfg.StreamID)
 	h.Auth.ServerAccount = h.authAccount
 	h.Secure.ServerAccount = h.secureAccount
 	h.Secure.IsSecureEndPoint = true
@@ -201,7 +228,11 @@ func (h *Host) registerSecureConnection() {
 
 func (h *Host) secureStationURL() types.StationURL {
 	url := types.NewStationURL("")
-	url.SetURLType(constants.StationURLPRUDPS)
+	urlType := constants.StationURLPRUDPS
+	if h.Config.StationScheme == "prudp" {
+		urlType = constants.StationURLPRUDP
+	}
+	url.SetURLType(urlType)
 	url.SetAddress(h.Config.SecureHost)
 	url.SetPortNumber(uint16(h.Config.SecurePort()))
 	url.SetConnectionID(1)

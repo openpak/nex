@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -16,7 +17,7 @@ import (
 func testConfig() Config {
 	return Config{
 		Title: "test", PortBase: 22100, AccessKey: "ridfebb9", Version: "4.4.0",
-		SecureHost: "127.0.0.1", HTTPAddr: ":0",
+		SecureHost: "127.0.0.1", StationScheme: "prudps", StreamID: 1, HTTPAddr: ":0",
 		InternalURL: "http://127.0.0.1:1", InternalKey: "k",
 	}
 }
@@ -31,6 +32,7 @@ func TestConfigValidate(t *testing.T) {
 		"no access key":              func(c *Config) { c.AccessKey = "" },
 		"no internal key":            func(c *Config) { c.InternalKey = "" },
 		"bad version":                func(c *Config) { c.Version = "4.4" },
+		"bad station scheme":         func(c *Config) { c.StationScheme = "https" },
 	} {
 		cfg := testConfig()
 		mutate(&cfg)
@@ -42,23 +44,70 @@ func TestConfigValidate(t *testing.T) {
 
 func TestOpenPakClaim(t *testing.T) {
 	payload := base64.RawURLEncoding.EncodeToString([]byte(`{"openpak":"nx2.abc.def"}`))
-	idToken := "header." + payload + ".signature"
-
-	got, err := openpakClaim(idToken)
-	if err != nil || got != "nx2.abc.def" {
-		t.Fatalf("jwt: got %q, %v", got, err)
+	if got := openpakClaim("header." + payload + ".signature"); got != "nx2.abc.def" {
+		t.Errorf("emulator token: got %q", got)
 	}
 
-	// A bare openpak token has three dot-separated parts too, so the "nx2." prefix is what
-	// keeps it from being mistaken for a JWT and having its middle segment decoded.
-	if got, err := openpakClaim("nx2.abc.def"); err != nil || got != "nx2.abc.def" {
-		t.Fatalf("bare token: got %q, %v", got, err)
+	// A bare claim has three dot-separated parts too, so the "nx2." prefix is what keeps it
+	// from being mistaken for a JWT and having its middle segment decoded.
+	if got := openpakClaim("nx2.abc.def"); got != "nx2.abc.def" {
+		t.Errorf("bare claim: got %q", got)
 	}
 
-	for _, bad := range []string{"", "  ", "header.bm90LWpzb24.sig"} {
-		if _, err := openpakClaim(bad); !errors.Is(err, errTokenRejected) {
-			t.Errorf("openpakClaim(%q): want errTokenRejected, got %v", bad, err)
+	// A real console sends a plain BAAS id token with no binding claim. That is not an
+	// error: it means nx-baas has to prove the token itself. Anything that returned an
+	// error here would refuse every genuine console.
+	plain := base64.RawURLEncoding.EncodeToString([]byte(`{"sub":"abc","iss":"baas"}`))
+	for _, noClaim := range []string{"header." + plain + ".sig", "", "not-a-jwt", "header.bm90LWpzb24.sig"} {
+		if got := openpakClaim(noClaim); got != "" {
+			t.Errorf("openpakClaim(%q): want no claim, got %q", noClaim, got)
 		}
+	}
+}
+
+// TestLoginNameIsNotThePID guards the fact that cost the first version a working login: a
+// Switch logs in under its NSA id, a number that is never equal to its NEX PID. Comparing
+// them, or trying to parse the name into a PID, refuses every real console.
+func TestLoginNameIsNotThePID(t *testing.T) {
+	host, err := New(testConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	const nsaID = "11389664994428258486" // NSA-id shaped: decimal, above 2^63, not a NEX PID
+	const pid = uint64(1800000042)
+
+	if _, ok := PIDForLoginName(nsaID); ok {
+		t.Fatal("login name known before any login")
+	}
+	host.rememberLoginName(nsaID, pid)
+
+	got, ok := PIDForLoginName(nsaID)
+	if !ok || got != pid {
+		t.Fatalf("PIDForLoginName: got %d, %v", got, ok)
+	}
+	if parsed, err := strconv.ParseUint(nsaID, 10, 64); err != nil || parsed == pid {
+		t.Fatal("an NSA id must parse as uint64 and must not equal the PID, or this test proves nothing")
+	}
+}
+
+func TestParseVersion(t *testing.T) {
+	// Both spellings: the dotted one people write, and the integer the console reports.
+	for _, spelling := range []string{"4.6.5", "40605"} {
+		version, err := parseVersion(spelling)
+		if err != nil {
+			t.Fatalf("%s: %v", spelling, err)
+		}
+		if version.Major != 4 || version.Minor != 6 || version.Patch != 5 {
+			t.Errorf("%s: got %d.%d.%d", spelling, version.Major, version.Minor, version.Patch)
+		}
+		// Method 6 is only dispatched at all above 4.0.0; a misparsed version silently
+		// routes a Switch login to a Wii U handler that is not registered.
+		if !version.GreaterOrEqual("4.0.0") {
+			t.Errorf("%s: parsed below 4.0.0", spelling)
+		}
+	}
+	if _, err := parseVersion("999"); err == nil {
+		t.Error("accepted a version integer that is too short")
 	}
 }
 
@@ -158,12 +207,27 @@ func TestIssueTicket(t *testing.T) {
 	}
 }
 
+// TestSecureStationURL also pins the per-title scheme: the wrong one is not a clean
+// failure, so it must follow configuration rather than a constant.
 func TestSecureStationURL(t *testing.T) {
+	cfg := testConfig()
+	cfg.StationScheme = "prudp"
+	plain, err := New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := plain.secureStationURL().URL(); !strings.HasPrefix(got, "prudp:") || strings.HasPrefix(got, "prudps:") {
+		t.Errorf("prudp scheme not honoured: %s", got)
+	}
+
 	host, err := New(testConfig())
 	if err != nil {
 		t.Fatal(err)
 	}
-	url := host.secureStationURL().String()
+	url := host.secureStationURL().URL()
+	if !strings.HasPrefix(url, "prudps:") {
+		t.Errorf("prudps scheme not honoured: %s", url)
+	}
 	if !strings.Contains(url, "port=22101") || !strings.Contains(url, "address=127.0.0.1") {
 		t.Errorf("secure station url does not point at the block's secure port: %s", url)
 	}
