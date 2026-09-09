@@ -33,17 +33,9 @@ import (
 	ticket_granting_types "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting/types"
 )
 
-// sourceKeyLength is how many random bytes the source key is — the key a Switch is handed as
-// pSourceKey and decrypts its ticket with.
-//
-// The invariant that actually matters is that the key we encrypt the ticket with is the key
-// we advertise. RC4 takes any length and the console is told the key rather than deriving it,
-// so the length is free as long as the two agree. Both 16 and 32 are attested by servers
-// known to work against retail consoles, which is why this is not a protocol constant: a
-// mismatch between the two halves is what rejects a ticket, not the number itself.
-//
-// 32 because it is the larger attested value and nothing is known to reject it.
-const sourceKeyLength = 32
+// The source key is what a Switch is handed as pSourceKey and decrypts its ticket with. Its
+// length lives in Config.SourceKeyBytes, because two titles have direct evidence for two
+// different values -- see the comment there.
 
 // validateAndRequestTicketWithParam is method 6 on NEX 4.4.0 and later.
 func (h *Host) validateAndRequestTicketWithParam(err error, packet nex.PacketInterface, callID uint32, param ticket_granting_types.ValidateAndRequestTicketParam) (*nex.RMCMessage, *nex.Error) {
@@ -141,7 +133,7 @@ func (h *Host) authorize(endpoint *nex.PRUDPEndPoint, username string, extraData
 	// the name they logged in with rather than by PID, and nothing else can translate it.
 	h.rememberLoginName(username, player.PID)
 
-	sourceKey := make([]byte, sourceKeyLength)
+	sourceKey := make([]byte, h.Config.SourceKeyBytes)
 	if _, keyErr := rand.Read(sourceKey); keyErr != nil {
 		return 0, nil, nil, nex.NewError(nex.ResultCodes.Authentication.Unknown, "failed to generate source key")
 	}

@@ -80,6 +80,20 @@ Set it from what your title is known to do rather than guessing. Getting it wron
 silent: nex-go logs `trying to connect to unbound PRUDPEndPoint 2` for every packet a console
 sends to a stream nothing is bound to. **That line means set it to `2`.**
 
+### Source key length: `NEX_SOURCE_KEY_BYTES`
+
+Also per title, and this one *is* silent — the login just fails, with nothing logged on either
+side. The length is not a protocol constant: RC4 takes any key length and the console is told
+the key rather than deriving it, so what has to hold is that the key the ticket is encrypted
+with is the key advertised in the response.
+
+| Set | Evidence |
+| --- | --- |
+| `32` (default) | a live Mario Kart 8 Deluxe server |
+| `16` | a public reference server known to work against a retail Super Mario Bros. 35 |
+
+Neither generalises. **If a console refuses a ticket and nothing is logged, flip this first.**
+
 The startup line says which of the three shapes is running (`udp`, `ws (TLS at the front
 proxy)`, `wss (TLS terminated here)`), because a console failing a TLS handshake against a
 plain `ws` listener looks exactly like silence.
@@ -110,6 +124,19 @@ use (
 `go.work` is git-ignored per repository, so local edits to the host are picked up immediately
 while CI still resolves the tagged version.
 
+**Set `GOPRIVATE` wherever this module is built** — locally, in every title's Dockerfile, and
+in every CI job:
+
+```sh
+export GOPRIVATE='github.com/openpak/*'
+```
+
+Without it the toolchain asks the public sum database to verify `github.com/openpak/nex`,
+which 404s, and the build fails with `verifying go.mod: ... 404 Not Found` — **even inside a
+`go.work` that already has the module locally**, because the required version is still
+checked. `GOPRIVATE` also stops the module proxy being consulted, so a private repository
+resolves straight over git.
+
 ## Run
 
 ```sh
@@ -132,6 +159,7 @@ whether a console reaches us and gets through the handshake, before any title wo
 | `NEX_TLS_CERT`, `NEX_TLS_KEY` | terminate TLS on the websocket listener. A console connects over `wss`, so either Traefik terminates and forwards plain `ws` (leave both empty) or Traefik passes the SNI through and this server terminates (set both). Setting exactly one is refused |
 | `NEX_STREAM_ID` | PRUDP virtual port the authentication endpoint binds, default `1` |
 | `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. Set it different (e.g. `2`) and both endpoints share one listener on `+0`, with `+1` reserved and unused. **Per title — see below** |
+| `NEX_SOURCE_KEY_BYTES` | length of the kerberos source key handed to the console, default `32`. **Per title** — see below |
 | `NEX_SECURE_PID` | secure server's principal ID, default `2`: the kerberos ticket target, the station URL `PID=`, and the source of pushed notifications. Some titles have a retail-observed constant |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
 | `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |

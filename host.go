@@ -77,6 +77,19 @@ type Config struct {
 	// the secure station URL, and the source of any notification the server pushes. 2 is the
 	// conventional value; some titles have a retail-observed constant instead.
 	SecurePID uint64
+	// SourceKeyBytes is how many random bytes the source key is.
+	//
+	// The invariant that actually matters is that the key the ticket is encrypted with is the
+	// key advertised in the response: RC4 takes any length and the console is told the key
+	// rather than deriving it, so a mismatch between those two is what rejects a ticket, not
+	// the number itself. This is therefore not a protocol constant.
+	//
+	// It is a knob rather than a constant because two titles have direct evidence for two
+	// different values *for themselves*: a public reference server known to work against a
+	// retail Super Mario Bros. 35 sends 16, and a live Mario Kart 8 Deluxe server sends 32.
+	// Neither generalises. The failure mode is a login that fails with nothing logged on
+	// either side, so this is the first thing to flip when a console refuses a ticket.
+	SourceKeyBytes int
 	// Transport is "websocket" (the default) or "udp". Every title that imports this package
 	// is a Switch title and every Switch title speaks PRUDP over WebSocket, so the default is
 	// the one that works; "udp" is the Wii U and 3DS era form and is here for a caller that
@@ -111,6 +124,7 @@ func FromEnv() Config {
 		StreamID:       uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
 		SecureStreamID: uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), 1)),
 		SecurePID:      uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), 2)),
+		SourceKeyBytes: atoiOr(os.Getenv("NEX_SOURCE_KEY_BYTES"), 32),
 		Transport:      env("NEX_TRANSPORT", "websocket"),
 		TLSCert:        os.Getenv("NEX_TLS_CERT"),
 		TLSKey:         os.Getenv("NEX_TLS_KEY"),
@@ -160,6 +174,10 @@ func (c Config) validate() error {
 	case c.StreamID == 0 || c.StreamID > 15 || c.SecureStreamID == 0 || c.SecureStreamID > 15:
 		// PRUDP v0 and v1 carry the stream ID in four bits.
 		return fmt.Errorf("stream IDs must be 1-15, got auth %d secure %d", c.StreamID, c.SecureStreamID)
+	case c.SourceKeyBytes < 16 || c.SourceKeyBytes > 64:
+		// The two attested values are 16 and 32; the range is wide enough for a third if
+		// evidence turns one up, and narrow enough that a typo does not reach a console.
+		return fmt.Errorf("NEX_SOURCE_KEY_BYTES=%d is outside 16-64", c.SourceKeyBytes)
 	case c.SecurePID == 0:
 		return errors.New("NEX_SECURE_PID must not be 0: it is the kerberos ticket's target")
 	case (c.TLSCert == "") != (c.TLSKey == ""):

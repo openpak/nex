@@ -19,7 +19,7 @@ func testConfig() Config {
 	return Config{
 		Title: "test", PortBase: 22100, AccessKey: "ridfebb9", Version: "4.4.0",
 		SecureHost: "127.0.0.1", StationScheme: "prudps", HTTPAddr: ":0",
-		StreamID: 1, SecureStreamID: 1, SecurePID: 2, Transport: "udp",
+		StreamID: 1, SecureStreamID: 1, SecurePID: 2, Transport: "udp", SourceKeyBytes: 32,
 		InternalURL: "http://127.0.0.1:1", InternalKey: "k",
 	}
 }
@@ -39,6 +39,8 @@ func TestConfigValidate(t *testing.T) {
 		"stream id zero":             func(c *Config) { c.StreamID = 0 },
 		"stream id above four bits":  func(c *Config) { c.SecureStreamID = 16 },
 		"secure pid zero":            func(c *Config) { c.SecurePID = 0 },
+		"source key too short":       func(c *Config) { c.SourceKeyBytes = 8 },
+		"source key unset":           func(c *Config) { c.SourceKeyBytes = 0 },
 		"half a TLS pair":            func(c *Config) { c.Transport, c.TLSCert = "websocket", "cert.pem" },
 		"TLS on udp":                 func(c *Config) { c.TLSCert, c.TLSKey = "cert.pem", "key.pem" },
 	} {
@@ -435,5 +437,31 @@ func TestSwitchByteStreamProfile(t *testing.T) {
 	}
 	if legacyHost.Auth.Server.ByteStreamSettings.PIDSize != 4 || legacyHost.Auth.Server.ByteStreamSettings.UseStructureHeader {
 		t.Error("the Switch profile was applied to a NEX 3 title")
+	}
+}
+
+// TestSourceKeyLengthIsConfigurable: the length is not a protocol constant, and the two
+// titles with direct evidence disagree. What must hold at any length is that the key the
+// ticket is encrypted with is the key advertised -- so check that the ticket actually opens
+// with a key of the configured size.
+func TestSourceKeyLengthIsConfigurable(t *testing.T) {
+	for _, size := range []int{16, 32} {
+		cfg := testConfig()
+		cfg.SourceKeyBytes = size
+		host, err := New(cfg)
+		if err != nil {
+			t.Fatalf("%d bytes rejected: %v", size, err)
+		}
+		sourceKey := make([]byte, host.Config.SourceKeyBytes)
+		for i := range sourceKey {
+			sourceKey[i] = byte(i + size)
+		}
+		ticket, err := issueTicket(host.Auth, types.NewPID(1800000042), host.secureAccount, sourceKey)
+		if err != nil {
+			t.Fatalf("%d bytes: %v", size, err)
+		}
+		if _, err := nex.NewKerberosEncryption(sourceKey).Decrypt(ticket); err != nil {
+			t.Errorf("%d bytes: a console handed this key could not open the ticket: %v", size, err)
+		}
 	}
 }
