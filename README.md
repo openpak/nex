@@ -66,117 +66,30 @@ A Switch title typically wants:
 NEX_TLS_CERT=/certs/title.crt NEX_TLS_KEY=/certs/title.key
 ```
 
-### One listener or two: `NEX_SECURE_STREAM_ID`
+### The per-title values
 
-This one is per title and has **no safe default**, because working servers exist for both
-shapes:
+Three settings are genuinely per title, and **every one of them fails silently or late** —
+none produces a red test or a useful error. That is why they are stated here with their
+failure mode, not just their value.
 
-| Shape | Set | Known to work for |
-| --- | --- | --- |
-| Two listeners, `+0` auth and `+1` secure, real dialable secure URL | leave `1` (default) | ARMS, Mario Golf, Mario Party Superstars |
-| One listener on `+0`, secure on stream 2, placeholder secure URL | `NEX_SECURE_STREAM_ID=2` | Super Mario Bros. 35 |
+| Setting | Value | Known for | Failure mode when wrong |
+| --- | --- | --- | --- |
+| `NEX_SECURE_STREAM_ID` | `1` (default) — two listeners, `+0` auth and `+1` secure, real dialable secure URL | ARMS, Mario Golf, Mario Party Superstars | Not silent, for once: nex-go logs `trying to connect to unbound PRUDPEndPoint 2` for every packet. **That line means set it to `2`** |
+| | `2` — one listener on `+0`, placeholder secure URL, `+1` reserved | Super Mario Bros. 35 | Console reaches nothing on the secure stream |
+| `NEX_STATION_SCHEME` | `prudps` (default) | ARMS, Mario Party Superstars, Splatoon 2, SSBU | **Late.** Under `prudp` the handshake completes but CONNECT carries an empty payload, so the title works through menus and dies the moment it first needs the session |
+| | `prudp` | Mario Kart 8 Deluxe | As above, mirrored |
+| `NEX_SOURCE_KEY_BYTES` | `32` (default) | Mario Kart 8 Deluxe, Mario Party Superstars — both derive it with SHA-256 and return all 32 | **Fully silent.** The login fails with nothing logged on either side |
+| | `16` | a public reference server working against a retail Super Mario Bros. 35 | As above |
 
-Set it from what your title is known to do rather than guessing. Getting it wrong is *not*
-silent: nex-go logs `trying to connect to unbound PRUDPEndPoint 2` for every packet a console
-sends to a stream nothing is bound to. **That line means set it to `2`.**
+On the source key specifically: the servers that use 32 tend to carry a comment claiming it
+*must* be 32, "the Switch kerberos key size". **That generalisation is wrong** — the 16-byte
+counter-example is a server that works against a retail console. RC4 takes any key length and
+the console is told the key rather than deriving it, so the only thing that must hold is that
+the key the ticket is encrypted with is the key advertised in the response. Do not propagate
+the "MUST".
 
-### Source key length: `NEX_SOURCE_KEY_BYTES`
-
-Also per title, and this one *is* silent — the login just fails, with nothing logged on either
-side. The length is not a protocol constant: RC4 takes any key length and the console is told
-the key rather than deriving it, so what has to hold is that the key the ticket is encrypted
-with is the key advertised in the response.
-
-| Set | Evidence |
-| --- | --- |
-| `32` (default) | a live Mario Kart 8 Deluxe server |
-| `16` | a public reference server known to work against a retail Super Mario Bros. 35 |
-
-Neither generalises. **If a console refuses a ticket and nothing is logged, flip this first.**
-
-The startup line says which of the three shapes is running (`udp`, `ws (TLS at the front
-proxy)`, `wss (TLS terminated here)`), because a console failing a TLS handshake against a
-plain `ws` listener looks exactly like silence.
-
-### Depending on this module
-
-The import path is `github.com/openpak/nex`. A title server depends on it as a normal tagged
-module, so its Dockerfile and CI work with a single-repo checkout:
-
-```
-require github.com/openpak/nex v0.1.0
-```
-
-`replace ../nex` does **not** work: it builds locally and fails in every container and CI run,
-where the checkout is one repository. For local multi-repo development, use a `go.work` at
-`~/REPOS/Openpak/servers` instead — it does the same job without entering any repository's
-`go.mod`:
-
-```
-go 1.25.0
-
-use (
-	./nex
-	./your-title
-)
-```
-
-`go.work` is git-ignored per repository, so local edits to the host are picked up immediately
-while CI still resolves the tagged version.
-
-**Set `GOPRIVATE` wherever this module is built** — locally, in every title's Dockerfile, and
-in every CI job:
-
-```sh
-export GOPRIVATE='github.com/openpak/*'
-```
-
-Without it the toolchain asks the public sum database to verify `github.com/openpak/nex`,
-which 404s, and the build fails with `verifying go.mod: ... 404 Not Found` — **even inside a
-`go.work` that already has the module locally**, because the required version is still
-checked. `GOPRIVATE` also stops the module proxy being consulted, so a private repository
-resolves straight over git.
-
-## Run
-
-```sh
-go build ./cmd/nexd
-NEX_PORT_BASE=22100 NEX_ACCESS_KEY=… NX_INTERNAL_KEY=… ./nexd
-```
-
-`cmd/nexd` is a title server's `main` minus the protocol registration: deploy it to find out
-whether a console reaches us and gets through the handshake, before any title work starts.
-
-| Env | Meaning |
-| --- | --- |
-| `NEX_TITLE` | name in logs, default `nex` |
-| `NEX_PORT_BASE` | **required.** The title's NEX block base from [ports.md](../../ports.md): a multiple of ten in 22100–22199 or 22300–22599. Authentication listens on `+0`, secure on `+1` |
-| `NEX_ACCESS_KEY` | **required.** The title's NEX access key |
-| `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Accepts `4.6.5` or the integer form the console reports, `40605`. Decides which login method the client uses and how structures are serialised |
-| `NEX_SECURE_HOST` | address the console is told to reach the secure server on, default `127.0.0.1` |
-| `NEX_STATION_SCHEME` | `prudps` (default) or `prudp`, per title. Whether the console treats the secure server as a Pia station. The wrong value is not a clean failure: menus keep working and the title gives up later |
-| `NEX_TRANSPORT` | `websocket` (default) or `udp`. Every Switch title speaks PRUDP over WebSocket, which is why it is the default; `udp` is the Wii U/3DS form. Choosing websocket also selects PRUDP Lite — in nex-go they are the same switch |
-| `NEX_TLS_CERT`, `NEX_TLS_KEY` | terminate TLS on the websocket listener. A console connects over `wss`, so either Traefik terminates and forwards plain `ws` (leave both empty) or Traefik passes the SNI through and this server terminates (set both). Setting exactly one is refused |
-| `NEX_STREAM_ID` | PRUDP virtual port the authentication endpoint binds, default `1` |
-| `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. Set it different (e.g. `2`) and both endpoints share one listener on `+0`, with `+1` reserved and unused. **Per title — see below** |
-| `NEX_SOURCE_KEY_BYTES` | length of the kerberos source key handed to the console, default `32`. **Per title** — see below |
-| `NEX_SECURE_PID` | secure server's principal ID, default `2`: the kerberos ticket target, the station URL `PID=`, and the source of pushed notifications. Some titles have a retail-observed constant |
-| `NEX_HTTP_ADDR` | `/healthz` listener, default `:<NEX_PORT_BASE+2>` |
-| `NX_INTERNAL_URL` | nx-baas game/internal API, default `http://127.0.0.1:20070` |
-| `NX_INTERNAL_KEY` | **required.** nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key` |
-
-See [`example.env`](example.env). Startup fails loudly on a bad port block, a missing access
-key or a missing internal key rather than serving something that cannot work.
-
-Firewall: with `NEX_TRANSPORT=udp` the two PRUDP ports are UDP and need explicit
-`ufw allow <port>/udp` rules (ports.md rule 4). With the default websocket transport they are
-TCP instead. The HTTP port stays internal either way.
-
-**Deployment consequence of the two-listener shape.** A console reaches the *secure* server at
-whatever the station URL names, which in that shape is a real `+1` address. So `+1` needs the
-same TLS front as `+0` — whether that is a Traefik route terminating for it, or
-`NEX_TLS_CERT`/`NEX_TLS_KEY` on this process — not only the `+0` the SNI route points at. In
-single-listener mode the question does not arise, because there is no second connection.
+Title servers are encouraged to pin all three in their own repository rather than inherit the
+default here, so the measured value lives next to the measurement.
 
 ## Deploy
 
