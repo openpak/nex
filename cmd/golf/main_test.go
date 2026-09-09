@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 // Golf must come up in the Switch shape: WebSocket transport, and the secure endpoint on

@@ -28,7 +28,7 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 	_ "github.com/lib/pq"
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 )
 
 func main() {

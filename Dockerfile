@@ -1,0 +1,25 @@
+# Multi-stage, cross-compiled: the build stage runs on the runner's native arch and Go emits
+# the target arch, so linux/arm64 builds need no QEMU.
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+ARG TARGETOS TARGETARCH
+# github.com/openpak/nex is a private repository, so the public module proxy and checksum
+# database cannot serve it. Fetching it needs credentials, mounted as a build secret so the
+# token never lands in a layer.
+ENV GOPRIVATE=github.com/openpak/*
+RUN apk add --no-cache git
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN --mount=type=secret,id=netrc,target=/root/.netrc go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/golf
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates tzdata \
+ && adduser -D -u 65532 -h /app app
+WORKDIR /app
+COPY --from=build /out/app /app/app
+RUN chown -R 65532:65532 /app
+# Runs unprivileged: rootless podman maps this uid into the host's subuid range, and every
+# NEX block port is >=22100 so no capability is needed to bind.
+USER 65532:65532
+ENTRYPOINT ["/app/app"]
