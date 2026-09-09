@@ -21,10 +21,11 @@ confirm it.
 
 | Fact | Value | Source | How to confirm |
 | --- | --- | --- | --- |
-| NEX access key | `09c1c475` | NN `mario-kart-8-deluxe/main.go`, `accessKey`. NN's own README calls it "a well-known per-title value derivable from the game itself, not a secret" | Any PRUDP packet from the console: the packet signature is an HMAC keyed on it, so a wrong key drops every packet at SYN |
+| NEX access key | `09c1c475` | NN `mario-kart-8-deluxe/main.go`, `accessKey` — a literal constant in a server that ran this title live, **not derived from anything**. NN's own README calls it "a well-known per-title value derivable from the game itself, not a secret" | Any PRUDP packet from the console: the packet signature is an HMAC keyed on it, so a wrong key drops every packet at SYN |
 | NEX version | `4.0.0` (the console reports the integer `40000`) | NN `main.go` `nexVersion = 40000`; NN `earlier-nex/settings.go` comment "40000 for Mario Kart 8 Deluxe, which reports 4.0.0" | `apiVersionGeneral` in the login packet |
 | Secure server PID | `2` | NN `main.go` `securePID = 2` — also the conventional NEX value | The `PID=` field the console reads out of the secure station URL |
 | Login method | ticket-granting method **2**, `ValidateAndRequestTicketWithCustomData` | NN `earlier-nex/ticketgranting.go`: method 6 is "called by SSBU at BOOT (MK8 doesn't)", and its `handleLoginWithContext` comment says method 6 is the NEX 4.6+ shape | The RMC method ID of the first request on the authentication endpoint |
+| `userName` at login | **the console's NSA id on hardware; the account's own PID on an emulator** | NN `main.go` `resolveUser` branches on the value: a bare number in the account range is the emulator's own PID, a larger one is a real CFW Switch's `baasUserID` resolved through the account service | The `userName` string in a login from hardware, next to one from an emulator |
 | Secure station URL | scheme `prudp`, `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | NN `main.go` builds exactly this | The station URL string in the login response, replayed against a console |
 
 `stream=10` is `StreamTypeRVSecure` in Pretendo's `nex-go/v2/constants`, which is what

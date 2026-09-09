@@ -98,22 +98,23 @@ func registerProtocols(host *nexhost.Host, db *sql.DB) error {
 	matchmaking.GetUserFriendPIDs = host.FriendPIDs
 
 	matchMakingProtocol := match_making.NewProtocol()
-	common_match_making.NewCommonProtocol(matchMakingProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchMakingProtocol)
+	common_match_making.NewCommonProtocol(matchMakingProtocol).SetManager(matchmaking)
 
 	matchmakeExtensionProtocol := matchmake_extension.NewProtocol()
-	common_matchmake_extension.NewCommonProtocol(matchmakeExtensionProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchmakeExtensionProtocol)
+	common_matchmake_extension.NewCommonProtocol(matchmakeExtensionProtocol).SetManager(matchmaking)
 
 	matchMakingExtProtocol := match_making_ext.NewProtocol()
-	common_match_making_ext.NewCommonProtocol(matchMakingExtProtocol).SetManager(matchmaking)
 	host.Secure.RegisterServiceProtocol(matchMakingExtProtocol)
+	common_match_making_ext.NewCommonProtocol(matchMakingExtProtocol).SetManager(matchmaking)
 
 	natTraversalProtocol := nat_traversal.NewProtocol()
-	common_nat_traversal.NewCommonProtocol(natTraversalProtocol)
 	host.Secure.RegisterServiceProtocol(natTraversalProtocol)
+	common_nat_traversal.NewCommonProtocol(natTraversalProtocol)
 
 	utilityProtocol := utility.NewProtocol()
+	host.Secure.RegisterServiceProtocol(utilityProtocol)
 	utilityManager := common_globals.NewUtilityManager(host.Secure, db)
 	// MK8D calls GetIntegerSettings as soon as it has registered. An empty map is a real
 	// answer; a missing callback is Core::NotImplemented, which stops the boot. There is no
@@ -126,7 +127,6 @@ func registerProtocols(host *nexhost.Host, db *sql.DB) error {
 		return types.NewMap[types.UInt16, types.String](), nil
 	}
 	common_utility.NewCommonProtocol(utilityProtocol).SetManager(utilityManager)
-	host.Secure.RegisterServiceProtocol(utilityProtocol)
 
 	// Ranking (0x70) carries MK8D's time-trial scores and the per-player "common data"
 	// blob, so unlike a pure P2P title it needs a backend. Only the three methods MK8D was
@@ -137,11 +137,11 @@ func registerProtocols(host *nexhost.Host, db *sql.DB) error {
 		return err
 	}
 	rankingProtocol := ranking.NewProtocol()
+	host.Secure.RegisterServiceProtocol(rankingProtocol)
 	rankingCommon := common_ranking.NewCommonProtocol(rankingProtocol)
 	rankingCommon.InsertRankingByPIDAndRankingScoreData = rankingStore.insertScore
 	rankingCommon.UploadCommonData = rankingStore.uploadCommonData
 	rankingCommon.GetCommonData = rankingStore.getCommonData
-	host.Secure.RegisterServiceProtocol(rankingProtocol)
 
 	return nil
 }
