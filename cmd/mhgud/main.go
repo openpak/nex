@@ -12,7 +12,7 @@ import (
 	"log"
 	"os"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/constants"

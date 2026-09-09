@@ -76,6 +76,8 @@ github.com/minio/minio-go/v7 v7.0.94 h1:1ZoksIKPyaSt64AVOyaQvhDOgVC3MfZsWM6mZXRU
 github.com/minio/minio-go/v7 v7.0.94/go.mod h1:71t2CqDt3ThzESgZUlU1rBN54mksGGlkLcFgguDnnAc=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
+github.com/openpak/nex v0.2.1 h1:dGh4h80QV4rsWdkmkBASIhjSlORlQXr6p9vbsSgO/Bo=
+github.com/openpak/nex v0.2.1/go.mod h1:anQM0bRWd7rwcTy1l79GJul/YtxmTYnDUPsHG6n0JwE=
 github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c h1:dAMKvw0MlJT1GshSTtih8C2gDs04w8dReiOGXrGLNoY=
 github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c/go.mod h1:RqIHx9QI14HlwKwm98g9Re5prTQ6LdeRQn+gXJFxsJM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
