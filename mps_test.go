@@ -80,6 +80,11 @@ func TestFromEnvDefaultsToThisTitle(t *testing.T) {
 	if cfg.Host.SecureStreamID != SecureStreamID {
 		t.Errorf("want secure stream ID %d (two listeners), got %d", SecureStreamID, cfg.Host.SecureStreamID)
 	}
+	// The wrong source key length fails silently: the login just does not work, and
+	// nothing is logged on either side. Pinned rather than inherited for that reason.
+	if cfg.Host.SourceKeyBytes != SourceKeyBytes {
+		t.Errorf("want a %d-byte source key, got %d", SourceKeyBytes, cfg.Host.SourceKeyBytes)
+	}
 }
 
 func TestFromEnvHonoursOverrides(t *testing.T) {

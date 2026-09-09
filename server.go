@@ -51,6 +51,11 @@ const (
 	// SecureStreamID 1 puts the secure endpoint on its own listener at PortBase+1. This
 	// title is one of the two-listener ones.
 	SecureStreamID = 1
+	// SourceKeyBytes is the length of the kerberos source key handed to the console. Per
+	// title, and the wrong value fails silently -- the login just does not work, with
+	// nothing logged on either side. 32 for this title, measured: the working server for it
+	// derives the source key with SHA-256 and hands over all 32 bytes.
+	SourceKeyBytes = 32
 	// PortBase is this title's NEX block from ports.md.
 	PortBase = 22110
 )
@@ -85,6 +90,9 @@ func FromEnv() Config {
 	}
 	if os.Getenv("NEX_SECURE_STREAM_ID") == "" {
 		host.SecureStreamID = SecureStreamID
+	}
+	if os.Getenv("NEX_SOURCE_KEY_BYTES") == "" {
+		host.SourceKeyBytes = SourceKeyBytes
 	}
 	return Config{
 		Host:        host,

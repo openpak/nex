@@ -57,6 +57,7 @@ running.
 | `NEX_STATION_SCHEME` | no | Defaults to **`prudps`**, measured for this title. Under `prudp` the handshake completes but CONNECT carries an empty payload, and the game fails later, when it first needs the session |
 | `NEX_SECURE_STREAM_ID` | no | Defaults to **1**: this is a two-listener title, secure on its own port. Do not set it to 2 |
 | `NEX_TRANSPORT` | no | `websocket` is the host's default and correct for this title |
+| `NEX_SOURCE_KEY_BYTES` | no | Defaults to **32**, measured for this title. Per title, and the wrong value fails *silently* — the login just does not work, with nothing logged either side |
 
 Firewall: 22110 and 22111 carry game traffic and need explicit `ufw allow` rules
 ([`ports.md`](../../ports.md) rule 4). They are **TCP**, not UDP — this title's transport is

@@ -92,6 +92,15 @@ them. Recorded precisely, because this title is one of the fleet's better-docume
 | Station scheme | **`prudps`** | NN/mps `example.env`, as a measurement with the failure mode recorded: under `prudp` the handshake completes but CONNECT carries an *empty* payload — no ticket, no session key — and the title dies when it first needs the session |
 | Secure station URL | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | NN/mps `main.go`. `stream=10` is `StreamTypeRVSecure`; `PID=2` is the conventional secure PID. Both are what `servers/nex` already defaults to |
 | Session key length | 32 | NN/mps `main.go`; same as the host's default |
+| Kerberos **source key** length | **32 bytes** | NN/mps `main.go` `resolveUser` derives it with SHA-256 and hands back all 32 bytes, commented "It MUST be 32 bytes (the Switch kerberos key size)". Measured from a working server for this title |
+
+On the source key: the comment in NN/mps calls 32 "the Switch kerberos key size", and that
+generalisation is **wrong** — `servers/nex` records a public reference server working against
+a retail Super Mario Bros. 35 with 16. The length is not a protocol constant; what must hold
+is that the key encrypting the ticket is the key advertised in the response. So 32 is a fact
+about *this* title's working server, not about Switch, and it is pinned in the code rather
+than inherited because the failure is silent: the login simply does not work, with nothing
+logged on either side.
 
 **Fleet correction, confirmed here.** A fleet-wide instruction went out that every Switch NEX
 title needs `NEX_SECURE_STREAM_ID=2` and a single listener. That is wrong for this title and
