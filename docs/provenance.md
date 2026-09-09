@@ -38,19 +38,20 @@ it is first-hand, and it is checkable by anyone.
 | Login method | 6, `ValidateAndRequestTicketWithParam` | kinnay/SMB35 implements `validate_and_request_ticket_with_param` and no other login method. |
 | Login source key | freshly generated per login and handed to the client, rather than derived from a password | kinnay/SMB35 `main.py`: `result.source_key = key.hex()`. This is the token-auth inversion `servers/nex` implements. |
 | Session key length | 32 bytes | kinnay/SMB35 `generate_ticket`: `secrets.token_bytes(32)`. |
-| Source key length | **16 bytes**, hex-encoded to a 32-character string | kinnay/SMB35 `main.py`: `key = secrets.token_bytes(16)`, `result.source_key = key.hex()`. |
+| Source key length | **16 bytes**, hex-encoded to a 32-character string | kinnay/SMB35 `main.py`: `key = secrets.token_bytes(16)`, `result.source_key = key.hex()`. Note this is *not* the session key, which is 32 in the same file — the two lengths differ on purpose. |
 
 All of the transport facts are honoured, through `servers/nex` configuration rather than any
 code here: `NEX_SECURE_STREAM_ID=2`, `NEX_SECURE_PID=257049437023956657`,
 `NEX_STATION_SCHEME=prudps`, `NEX_VERSION=40600`, and the websocket transport that is now the
 host's default. See [`example.env`](../example.env).
 
-**One conflict, unresolved.** `servers/nex` sends a **32**-byte source key, on the grounds
-that 16 makes a Switch console reject the ticket, confirmed against a different live Switch
-NEX implementation. kinnay/SMB35 sends **16** and is the only server known to have worked
-against a retail Super Mario Bros. 35 client. Both cannot be a general rule. It is recorded
-here rather than worked around, because guessing costs a login and no log line: see the open
-questions in [`design.md`](design.md).
+**The source key length is per title, and this title's is 16.** `servers/nex` defaulted to 32
+on the grounds that 16 made a console reject a ticket; that evidence came from Mario Kart 8
+Deluxe, where the key is derived as `sha256(...)` and is therefore 32 bytes wide because
+sha256 is, not because a console asked for it. Two titles, two same-title values. The real
+invariant is that the key encrypting the ticket must equal the key advertised in `source_key`
+— RC4 takes any length — so "16 rejects the ticket" was a key mismatch misattributed to
+length. `servers/nex` v0.2.0 made it `NEX_SOURCE_KEY_BYTES`; this title sets 16.
 
 ## Protocols the game calls
 

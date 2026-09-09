@@ -33,6 +33,16 @@ its source in [`docs/provenance.md`](docs/provenance.md).
 
 DataStore is deliberately absent: this game never calls it.
 
+## Build
+
+`github.com/openpak/nex` is a private module, so the toolchain must be told not to check it
+against the public sum database — otherwise the build fails on a 404, locally and in CI
+alike, even when the module is already present:
+
+```sh
+export GOPRIVATE='github.com/openpak/*'
+```
+
 ## Run
 
 ```sh
@@ -54,6 +64,7 @@ list. These are the values that are **specific to this title** and wrong by defa
 | `NEX_VERSION` | `40600` | NEX 4.6.0 |
 | `NEX_SECURE_STREAM_ID` | `2` | the secure endpoint is on virtual port 2, which puts both endpoints on one listener. **Specific to this title** — most Switch titles in the fleet use two listeners |
 | `NEX_SECURE_PID` | `257049437023956657` | the retail secure-server principal ID, not the conventional 2 |
+| `NEX_SOURCE_KEY_BYTES` | `16` | the host defaults to 32; this title has same-title retail evidence for 16, and a wrong value is a login that fails with nothing logged on either side |
 | `NEX_STATION_SCHEME` | `prudps` | per title; the wrong value fails late, when a session is actually needed |
 | `NX_INTERNAL_KEY` | **required** | nx-baas's internal key; without it every login is refused |
 
@@ -73,6 +84,7 @@ WebSocket, not UDP, on every Switch NEX title). The HTTP port stays internal.
 ## Test
 
 ```sh
+export GOPRIVATE='github.com/openpak/*'
 go build ./...
 go vet ./...
 go test ./...

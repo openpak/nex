@@ -36,7 +36,7 @@ import (
 	message_delivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	ranking2 "github.com/PretendoNetwork/nex-protocols-go/v2/ranking2"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // database/sql driver "pgx"
 )

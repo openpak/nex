@@ -7,7 +7,7 @@ require (
 	github.com/PretendoNetwork/nex-protocols-common-go/v2 v2.6.1
 	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.7
 	github.com/jackc/pgx/v5 v5.7.6
-	openpak/nex v0.0.0
+	github.com/openpak/nex v0.2.0
 )
 
 require (
@@ -48,5 +48,3 @@ require (
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace openpak/nex => ../nex

@@ -169,9 +169,16 @@ now — `servers/nex` took the four changes as configuration:
 | `NEX_SECURE_PID` | `257049437023956657` | the retail constant; feeds the ticket target, the station URL PID and the notification source |
 | `NEX_STATION_SCHEME` | `prudps` | per title, and a wrong value fails late rather than loudly |
 | `NEX_VERSION` | `40600` | 4.6.0 |
+| `NEX_SOURCE_KEY_BYTES` | `16` | per title, and the host's default is 32 — see below |
 
 With those, the retail station URL falls out of the host with no override:
 `prudps:/address=0.0.0.1;port=1;PID=257049437023956657;CID=1;sid=2;stream=10;type=2`.
+
+The source key length is the other per-title value. `servers/nex` defaults to 32, which has
+same-title evidence behind it on Mario Kart 8 Deluxe; this title has same-title evidence for
+16, from the measured server that worked against a retail client. A wrong length is a login
+that fails with nothing logged on either side, which is why it is set explicitly here rather
+than left to a default. `servers/nex` v0.2.0 made it configurable after this came up.
 
 The single-listener shape is **specific to this title**, not the fleet default — other Switch
 titles in OpenPak use two listeners. It is set here because this is what the measured server
@@ -195,18 +202,12 @@ Everything below needs a real client and a capture. None of it is guessed at in 
    above, but nothing has been in front of it. **Evidence needed:** a CONNECT on the auth
    stream and its virtual port, which also settles whether stream 2 is right for secure. If
    nex-go logs "trying to connect to unbound PRUDPEndPoint", the stream IDs are wrong.
-4. **Is the source key 16 bytes or 32 on this title?** `servers/nex` sends 32, because 16
-   was found to make a Switch console reject the ticket. kinnay/SMB35 sends 16 and worked
-   against a retail client. Both cannot be a general rule, and the failure mode is a login
-   that fails with nothing logged on either side. **Evidence needed:** a login attempt from
-   this title against each length. If it turns out to be per title, `servers/nex` needs a
-   knob and this is the title that proves it.
-5. **Do the integer settings at index 0 mean what the reference thought?** They are carried
+4. **Do the integer settings at index 0 mean what the reference thought?** They are carried
    across unchanged and nobody knows what any index controls. **Evidence needed:** a match
    that runs, and then one changed value at a time.
-6. **Is index 10 really empty?** The reference left it empty with an open question in its own
+5. **Is index 10 really empty?** The reference left it empty with an open question in its own
    source. **Evidence needed:** whether the game misbehaves when it gets nothing back.
-7. **What does the relay have to do?** Out of scope here, but the blocker on playability.
+6. **What does the relay have to do?** Out of scope here, but the blocker on playability.
    **Evidence needed:** the Eagle framing, beyond the wiki's summary of the transport and the
    handshake token.
 
