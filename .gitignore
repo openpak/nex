@@ -46,3 +46,7 @@ dist/
 deploy/oci/.env
 deploy/oci/certs/
 shared-docs
+
+# Local build output (binary named after the command)
+/minecraftd
+/log/
