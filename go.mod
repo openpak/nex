@@ -8,7 +8,7 @@ require (
 	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.7
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
-	github.com/openpak/nex v0.1.0
+	github.com/openpak/nex v0.2.1
 )
 
 require (
