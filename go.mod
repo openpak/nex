@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/PretendoNetwork/nex-go/v2 v2.3.1
 	github.com/PretendoNetwork/nex-protocols-common-go/v2 v2.6.1
-	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.5
+	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.7
 )
 
 require (

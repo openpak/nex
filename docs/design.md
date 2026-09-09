@@ -129,8 +129,15 @@ nex-go already supports all of this: `ListenWebSocket` beside `Listen`, and a se
 routes each packet to the endpoint whose stream ID it is addressed to. So the single-listener
 mode is *less* code than two servers, not more — it is one server with two endpoints bound.
 
-`NEX_TRANSPORT` picks the transport and TLS stays with the front proxy, matching every other
-console-facing listener in OpenPak. `NEX_SECURE_STREAM_ID` picks the shape: leave it equal to
+`NEX_TRANSPORT` picks the transport, and picking websocket also picks PRUDP Lite — nex-go
+reads a packet as Lite only when a websocket server is present, so they are one switch, not
+two. A console connects over `wss`, and OpenPak runs both TLS shapes: Traefik terminating and
+forwarding plain `ws`, or Traefik passing the SNI through to a listener that terminates
+itself, which is what the 21xxx range in ports.md exists for. `NEX_TLS_CERT` and `NEX_TLS_KEY`
+select the second; setting exactly one of them is refused, because a half-configured pair
+listening plain fails as silence rather than as an error.
+
+`NEX_SECURE_STREAM_ID` picks the shape: leave it equal to
 `NEX_STREAM_ID` for two listeners on `+0` and `+1`, or set it different for one listener on
 `+0`. They cannot both be one listener and the same stream, because nex-go refuses to bind two
 endpoints with the same stream ID — so the one knob says everything, and the station URL

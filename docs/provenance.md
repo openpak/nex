@@ -32,7 +32,9 @@ Sources are abbreviated:
 | Switch internal ticket format: random key in the clear beside the encrypted body, final key `MD5(target key + random key)` | `KerberosTicketVersion = 1` | K; PL implements both formats |
 | Session key length | 32 bytes | K |
 | PRUDP virtual ports are **learned from the SYN** — the server answers as the port the client targeted; there is no fixed value | — | N `earlier-nex/endpoint.go` |
-| **Switch NEX is PRUDP over WebSocket**, not over UDP | — | KS serves a WebSocket transport; corroborated by N's SMB35 server using a WSS listener |
+| **Switch NEX is PRUDP over WebSocket**, not over UDP, and the console reaches it over `wss` | — | KS serves a WebSocket transport; corroborated by N's SMB35 server using a WSS listener, and by Golf's live SNI hostname being forwarded by Traefik |
+| WebSocket transport and PRUDP Lite are one choice, not two: nex-go reads a packet as Lite only when a websocket server is present | — | PL `nex-go/prudp_server.go`, reported by the Golf title agent |
+| PRUDP Lite's SYN/CONNECT ack never sets a minor version, so it answers 0 — which matches the retail secure server, and needs no knob | — | PL `nex-go`, reported by the Golf title agent; N had to force minor 0 because its own default was 5 |
 | **Authentication and secure share one listener, separated by stream ID.** Authentication is stream 1, secure is stream 2, both on the same transport | — | KS |
 | Because of that, the secure station URL in the login response is a **placeholder** — the console does not dial it, it switches virtual port on the connection it already has | `address=0.0.0.1`, `port=1`, `sid=2` | KS |
 | Full retail secure station URL shape for a Switch title | `prudps`, address `0.0.0.1`, port 1, `PID=<secure pid>`, `CID=1`, `type=2`, `sid=2`, `stream=10` | KS |

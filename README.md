@@ -55,7 +55,13 @@ A Switch title typically wants:
 
 ```sh
 NEX_TRANSPORT=websocket NEX_SECURE_STREAM_ID=2   # one listener, secure on stream 2
+# and, if Traefik passes the SNI through rather than terminating it:
+NEX_TLS_CERT=/certs/title.crt NEX_TLS_KEY=/certs/title.key
 ```
+
+The startup line says which of the three shapes is running (`udp`, `ws (TLS at the front
+proxy)`, `wss (TLS terminated here)`), because a console failing a TLS handshake against a
+plain `ws` listener looks exactly like silence.
 
 In a title server's `go.mod`:
 
@@ -82,7 +88,8 @@ whether a console reaches us and gets through the handshake, before any title wo
 | `NEX_VERSION` | NEX library version the title was built against, default `4.4.0`. Accepts `4.6.5` or the integer form the console reports, `40605`. Decides which login method the client uses and how structures are serialised |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on, default `127.0.0.1` |
 | `NEX_STATION_SCHEME` | `prudps` (default) or `prudp`, per title. Whether the console treats the secure server as a Pia station. The wrong value is not a clean failure: menus keep working and the title gives up later |
-| `NEX_TRANSPORT` | `udp` (default) or `websocket`. **Switch NEX titles speak PRUDP over WebSocket**; UDP is the Wii U/3DS form. TLS is the front proxy's job, so this listens plain `ws` |
+| `NEX_TRANSPORT` | `udp` (default) or `websocket`. **Switch NEX titles speak PRUDP over WebSocket**; UDP is the Wii U/3DS form. Choosing websocket also selects PRUDP Lite — in nex-go they are the same switch |
+| `NEX_TLS_CERT`, `NEX_TLS_KEY` | terminate TLS on the websocket listener. A console connects over `wss`, so either Traefik terminates and forwards plain `ws` (leave both empty) or Traefik passes the SNI through and this server terminates (set both). Setting exactly one is refused |
 | `NEX_STREAM_ID` | PRUDP virtual port the authentication endpoint binds, default `1` |
 | `NEX_SECURE_STREAM_ID` | PRUDP virtual port the secure endpoint binds, default `1`. **Set it different (retail Switch shape: 2) and both endpoints share one listener on `+0`** — the console never opens a second socket, it switches virtual port on the connection it has. `+1` then stays reserved and unused |
 | `NEX_SECURE_PID` | secure server's principal ID, default `2`: the kerberos ticket target, the station URL `PID=`, and the source of pushed notifications. Some titles have a retail-observed constant |

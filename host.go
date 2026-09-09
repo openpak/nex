@@ -72,8 +72,19 @@ type Config struct {
 	// conventional value; some titles have a retail-observed constant instead.
 	SecurePID uint64
 	// Transport is "udp" or "websocket". Switch NEX titles speak PRUDP over WebSocket; the
-	// UDP form is what Wii U and 3DS era titles use. TLS is left to the front proxy.
-	Transport   string
+	// UDP form is what Wii U and 3DS era titles use.
+	//
+	// Selecting websocket also selects PRUDP Lite: nex-go reads a packet as Lite only when a
+	// websocket server is present, so the transport and the packet format are one choice.
+	Transport string
+	// TLSCert and TLSKey terminate TLS on the websocket listener. A console reaches a NEX
+	// title over wss, so one of two things has to be true: either Traefik terminates and
+	// forwards plain ws here (leave both empty), or Traefik passes the SNI through and this
+	// server terminates (set both). Both are real OpenPak deployments -- ports.md's 21xxx
+	// range exists for the passthrough shape -- so neither is forced. Setting exactly one is
+	// always a mistake and is refused.
+	TLSCert     string
+	TLSKey      string
 	HTTPAddr    string // /healthz listener
 	InternalURL string // nx-baas game/internal API
 	InternalKey string // nx-baas NX_INTERNAL_KEY, sent as X-Internal-Key
@@ -93,6 +104,8 @@ func FromEnv() Config {
 		SecureStreamID: uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), 1)),
 		SecurePID:      uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), 2)),
 		Transport:      env("NEX_TRANSPORT", "udp"),
+		TLSCert:        os.Getenv("NEX_TLS_CERT"),
+		TLSKey:         os.Getenv("NEX_TLS_KEY"),
 		HTTPAddr:       env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
 		InternalURL:    env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
 		InternalKey:    os.Getenv("NX_INTERNAL_KEY"),
@@ -141,6 +154,10 @@ func (c Config) validate() error {
 		return fmt.Errorf("stream IDs must be 1-15, got auth %d secure %d", c.StreamID, c.SecureStreamID)
 	case c.SecurePID == 0:
 		return errors.New("NEX_SECURE_PID must not be 0: it is the kerberos ticket's target")
+	case (c.TLSCert == "") != (c.TLSKey == ""):
+		return errors.New("NEX_TLS_CERT and NEX_TLS_KEY go together: set both to terminate TLS here, or neither to let the front proxy do it")
+	case c.Transport == "udp" && c.TLSCert != "":
+		return errors.New("NEX_TLS_CERT is set but NEX_TRANSPORT=udp: PRUDP over UDP has no TLS layer")
 	}
 	if _, err := parseVersion(c.Version); err != nil {
 		return err
@@ -329,12 +346,12 @@ func (h *Host) Run() error {
 
 	if h.Config.SingleListener() {
 		log.Printf("[%s] %s :%d (auth stream %d, secure stream %d) healthz %s nex %s",
-			h.Config.Title, h.Config.Transport, h.Config.AuthPort(),
+			h.Config.Title, h.transportName(), h.Config.AuthPort(),
 			h.Config.StreamID, h.Config.SecureStreamID, h.Config.HTTPAddr, h.Config.Version)
 		go h.listen(h.authServer, h.Config.AuthPort())
 	} else {
 		log.Printf("[%s] %s auth :%d secure :%d healthz %s nex %s",
-			h.Config.Title, h.Config.Transport, h.Config.AuthPort(), h.Config.SecurePort(),
+			h.Config.Title, h.transportName(), h.Config.AuthPort(), h.Config.SecurePort(),
 			h.Config.HTTPAddr, h.Config.Version)
 		go h.listen(h.authServer, h.Config.AuthPort())
 		go h.listen(h.secureServer, h.Config.SecurePort())
@@ -342,13 +359,26 @@ func (h *Host) Run() error {
 	return srv.ListenAndServe()
 }
 
+// transportName says which of the three listener shapes is running. A console failing its
+// TLS handshake against a plain ws listener looks like silence, so this is worth a line.
+func (h *Host) transportName() string {
+	if h.Config.Transport != "websocket" {
+		return "udp"
+	}
+	if h.Config.TLSCert != "" {
+		return "wss (TLS terminated here)"
+	}
+	return "ws (TLS at the front proxy)"
+}
+
 // listen blocks; both callers run it in a goroutine.
 func (h *Host) listen(server *nex.PRUDPServer, port int) {
-	if h.Config.Transport == "websocket" {
-		// Plain ws: TLS belongs to the front proxy, which is where every other console-facing
-		// listener in OpenPak terminates it.
+	switch {
+	case h.Config.Transport == "websocket" && h.Config.TLSCert != "":
+		server.ListenWebSocketSecure(port, h.Config.TLSCert, h.Config.TLSKey)
+	case h.Config.Transport == "websocket":
 		server.ListenWebSocket(port)
-		return
+	default:
+		server.Listen(port)
 	}
-	server.Listen(port)
 }

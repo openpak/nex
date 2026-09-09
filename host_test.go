@@ -38,6 +38,8 @@ func TestConfigValidate(t *testing.T) {
 		"stream id zero":             func(c *Config) { c.StreamID = 0 },
 		"stream id above four bits":  func(c *Config) { c.SecureStreamID = 16 },
 		"secure pid zero":            func(c *Config) { c.SecurePID = 0 },
+		"half a TLS pair":            func(c *Config) { c.Transport, c.TLSCert = "websocket", "cert.pem" },
+		"TLS on udp":                 func(c *Config) { c.TLSCert, c.TLSKey = "cert.pem", "key.pem" },
 	} {
 		cfg := testConfig()
 		mutate(&cfg)
@@ -298,4 +300,41 @@ func TestSecureStationURLOverride(t *testing.T) {
 	if got := host.commonTicketGranting.SecureStationURL.URL(); !strings.Contains(got, "10.0.0.9") {
 		t.Errorf("common ticket-granting kept a stale station url: %s", got)
 	}
+}
+
+// TestWebSocketTLS: a console reaches a NEX title over wss, so both deployments have to be
+// expressible -- TLS terminated here, or terminated by the front proxy -- and a half-set pair
+// has to be refused rather than quietly listening plain.
+func TestWebSocketTLS(t *testing.T) {
+	proxyTerminated := testConfig()
+	proxyTerminated.Transport = "websocket"
+	if err := proxyTerminated.validate(); err != nil {
+		t.Errorf("plain ws behind a terminating proxy must be allowed: %v", err)
+	}
+
+	selfTerminated := testConfig()
+	selfTerminated.Transport, selfTerminated.TLSCert, selfTerminated.TLSKey = "websocket", "cert.pem", "key.pem"
+	if err := selfTerminated.validate(); err != nil {
+		t.Errorf("wss terminated here must be allowed: %v", err)
+	}
+
+	host, err := New(selfTerminated)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := host.transportName(); !strings.Contains(got, "wss") {
+		t.Errorf("startup line hides that TLS is on: %q", got)
+	}
+	if got := New2(t, proxyTerminated).transportName(); !strings.Contains(got, "ws (") {
+		t.Errorf("startup line hides that TLS is at the proxy: %q", got)
+	}
+}
+
+func New2(t *testing.T, cfg Config) *Host {
+	t.Helper()
+	host, err := New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return host
 }
