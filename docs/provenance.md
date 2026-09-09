@@ -78,20 +78,58 @@ Protocol and method IDs were then independently confirmed against Pretendo's
 - Session key length 32, secure server PID 2. Source: NN/mps `main.go`; the same values
   `servers/nex` already uses.
 
-## Facts about earlier network's deployment that do **not** carry across
+## Transport and wire shape — confirmed, and a fleet correction
 
-Recorded so nobody re-derives them and then wonders why OpenPak looks different.
+These were first filed here as "earlier network deployment details that do not carry across".
+That was wrong: they are facts about the game, and `servers/nex` now has knobs for all of
+them. Recorded precisely, because this title is one of the fleet's better-documented ones.
 
-- NN runs its NEX endpoints over **TLS (WSS)** — auth on `:443`, secure on `:60011`/`:60012`,
-  each terminating its own certificate — because `earlier-nex` is a from-scratch stack whose
-  transport is WebSocket. OpenPak runs Pretendo's `nex-go`, which is **PRUDP over UDP**, on
-  the block from `ports.md`. Ports, transport and TLS are all different by design. Neither
-  arrangement is a fact about the game.
-- `MPS_STATION_SCHEME`, `MPS_SECURE_MINOR` and `MPS_LEGACY_PIA` are knobs on NN's own PRUDP
-  implementation. `nex-go` handles the equivalents itself, so they have no counterparts here.
-- The Pia type-8 keepalive NN ACKs by hand (`pia_keepalive.go`) is a gap in `earlier-nex`'s
-  packet-type switch, not a property of the game. Whether `nex-go` needs the same is an open
-  question below, not a port of their fix.
+| Fact | Value for this title | Source |
+| --- | --- | --- |
+| Transport | **WebSocket**, not UDP | NN/mps runs both endpoints with `ListenSecure`, a WSS listener. `servers/nex` now defaults to `websocket` for exactly this reason |
+| Listener shape | **Two listeners** — authentication and secure on separate ports | NN/mps `main.go`: `AUTH_PORT` and `SECURE_PORT` are separate, `:443` and `:60011`/`:60012` |
+| Secure stream ID | **1** | NN/mps station URL sets `sid=1`. This is the two-listener shape: `NEX_SECURE_STREAM_ID=1`, the default. **Not 2.** |
+| Station scheme | **`prudps`** | NN/mps `example.env`, as a measurement with the failure mode recorded: under `prudp` the handshake completes but CONNECT carries an *empty* payload — no ticket, no session key — and the title dies when it first needs the session |
+| Secure station URL | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | NN/mps `main.go`. `stream=10` is `StreamTypeRVSecure`; `PID=2` is the conventional secure PID. Both are what `servers/nex` already defaults to |
+| Session key length | 32 | NN/mps `main.go`; same as the host's default |
+
+**Fleet correction, confirmed here.** A fleet-wide instruction went out that every Switch NEX
+title needs `NEX_SECURE_STREAM_ID=2` and a single listener. That is wrong for this title and
+was retracted. Mario Party Superstars is a **two-listener, stream-1** title, and the evidence
+is its own working server: separate auth and secure ports, `sid=1` in the station URL it hands
+the console. The per-title table in `servers/nex`'s README now agrees. Nothing in this
+repository contradicts the shared host.
+
+### What genuinely does not carry across
+
+- NN's **port numbers** (`:443`, `:60011`/`:60012`) and its own TLS termination. OpenPak uses
+  the block from `ports.md` and terminates TLS at the front proxy by default. Ports are a
+  deployment choice; the transport above is not.
+- `MPS_SECURE_MINOR` and `MPS_LEGACY_PIA` are knobs on `earlier-nex`'s own PRUDP
+  implementation. `nex-go` handles the equivalents itself.
+- The Pia type-8 keepalive NN ACKs by hand (`pia_keepalive.go`) works around a gap in
+  `earlier-nex`'s packet-type switch — it only knows types 0–4. That is a property of their
+  transport, not of the game, and `nex-go` is a different transport. Whether it has the same
+  gap is an open question below, not a fix to port.
+
+## DataStore: what this title is known to use
+
+Nothing. This is a finding, not a gap in the research.
+
+the earlier network server registers a DataStore stub, and its own comment says why: Super
+Smash Bros. Ultimate soft-locked with no DataStore handler registered, so a stub was added
+here **by analogy, before ever seeing an MPS-specific DataStore call logged** — their
+connection never survived long enough to make one. No object type, field, permission or
+persistence slot has ever been observed for this title.
+
+So there is nothing title-specific to record here yet, and nothing to build an object store
+against. When a session survives long enough to call DataStore, what it asks for belongs in
+this section, and the store it needs belongs in `servers/nex` (fleet decision), not here.
+
+One correction worth keeping while it is fresh: the SSBU failure was that `earlier-nex`
+**silently dropped** calls to an unregistered protocol. `nex-go` answers
+`Core::NotImplemented` instead, which is what a stub would have said. The defensive stub is
+therefore not needed on this stack — the reason for it does not exist here.
 
 ## Assumptions this server makes that nothing has confirmed
 
@@ -103,23 +141,18 @@ Each is a place where a capture would settle something the code currently guesse
    correctly shaped empty map and takes real values from `MPS_INTEGER_SETTINGS` when a
    capture provides them. **Evidence needed:** the settings map from a working session, or the
    game's behaviour with an empty one.
-2. **Persistence slot `0xFFFF` means "not persistent".** DataStore's persistence slot has no
-   sentinel in Pretendo's types, whose constructors default it to 0. `0xFFFF` is the
-   conventional "none". If this title actually posts to slot 0 for ordinary objects, every
-   object would evict the last. **Evidence needed:** the `PersistenceInitParam` of a real
-   `PreparePostObject`.
-3. **The game calls DataStore at all.** NN/mps registered a stub defensively after SSBU
-   soft-locked without one; their connection never survived long enough to log an actual
-   DataStore call from this title. **Evidence needed:** a session that gets past
-   `GetIntegerSettings` and a log of what it asks DataStore for.
-4. **Ranking.** NN/mps answers `0x70` with a generic acknowledgement and its README says it is
+2. **Whether the game calls DataStore at all.** See the DataStore section above: nobody has
+   ever observed one. Nothing is registered for it. **Evidence needed:** a session that gets
+   past `GetIntegerSettings`, and a log of what it asks DataStore for — object types, fields,
+   permissions and persistence slots.
+3. **Ranking.** NN/mps answers `0x70` with a generic acknowledgement and its README says it is
    unknown whether the title needs real leaderboard data. **Evidence needed:** whether the
    game calls Ranking, and with what.
-5. **The Pia keepalive.** Whether `nex-go` already answers the periodic type-8 packet, or
+4. **The Pia keepalive.** Whether `nex-go` already answers the periodic type-8 packet, or
    whether this title will drop its connection every few seconds the way it did on the NN
    stack. **Evidence needed:** a connection held open past ten seconds, or a `nex-go` packet
    log showing an unanswered type.
-6. **Everything `servers/nex` lists as open** — whether the console sends an nx-baas id
+5. **Everything `servers/nex` lists as open** — whether the console sends an nx-baas id
    token, whether it fits the token field, what `userName` carries, and whether this title
    logs in with method 2 or method 6. This title's NEX 4.6.5 is past the 4.4.0 line, so
    method 6 (`ValidateAndRequestTicketWithParam`) is the likely one, but that is inference

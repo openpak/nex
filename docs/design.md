@@ -11,10 +11,10 @@ Almost nothing here is Mario Party Superstars code. Three layers do the work:
 | --- | --- | --- |
 | `nex-go`, `nex-protocols-go`, `nex-protocols-common-go` | PRUDP, kerberos, RMC, and working handlers for every standard NEX protocol | Pretendo, AGPL-3.0 |
 | [`servers/nex`](../../nex) | Switch login (`ValidateAndRequestTicketWith{Param,CustomData}`), OpenPak identity through nx-baas, the port block, `/healthz` | OpenPak |
-| this repository | The three things neither of those covers for this title | OpenPak |
+| this repository | The two things neither of those covers for this title, and the per-title wire-shape values | OpenPak |
 
 If a line here could have been a call into one of the layers above, it should be. The whole
-package is under 800 lines, and three files of it are the title-specific part.
+package is under 400 lines across two title-specific files.
 
 ## What this title needs
 
@@ -22,8 +22,9 @@ The set of protocols comes from what the earlier network server for this title r
 (recorded, with sources, in [`provenance.md`](provenance.md)): Secure Connection, Match
 Making, Matchmake Extension, Match Making Ext, NAT Traversal, Utility, DataStore, Ranking.
 
-Everything except Utility's settings, two Matchmake Extension methods, and DataStore's
-storage is already implemented by `nex-protocols-common-go` and is registered as-is.
+Everything except Utility's settings and two Matchmake Extension methods is already
+implemented by `nex-protocols-common-go` and is registered as-is. DataStore is registered by
+nothing, for the reason in section 3.
 
 ### 1. Friend join — the two missing matchmaking methods
 
@@ -62,40 +63,32 @@ map rather than borrow another title's numbers, and to make the real values load
 `MPS_INTEGER_SETTINGS` — a wrong guess should cost a restart, not a release. Everything else
 Utility does (NEX unique IDs) is the common protocol, backed by the same Postgres.
 
-### 3. DataStore, implemented rather than stubbed
+### 3. DataStore — registered nowhere, deliberately
 
-`datastore.go`. This is the capability OpenPak has that the earlier network stack does not:
-`earlier-nex` has no DataStore implementation at all, so their server answers every
-DataStore method with a stub — an empty list for most methods and `0x80690004` for
-`GetMetaMultiple` — written defensively after Super Smash Bros. Ultimate soft-locked with no
-DataStore handler registered.
+The DataStore protocol (`0x73`) is not registered. That is a decision, not an omission, and
+it reverses one made earlier in this repository.
 
-`nex-protocols-common-go/v2/datastore` implements every method for real, but holds no state:
-it asks the operator for object metadata through a set of callbacks and for object bytes
-through an S3 presigner. This file is those callbacks. With them, these answer with real,
-restart-surviving state instead of a stub:
+The first version of this server carried a full Postgres-and-S3 DataStore implementation,
+because the earlier network server stubs DataStore and OpenPak can do better. Two things
+changed that:
 
-| Method | What it now does |
-| --- | --- |
-| `GetMeta`, `GetMetas`, `GetMetasMultipleParam` | Return the object's real metadata, by data ID or by persistence target, with access-password and permission checks |
-| `PreparePostObject` | Allocates a data ID, records the metadata, and returns a presigned S3 upload |
-| `CompletePostObject`, `CompletePostObjects` | Verify the uploaded size against the declared size and publish the object |
-| `PrepareGetObject` | Returns a presigned S3 download |
-| `SearchObject` | Real filtering by owner, data type, tags, refer ID and created/updated ranges, with ordering, paging and a total count |
-| `ChangeMeta` | Updates period, data type and meta binary under the update password |
-| `RateObject`, `RateObjects` | Accumulate votes per rating slot and return the running total |
-| `DeleteObject` | Deletes, with the update password and the delete permission enforced |
-| `PostMetaBinary` | Records a meta binary against an object |
+1. **Nothing has ever observed this title call DataStore.** Their stub was added by analogy
+   with Super Smash Bros. Ultimate, before any MPS DataStore call was seen — their connection
+   never survived long enough to make one. An object store built to the protocol rather than
+   to an observed wire format is speculation with a schema.
+2. **The object store is a fleet component.** Three titles need one, and the decision is that
+   it lives in `servers/nex` so they do not each carry a divergent copy. A title-specific
+   store here would have been stranded.
 
-Only the S3 half is optional: with `MPS_S3_ENDPOINT` unset, the metadata methods still work
-and the upload and download methods answer `Core::NotImplemented`, which is exactly what they
-did before this file existed. Nothing degrades silently — startup says so.
+The implementation is not lost — it is in this repository's history at commit `5490013`
+(`datastore.go`, `datastore_test.go`: object metadata in one Postgres table, presigned S3
+uploads and downloads, and every callback the common protocol asks for, with four tests
+against a real database). It was offered to the shared backend as a starting point.
 
-Object metadata lives in one Postgres table, `datastore.objects`. The whole
-`DataStoreMetaInfo` is stored as one serialised blob, with only the fields something queries
-by mirrored into columns. That is a deliberate trade: writes are one statement, a future
-structure revision needs no migration, and the cost is that the columns must be rewritten
-whenever the blob is, which is what `mutate` exists to guarantee.
+One thing worth carrying forward: the reason the earlier network server needs a stub does not
+exist on this stack. `earlier-nex` **silently drops** calls to an unregistered protocol,
+which is what soft-locked SSBU. `nex-go` answers `Core::NotImplemented`, which is exactly what
+a stub says. Registering an empty DataStore here would change nothing.
 
 ## What is not implemented
 
@@ -109,6 +102,7 @@ whenever the blob is, which is what `mutate` exists to guarantee.
   a NAT-traversal-internal one. That is an observation about the game binary, not about what
   it calls. Their fallback logger exists to find out; ours is `nex-go`'s own
   `Core::NotImplemented`, which is the same information in a different place.
+- **DataStore.** See above.
 - **A Pia keepalive handler.** `earlier-nex`'s PRUDP switch only knows packet types 0–4, so
   it drops Pia's periodic type-8 keepalive and the console gives up on the connection. That
   is a gap in their transport, not a property of the game, and `nex-go` is a different
@@ -120,18 +114,28 @@ whenever the blob is, which is what `mutate` exists to guarantee.
   forty title servers. Worth raising as a fleet-wide question.
 - **A dashboard.** `/healthz` plus the Gatus status page is OpenPak's answer to "is it up".
 
-## Deploy — an unresolved fleet problem
+## Deploy
 
-There is no `Dockerfile` or release workflow here yet, and adding a broken one would be
-worse than none. `servers/nex` is imported as the module path `openpak/nex` through a
-`replace` directive pointing at `../nex`. That works for a local build and for `go test`. It
-cannot work in a container build or in CI, where the checkout is this repository alone and
-`../nex` does not exist.
+`Dockerfile` and `.github/workflows/release.yml` are the fleet shape: tag `v1.2.3`, the
+workflow publishes `ghcr.io/openpak/mario-party-superstars:1.2.3` and `:latest`, and the
+deploy host's `podman-auto-update` does the rest.
 
-Every NEX title in the fleet will hit this on its first deploy, so it wants one fleet-wide
-answer rather than forty workarounds. The obvious one is for `servers/nex` to take a real
-module path (`github.com/openpak/nex`) and be consumed as a tagged dependency. Raised with
-the `servers/nex` maintainer; nothing here should be built around a guess at the outcome.
+The earlier blocker is resolved. `servers/nex` now has a real module path
+(`github.com/openpak/nex`, tagged), so this repository depends on it as an ordinary module
+and a single-repo checkout builds. Local multi-repo work uses a `go.work` at
+`~/REPOS/Openpak/servers`, which never enters `go.mod`.
+
+One requirement is left, and it is the same for every NEX title: `github.com/openpak/nex` is
+a **private** repository, so the public module proxy and checksum database cannot serve it.
+Anything that fetches it needs `GOPRIVATE=github.com/openpak/*` and credentials —
+
+- locally, whatever git credential helper already lets you clone the org;
+- in the container build, a `netrc` build secret (never a layer);
+- in CI, an org secret `OPENPAK_MODULE_TOKEN` with read access to `openpak/nex`, because
+  `GITHUB_TOKEN` only covers this repository.
+
+That secret does not exist yet. Until it is created the release workflow will fail at
+`go mod download`, and the failure will say so.
 
 ## What the next round needs
 
@@ -146,10 +150,9 @@ In rough order of how much they unblock:
 3. **A two-console friend join.** Host creates a lobby, joiner opens Join Room. What the
    joiner calls, in what order, and with what gathering ID, tells us whether the two methods
    implemented here are the right two and whether the friend graph reaches them.
-4. **Any DataStore call at all.** Nobody has ever seen this title make one. The
-   implementation is built to the protocol rather than to the title, which is the best that
-   can be done without evidence, but the persistence-slot assumption in particular wants a
-   real `PreparePostObject` to confirm.
+4. **Any DataStore call at all.** Nobody has ever seen this title make one, which is why
+   nothing is registered for it. The first such call decides whether this title needs the
+   shared object store at all, and what object types to record.
 5. **Whether Ranking is ever called.**
 
 ## Sources

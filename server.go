@@ -1,19 +1,17 @@
 // Package mps is the OpenPak NEX game server for Mario Party Superstars
 // (title 01006FE013472000, NEX 4.6.5, Pia 5.33.0).
 //
-// Everything shared with other NEX titles — PRUDP, kerberos, the Switch login methods and
-// OpenPak identity — comes from openpak/nex. Everything shared with other NEX servers of any
-// title — match-making, matchmake-extension, NAT traversal, utility and DataStore — comes
-// from Pretendo's nex-protocols-common-go. What is left, and all this package is, is the
-// three things Mario Party Superstars needs that neither of those provides:
+// Everything shared with other NEX titles — PRUDP over WebSocket, kerberos, the Switch login
+// methods and OpenPak identity — comes from github.com/openpak/nex. Everything shared with
+// NEX servers of any title — match-making, matchmake-extension, NAT traversal and utility —
+// comes from Pretendo's nex-protocols-common-go. What is left, and all this package is, is
+// the two things Mario Party Superstars needs that neither of those provides:
 //
 //  1. FindMatchmakeSessionByParticipant and FindMatchmakeSessionByGatheringIDDetail, the two
 //     methods the game's "Join Room" screen uses to follow a friend into a lobby. See
 //     matchmaking.go.
-//  2. Real Utility integer settings, because an empty settings map drops the connection. See
-//     utility.go.
-//  3. A DataStore object store, so DataStore is answered for real rather than stubbed. See
-//     datastore.go.
+//  2. Real Utility integer settings, because the game asks for them the moment it connects.
+//     See utility.go.
 package mps
 
 import (
@@ -22,16 +20,14 @@ import (
 	"fmt"
 	"os"
 
-	nexhost "openpak/nex"
+	nexhost "github.com/openpak/nex"
 
-	common_datastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_matchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_matchmaking_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	common_nat_traversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	common_utility "github.com/PretendoNetwork/nex-protocols-common-go/v2/utility"
-	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmaking_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
@@ -41,33 +37,37 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Defaults that are facts about the game rather than deployment choices. Both are recorded
-// in docs/provenance.md; the access key is configuration and has no default here.
+// Facts about the game rather than deployment choices, all recorded with their sources in
+// docs/provenance.md. The access key is configuration and has no default here.
 const (
 	// TitleID is Mario Party Superstars on Switch.
 	TitleID = "01006FE013472000"
 	// NEXVersion is the NEX library the game was built against (apiVersionGeneral 40605).
 	NEXVersion = "4.6.5"
+	// StationScheme is per title, and this one is measured: the game hands over its
+	// kerberos ticket in CONNECT under prudps, and sends an empty CONNECT payload under
+	// prudp.
+	StationScheme = "prudps"
+	// SecureStreamID 1 puts the secure endpoint on its own listener at PortBase+1. This
+	// title is one of the two-listener ones.
+	SecureStreamID = 1
 	// PortBase is this title's NEX block from ports.md.
 	PortBase = 22110
 )
 
-// Config is the whole configuration of the server: the shared host's, plus the two backing
-// stores matchmaking and DataStore need.
+// Config is the whole configuration of the server: the shared host's, plus the database the
+// matchmaking and utility protocols keep their state in.
 type Config struct {
 	Host nexhost.Config
 
-	// DatabaseURL is the Postgres the common matchmaking, utility and DataStore protocols
-	// keep their state in. Required: without it the game has no lobbies.
+	// DatabaseURL is the Postgres the common matchmaking and utility protocols keep their
+	// state in. Required: without it the game has no lobbies.
 	DatabaseURL string
-
-	// S3 is the object store DataStore hands out presigned upload and download URLs for.
-	// Optional — see datastore.go for what stops working without it.
-	S3 S3Config
 }
 
 // FromEnv reads the configuration from the environment, defaulting everything this title
-// already knows about itself.
+// already knows about itself. Every default here is a measured value from
+// docs/provenance.md, not a house style, so overriding one needs a reason.
 func FromEnv() Config {
 	host := nexhost.FromEnv()
 	if host.Title == "nex" {
@@ -80,10 +80,15 @@ func FromEnv() Config {
 	if os.Getenv("NEX_VERSION") == "" {
 		host.Version = NEXVersion
 	}
+	if os.Getenv("NEX_STATION_SCHEME") == "" {
+		host.StationScheme = StationScheme
+	}
+	if os.Getenv("NEX_SECURE_STREAM_ID") == "" {
+		host.SecureStreamID = SecureStreamID
+	}
 	return Config{
 		Host:        host,
 		DatabaseURL: os.Getenv("MPS_DATABASE_URL"),
-		S3:          s3FromEnv(),
 	}
 }
 
@@ -97,7 +102,7 @@ func env(name, fallback string) string {
 // Run starts the server and blocks.
 func Run(cfg Config) error {
 	if cfg.DatabaseURL == "" {
-		return errors.New("MPS_DATABASE_URL is required: matchmaking, utility and DataStore all keep their state in Postgres")
+		return errors.New("MPS_DATABASE_URL is required: matchmaking and NEX unique IDs both keep their state in Postgres")
 	}
 
 	host, err := nexhost.New(cfg.Host)
@@ -115,7 +120,11 @@ func Run(cfg Config) error {
 
 	registerMatchmaking(host, db)
 	registerUtility(host, db)
-	registerDataStore(host, db, cfg.S3)
+
+	// DataStore (0x73) is deliberately not registered. See docs/design.md: nothing has ever
+	// observed this title make a DataStore call, and nex-go answers an unregistered
+	// protocol with Core::NotImplemented rather than dropping it, which is what a stub
+	// would say anyway.
 
 	natProtocol := nat_traversal.NewProtocol()
 	host.Secure.RegisterServiceProtocol(natProtocol)
@@ -128,7 +137,9 @@ func Run(cfg Config) error {
 // two methods the common library does not implement but this title needs (matchmaking.go).
 func registerMatchmaking(host *nexhost.Host, db *sql.DB) {
 	manager := common_globals.NewMatchmakingManager(host.Secure, db)
-	manager.GetUserFriendPIDs = friendPIDs(host)
+	// Friend-only lobbies. Upstream documents this callback as not working on Switch
+	// because it has no Switch friend graph; OpenPak has one, in nx-baas.
+	manager.GetUserFriendPIDs = host.FriendPIDs
 
 	// Register before wrapping, both times: a common protocol reads the endpoint off the
 	// protocol it is given, and a protocol has no endpoint until it is registered.
@@ -148,27 +159,6 @@ func registerMatchmaking(host *nexhost.Host, db *sql.DB) {
 	common_matchmaking_ext.NewCommonProtocol(extProtocol).SetManager(manager)
 }
 
-// friendPIDs answers the common protocols' "who are this player's friends" question out of
-// nx-baas, which is where an OpenPak player's friend graph already lives. Friend-only
-// lobbies and DataStore's friends-only permission both read it.
-//
-// ponytail: no cache. One internal HTTP call on a LAN per question; add a short-TTL cache
-// only if it ever shows up in nx-baas latency.
-func friendPIDs(host *nexhost.Host) func(uint32) []uint32 {
-	return func(pid uint32) []uint32 {
-		player, err := host.PlayerByPID(uint64(pid))
-		if err != nil {
-			common_globals.Logger.Warningf("friend lookup for pid %d: %v", pid, err)
-			return nil
-		}
-		pids := make([]uint32, 0, len(player.Friends))
-		for _, friend := range player.Friends {
-			pids = append(pids, uint32(friend.PID))
-		}
-		return pids
-	}
-}
-
 func registerUtility(host *nexhost.Host, db *sql.DB) {
 	protocol := utility.NewProtocol()
 	host.Secure.RegisterServiceProtocol(protocol)
@@ -178,20 +168,4 @@ func registerUtility(host *nexhost.Host, db *sql.DB) {
 	manager.GetIntegerSettings = integerSettings
 	manager.GetStringSettings = stringSettings
 	common.SetManager(manager)
-}
-
-func registerDataStore(host *nexhost.Host, db *sql.DB, s3 S3Config) {
-	protocol := datastore.NewProtocol()
-	host.Secure.RegisterServiceProtocol(protocol)
-	common := common_datastore.NewCommonProtocol(protocol)
-	common.GetUserFriendPIDs = friendPIDs(host)
-
-	store := newStore(db, host.Secure)
-	store.wire(common)
-	if err := store.migrate(); err != nil {
-		common_globals.Logger.Errorf("DataStore schema: %v", err)
-	}
-	if err := s3.attach(common); err != nil {
-		common_globals.Logger.Warningf("DataStore object storage disabled: %v", err)
-	}
 }

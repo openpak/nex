@@ -3,9 +3,10 @@
 NEX game server for **Mario Party Superstars** on Nintendo Switch (title `01006FE013472000`,
 NEX 4.6.5, Pia 5.33.0), built on [`servers/nex`](../nex) and Pretendo's AGPL `nex-go`.
 
-**Status (2026-09-09): it builds, starts, serves `/healthz`, binds its NEX block and creates
-its schemas.** Nothing has been run against a console or the game. The identity values it
-uses — access key, NEX version — are confirmed measurements carried across from the
+**Status (2026-09-09): it builds, starts, serves `/healthz`, listens on both WebSocket
+listeners of its NEX block and creates its schemas.** Nothing has been run against a console
+or the game. The identity and wire-shape values it
+uses — access key, NEX version, station scheme, listener shape — are confirmed measurements carried across from the
 earlier network server for this title; everything about how the *game* behaves against
 `nex-go` is unverified. [`docs/design.md`](docs/design.md) says what is implemented and what
 is not; [`docs/provenance.md`](docs/provenance.md) says where every fact came from and which
@@ -13,8 +14,8 @@ assumptions are still guesses.
 
 ## What it does
 
-Registers this title's protocols on the shared NEX host and adds the three things neither
-the host nor `nex-protocols-common-go` provides for it:
+Registers this title's protocols on the shared NEX host and adds the two things neither the
+host nor `nex-protocols-common-go` provides for it:
 
 - **Friend join.** `FindMatchmakeSessionByParticipant` (`0x6D`.`0x33`) and
   `FindMatchmakeSessionByGatheringIDDetail` (`0x6D`.`0x29`), the two methods the game's Join
@@ -22,10 +23,10 @@ the host nor `nex-protocols-common-go` provides for it:
   and without them the game silently starts its own session instead of joining.
 - **Utility settings** in the shape the game expects, loadable from the environment because
   nobody has captured this title's real values yet.
-- **A real DataStore.** Postgres object metadata plus presigned S3 uploads and downloads, so
-  `GetMeta`, `SearchObject`, `RateObject`, `ChangeMeta`, `DeleteObject` and the whole
-  prepare/complete upload handshake answer with real state. the earlier network server stubs
-  all of these, because the NEX core it runs on has no DataStore at all.
+
+DataStore is deliberately registered by nothing: no capture has ever shown this title making
+a DataStore call, and the object store is a shared component of `servers/nex` rather than a
+per-title one. See [`docs/design.md`](docs/design.md).
 
 Everything else — PRUDP, kerberos, Switch login, OpenPak accounts, match making, NAT
 traversal, NEX unique IDs, cleaning up a lobby after a dropped connection — is a call into
@@ -34,27 +35,33 @@ traversal, NEX unique IDs, cleaning up a lobby after a dropped connection — is
 ## Run
 
 ```sh
+export GOPRIVATE='github.com/openpak/*'   # github.com/openpak/nex is a private module
 go build ./cmd/mario-party-superstars
 NEX_ACCESS_KEY=… NX_INTERNAL_KEY=… MPS_DATABASE_URL=postgres://… ./mario-party-superstars
 ```
+
+It listens on **two WebSocket listeners** — authentication on 22110, secure on 22111 — which
+is this title's measured shape, not a default. The startup line says which transport is
+running.
 
 | Env | Required | Meaning |
 | --- | --- | --- |
 | `NEX_ACCESS_KEY` | **yes** | The title's NEX access key. See [`example.env`](example.env) — it is configuration, not a secret |
 | `NX_INTERNAL_KEY` | **yes** | nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key`. Without it every login is refused |
-| `MPS_DATABASE_URL` | **yes** | Postgres for matchmaking, NEX unique IDs and DataStore metadata. Startup fails without it: a NEX title with no lobby storage cannot do anything |
+| `MPS_DATABASE_URL` | **yes** | Postgres for matchmaking and NEX unique IDs. Startup fails without it: a NEX title with no lobby storage cannot do anything |
 | `NEX_PORT_BASE` | no | Defaults to **22110**, this title's block from [`ports.md`](../../ports.md). Authentication `+0`, secure `+1`, `/healthz` `+2` |
 | `NEX_VERSION` | no | Defaults to **4.6.5**, the version the game was built against. Changing it changes the login method and the wire encoding — do not, without a capture that says otherwise |
 | `NEX_SECURE_HOST` | no | Address the console is told to reach the secure server on. Default `127.0.0.1`; set it to the host's real address for anything but a loopback test |
 | `NEX_TITLE`, `NEX_HTTP_ADDR`, `NX_INTERNAL_URL` | no | As in [`servers/nex`](../nex) |
 | `MPS_INTEGER_SETTINGS` | no | `Utility::GetIntegerSettings` values as `index:key=value` entries, e.g. `0:0=60, 0:1=30`. Empty by default because this title's real values have never been captured |
-| `MPS_S3_ENDPOINT` | no | S3-compatible object store for DataStore object bytes. Without it the metadata methods still work and the upload/download methods answer `Core::NotImplemented` |
-| `MPS_S3_BUCKET` | no | Default `mario-party-superstars` |
-| `MPS_S3_ACCESS_KEY`, `MPS_S3_SECRET_KEY` | with S3 | Object store credentials |
-| `MPS_S3_USE_SSL` | no | `1` to reach the object store over HTTPS |
+| `NEX_STATION_SCHEME` | no | Defaults to **`prudps`**, measured for this title. Under `prudp` the handshake completes but CONNECT carries an empty payload, and the game fails later, when it first needs the session |
+| `NEX_SECURE_STREAM_ID` | no | Defaults to **1**: this is a two-listener title, secure on its own port. Do not set it to 2 |
+| `NEX_TRANSPORT` | no | `websocket` is the host's default and correct for this title |
 
-Firewall: 22110 and 22111 are UDP and need explicit `ufw allow <port>/udp` rules
-([`ports.md`](../../ports.md) rule 4). 22112 stays internal.
+Firewall: 22110 and 22111 carry game traffic and need explicit `ufw allow` rules
+([`ports.md`](../../ports.md) rule 4). They are **TCP**, not UDP — this title's transport is
+PRUDP over WebSocket, so the rule that block wants is `ufw allow <port>/tcp`. 22112 stays
+internal.
 
 ## Test
 
@@ -64,20 +71,20 @@ go vet ./...
 go test ./...
 ```
 
-The DataStore checks want a real database, because a store is not worth testing against a
-mock of itself. They skip unless one is offered:
-
-```sh
-MPS_TEST_DATABASE_URL=postgres://…/throwaway go test ./...
-```
-
-They truncate `datastore.objects`, so point them at a database you do not mind losing.
+For local work across both repositories, use a `go.work` at `~/REPOS/Openpak/servers` rather
+than a `replace` directive — see [`servers/nex`](../nex)'s README.
 
 ## Deploy
 
-Not yet — see the deploy section of [`docs/design.md`](docs/design.md). `servers/nex` is
-imported through a local `replace` directive, which no container build or CI checkout can
-resolve. That needs one fleet-wide answer, not a per-title workaround.
+Tag `v1.2.3` and the release workflow publishes
+`ghcr.io/openpak/mario-party-superstars:1.2.3` and `:latest`; the deploy host runs
+`podman-auto-update` against `:latest`.
+
+**One prerequisite is not yet met:** `github.com/openpak/nex` is a private repository, so
+the build needs credentials the public proxy cannot supply. CI wants an org secret
+`OPENPAK_MODULE_TOKEN` with read access to `openpak/nex` — `GITHUB_TOKEN` covers only this
+repository. Until that secret exists the workflow fails at `go mod download`, loudly. Every
+NEX title server needs the same secret.
 
 ## Ground rules
 

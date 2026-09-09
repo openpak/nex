@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	datastore_constants "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/constants"
-	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
 	match_making_constants "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/constants"
 	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 )
@@ -57,59 +55,6 @@ func TestApplyResultOptionDropsUnrequestedFields(t *testing.T) {
 	}
 }
 
-func TestSearchOrderBy(t *testing.T) {
-	cases := []struct {
-		column datastore_constants.SearchSortColumn
-		order  datastore_constants.SearchSortOrder
-		want   string
-	}{
-		{datastore_constants.SearchSortColumnDataID, datastore_constants.SearchSortOrderAsc, "data_id ASC"},
-		{datastore_constants.SearchSortColumnUpdatedTime, datastore_constants.SearchSortOrderAsc, "updated_time ASC"},
-		{datastore_constants.SearchSortColumnSize, datastore_constants.SearchSortOrderAsc + 1, "size DESC"},
-		// A rating slot is not a column of this table; sorting must still be stable.
-		{datastore_constants.SearchSortColumnRating0, datastore_constants.SearchSortOrderAsc, "data_id ASC"},
-	}
-
-	for _, test := range cases {
-		param := datastore_types.NewDataStoreSearchParam()
-		param.ResultOrderColumn = test.column
-		param.ResultOrder = test.order
-
-		if got := orderBy(param); got != test.want {
-			t.Errorf("column %v order %v: want %q, got %q", test.column, test.order, test.want, got)
-		}
-	}
-}
-
-// The ORDER BY clause is interpolated into the query rather than bound, so it must never
-// contain anything a caller controls.
-func TestSearchOrderByIsAlwaysAKnownColumn(t *testing.T) {
-	known := map[string]bool{
-		"data_id": true, "size": true, "name": true,
-		"data_type": true, "created_time": true, "updated_time": true,
-	}
-
-	for column := 0; column < 256; column++ {
-		param := datastore_types.NewDataStoreSearchParam()
-		param.ResultOrderColumn = datastore_constants.SearchSortColumn(column)
-
-		clause := orderBy(param)
-		name, direction, _ := cut(clause)
-		if !known[name] || (direction != "ASC" && direction != "DESC") {
-			t.Fatalf("sort column %d produced %q, which is not a known column and direction", column, clause)
-		}
-	}
-}
-
-func cut(clause string) (string, string, bool) {
-	for i := range clause {
-		if clause[i] == ' ' {
-			return clause[:i], clause[i+1:], true
-		}
-	}
-	return clause, "", false
-}
-
 func TestFromEnvDefaultsToThisTitle(t *testing.T) {
 	t.Setenv("NEX_ACCESS_KEY", "e915510f")
 	t.Setenv("NX_INTERNAL_KEY", "test")
@@ -126,6 +71,15 @@ func TestFromEnvDefaultsToThisTitle(t *testing.T) {
 	if cfg.Host.HTTPAddr != ":22112" {
 		t.Errorf("want healthz on the block's +2, got %s", cfg.Host.HTTPAddr)
 	}
+	// Both of these are per-title measured values, not house defaults. The wrong station
+	// scheme fails late, when the game needs the session; the wrong secure stream ID puts
+	// the secure endpoint where this title does not look for it.
+	if cfg.Host.StationScheme != StationScheme {
+		t.Errorf("want station scheme %s, got %s", StationScheme, cfg.Host.StationScheme)
+	}
+	if cfg.Host.SecureStreamID != SecureStreamID {
+		t.Errorf("want secure stream ID %d (two listeners), got %d", SecureStreamID, cfg.Host.SecureStreamID)
+	}
 }
 
 func TestFromEnvHonoursOverrides(t *testing.T) {
@@ -141,5 +95,21 @@ func TestFromEnvHonoursOverrides(t *testing.T) {
 	}
 	if cfg.Host.Version != "4.4.0" {
 		t.Errorf("NEX_VERSION must win, got %s", cfg.Host.Version)
+	}
+}
+
+func TestFromEnvHonoursWireShapeOverrides(t *testing.T) {
+	t.Setenv("NEX_ACCESS_KEY", "e915510f")
+	t.Setenv("NX_INTERNAL_KEY", "test")
+	t.Setenv("NEX_STATION_SCHEME", "prudp")
+	t.Setenv("NEX_SECURE_STREAM_ID", "2")
+
+	cfg := FromEnv()
+
+	if cfg.Host.StationScheme != "prudp" {
+		t.Errorf("NEX_STATION_SCHEME must win, got %s", cfg.Host.StationScheme)
+	}
+	if cfg.Host.SecureStreamID != 2 {
+		t.Errorf("NEX_SECURE_STREAM_ID must win, got %d", cfg.Host.SecureStreamID)
 	}
 }

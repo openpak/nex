@@ -4,7 +4,7 @@ package main
 import (
 	"log"
 
-	mps "openpak/mario-party-superstars"
+	mps "github.com/openpak/mario-party-superstars"
 )
 
 func main() {
