@@ -5,6 +5,14 @@ Every non-obvious fact in this repository and where it came from, per
 down here, and then OpenPak's own version was written from these notes. No earlier code,
 comment, doc text, structure or naming was copied.
 
+**Record what did not make sense, not only what did.** Twice in one round an observation
+logged here as unexplained turned out to be the cause of something another repository had
+measured, and in both cases neither half was enough on its own: the ticketless-CONNECT
+behaviour sat here as noise until a title server measured that `prudp` produces an empty
+CONNECT payload, and the "source key must be 32" claim only fell once a second title reported
+16 working against retail. Neither connection could have been made from inside one repository.
+So an oddity with no explanation still earns a row, marked as such.
+
 Sources are abbreviated:
 
 - **K** — Kinnay's NintendoClients wiki (public).
