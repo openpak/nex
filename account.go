@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -223,13 +224,14 @@ func PIDForLoginName(name string) (uint64, bool) {
 	return pid.(uint64), true
 }
 
-// FriendPIDs answers "who are this player's friends", the callback Pretendo's common
-// DataStore needs for friends-only object permissions. Upstream notes that check as not
-// working on Switch because it has no Switch friend graph to ask; OpenPak does, so a title
-// wires this in and the permission works.
+// FriendPIDs answers "who are this player's friends". Two of Pretendo's common protocols ask
+// for it by 32-bit PID and document it as not working on Switch, because upstream has no
+// Switch friend graph to ask: DataStore's friends-only object permissions, and
+// match-making's friend-only lobbies. OpenPak has the graph, so a title assigns this to both
+// and the checks start working.
 //
-// It answers nothing rather than everything on failure: a friends-only object stays private
-// when we cannot confirm the friendship.
+// Everything here fails closed. On a failed lookup it answers nothing rather than everything,
+// so a friends-only object stays private and a friend-only lobby stays shut.
 func (h *Host) FriendPIDs(pid uint32) []uint32 {
 	player, err := h.PlayerByPID(uint64(pid))
 	if err != nil {
@@ -238,6 +240,15 @@ func (h *Host) FriendPIDs(pid uint32) []uint32 {
 	}
 	pids := make([]uint32, 0, len(player.Friends))
 	for _, friend := range player.Friends {
+		// The callback's PID is 32 bits and ours is 64. Truncating would not merely lose a
+		// friend, it would name a different account -- 0x1_00000007 arrives as 7 -- and hand
+		// that stranger a friend's access. Drop the entry instead. OpenPak PIDs are far below
+		// this today, so the log line is the interesting part: it means PIDs have outgrown
+		// the callbacks and every friends-only check is quietly losing people.
+		if friend.PID == 0 || friend.PID > math.MaxUint32 {
+			log.Printf("[%s] friend pid %d is not usable in the 32-bit friend callback, skipped", h.Config.Title, friend.PID)
+			continue
+		}
 		pids = append(pids, uint32(friend.PID))
 	}
 	return pids

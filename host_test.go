@@ -338,3 +338,40 @@ func New2(t *testing.T, cfg Config) *Host {
 	}
 	return host
 }
+
+// TestFriendPIDsDoesNotTruncate: the friend callbacks are 32-bit and our PIDs are 64-bit, so
+// a wrapped PID would not lose a friend, it would name a different account and hand that
+// stranger a friend's access. Unreachable with today's PIDs; the point is that it stays so.
+func TestFriendPIDsDoesNotTruncate(t *testing.T) {
+	stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		json.NewEncoder(w).Encode(Player{PID: 1800000042, BaasUserID: "abc", Friends: []Friend{
+			{PID: 1800000043, BaasUserID: "ok"},   // fits
+			{PID: 0x1_00000007, BaasUserID: "hi"}, // would arrive as 7 if truncated
+			{PID: 0, BaasUserID: "zero"},
+		}})
+	}))
+	defer stub.Close()
+
+	cfg := testConfig()
+	cfg.InternalURL = stub.URL
+	host, err := New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := host.FriendPIDs(1800000042)
+	if len(got) != 1 || got[0] != 1800000043 {
+		t.Fatalf("got %v, want only the friend that fits", got)
+	}
+	for _, pid := range got {
+		if pid == 7 {
+			t.Error("a 64-bit PID was truncated into a different account's PID")
+		}
+	}
+
+	// A failed lookup must answer nothing, not everything.
+	stub.Close()
+	if leaked := host.FriendPIDs(1800000042); leaked != nil {
+		t.Errorf("friend list leaked on a failed lookup: %v", leaked)
+	}
+}

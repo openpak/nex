@@ -114,8 +114,15 @@ whether a console reaches us and gets through the handshake, before any title wo
 See [`example.env`](example.env). Startup fails loudly on a bad port block, a missing access
 key or a missing internal key rather than serving something that cannot work.
 
-Firewall: the two PRUDP ports are UDP and need explicit `ufw allow <port>/udp` rules
-(ports.md rule 4). The HTTP port stays internal.
+Firewall: with `NEX_TRANSPORT=udp` the two PRUDP ports are UDP and need explicit
+`ufw allow <port>/udp` rules (ports.md rule 4). With the default websocket transport they are
+TCP instead. The HTTP port stays internal either way.
+
+**Deployment consequence of the two-listener shape.** A console reaches the *secure* server at
+whatever the station URL names, which in that shape is a real `+1` address. So `+1` needs the
+same TLS front as `+0` — whether that is a Traefik route terminating for it, or
+`NEX_TLS_CERT`/`NEX_TLS_KEY` on this process — not only the `+0` the SNI route points at. In
+single-listener mode the question does not arise, because there is no second connection.
 
 ## Deploy
 

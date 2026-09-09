@@ -210,7 +210,9 @@ and registers it on `host.Secure` like any other protocol.
 
 The one callback that does not work out of the box upstream is friends-only object
 permissions, because it asks for a friend list by 32-bit PID and upstream has no Switch friend
-graph to answer with. OpenPak does, through nx-baas, so `Host.FriendPIDs` fills it:
+graph to answer with. OpenPak does, through nx-baas, so `Host.FriendPIDs` fills it — and the
+same function fills match-making's `GetUserFriendPIDs` for friend-only lobbies, which has the
+same gap for the same reason:
 
 ```go
 protocol := datastore.NewProtocol()
@@ -225,6 +227,11 @@ host.Secure.RegisterServiceProtocol(protocol)
 The remaining callbacks are the title's object storage and are title-specific by nature — a
 level's metadata is not shaped like a replay's. This repository deliberately does not invent a
 common schema for them.
+
+`Host.FriendPIDs` drops a friend whose PID does not fit 32 bits rather than truncating it.
+Truncation would not lose a friend, it would name a *different* account and hand that stranger
+a friend's access. OpenPak PIDs are nowhere near that today; the log line it emits is the
+signal that they have outgrown the upstream callbacks.
 
 `Host.PIDForLoginName` matters here too. A DataStore request for "this console's own objects"
 arrives naming the player by the name they logged in with, not by NEX PID, so a title that
