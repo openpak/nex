@@ -297,11 +297,22 @@ confirmed in `nex-protocols-common-go` v2.6.1:
   called with `param.Period`; the second takes one spelled `period` and is called with
   `param.DataType`. The call sites are right and the signatures are misleading, so implement
   by callback name and ignore the parameter name, or the two columns get written swapped.
+- **Log the method ID of every unimplemented DataStore call rather than guessing which to
+  write.** The protocol carries on the order of a hundred methods and a title uses a handful;
+  the existing implementation for the most DataStore-heavy title found its set by deploying
+  with none of them and reading the method IDs the console asked for. The shared store should
+  do that logging once, for everyone.
 - **The persistence slot has no "not persistent" sentinel.** Pretendo's constructors default
   it to 0, which is also a legitimate slot, so the store has to choose a representation. One
   implementation used `0xFFFF` and flagged it as an assumption. If it is wrong and a title
-  posts ordinary objects to slot 0, every object evicts the previous one — so this needs a
-  real `PreparePostObject` to settle before the shared store commits to it.
+  posts ordinary objects to slot 0, every object evicts the previous one — silent data loss,
+  not a glitch.
+
+  It cannot be settled by reading an existing server: the one title whose online mode is
+  mostly DataStore has an implementation that never wrote the generic persistence path at all
+  and records it as deferred. So this waits on a real `PreparePostObject` from a console, and
+  the shared store should carry the assumption behind one named constant with this note
+  attached, so that changing it later is a one-line change rather than an audit.
 - **The search sort column cannot be a bound parameter**, since it lands in `ORDER BY`. It
   must map onto a fixed set of known columns, with a stable fallback for the sort values that
   have no column at all (rating slots), or the ordering is both unstable and an injection
