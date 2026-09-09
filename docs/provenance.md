@@ -20,7 +20,8 @@ then implemented in OpenPak's own shape.
 
 | Fact | Value | Source |
 | --- | --- | --- |
-| NEX access key | `b6b34c51` | `earlier/arms` `example.env` and `main.go`, which record it as read out of the ARMS update's main NSO `.rodata` at `0x42bda6` and confirmed three independent ways. Configuration here, never a literal in source. |
+| NEX access key | `b6b34c51` | **Public source, independently confirmed:** [Kinnay's Game Server List](https://github.com/kinnay/NintendoClients/wiki/Game-Server-List) lists it for ARMS. `earlier/arms` separately records reading the same value out of the ARMS update's main NSO `.rodata` at `0x42bda6`. Two independent sources agree. Configuration here, never a literal in source. |
+| Game Server ID | `25C08801` | Kinnay's Game Server List. **Not** the access key — see the trap below. |
 | NEX library version, update | 4.3.5 (`40305`), from `SDK MW+Nintendo+NEX-4_3_5-OL` in the update's `.rodata` | `earlier/arms` `main.go` |
 | NEX library version, base game | 4.0.3 (`40003`) | `earlier/arms` `main.go` |
 | Pia version | 5.7.0 in the update, 5.2.12 in the base game | `earlier/arms` `main.go` |
@@ -29,6 +30,19 @@ then implemented in OpenPak's own shape.
 `NEX_VERSION` is `4.3.5` because the update is what goes online. Whether the title logs in
 with method 2 or method 6 is `servers/nex`'s open question 4 and is decided by that version,
 not by anything here.
+
+**The Game Server ID is not the access key.** ARMS's game server ID is `25C08801` and its
+access key is `b6b34c51`; neither is derivable from the other. The ID is what appears in the
+`g<hex>-lp1.s.n.srv.nintendo.net` hostname a console resolves, which makes it the thing most
+likely to be mistaken for a key. An access key is always 8 hex digits and comes from the public
+Game Server List, from the game binary, or from brute-forcing a captured pair against
+`HMAC-MD5(MD5(key), MD5(key)+connectionSig)`. This mistake has already been made once in the
+fleet, which is why both values are written down here side by side.
+
+That the two independent sources for `b6b34c51` agree — a public wiki and a binary read — is
+also a cross-check on the sources themselves: the same list gives Mario Kart 8 Deluxe
+`09c1c475` and Super Smash Bros. Ultimate `9587602b`, the values `earlier/arms` cites for its
+sibling titles.
 
 A wrong access key is the worst failure mode in this whole server: the PRUDP-Lite packet
 signature simply does not match, the console retries forever, and neither side logs an error
@@ -73,6 +87,13 @@ them do not exist on nex-go, because nex-go already answers the way ARMS wants:
 
 Two more facts that came out of the same file and that we **do** act on:
 
+- **Two listeners, secure stream 1 — not the single-listener shape.** `earlier/arms` runs two
+  separate WSS listeners, `:443` for authentication and `:60006` for secure, and the secure
+  station URL it hands out carries `sid=1`. Both say two-listener. A fleet-wide instruction to
+  set `NEX_SECURE_STREAM_ID=2` was issued and then retracted: it is per-title, and of the
+  titles checked only Super Mario Bros. 35 uses the single-listener form. ARMS keeps the
+  `servers/nex` default of `1`. Recorded because the wrong value here is the difference between
+  a console connecting and a log line reading `trying to connect to unbound PRUDPEndPoint`.
 - **Transport is WebSocket, not UDP.** `earlier/arms` serves both endpoints with
   `ListenSecure(port, cert, key)` — TLS WebSocket — and never opens a UDP socket. Since that
   server is recorded as fully operational for ARMS multiplayer, ARMS speaks PRUDP over

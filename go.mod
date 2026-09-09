@@ -1,4 +1,4 @@
-module openpak/arms
+module github.com/openpak/arms
 
 go 1.25.0
 
@@ -8,7 +8,7 @@ require (
 	github.com/PretendoNetwork/nex-protocols-go/v2 v2.3.7
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
-	openpak/nex v0.0.0
+	github.com/openpak/nex v0.1.0
 )
 
 require (
@@ -52,5 +52,3 @@ require (
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
-
-replace openpak/nex => ../nex

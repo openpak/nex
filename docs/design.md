@@ -42,11 +42,24 @@ linked in either ARMS build.
 
 ## Transport
 
-`NEX_TRANSPORT=websocket`. Switch NEX titles speak PRUDP over WebSocket rather than UDP, and
+Nothing to set: both `servers/nex` defaults are already right for ARMS. That is worth stating
+because neither is right for *every* Switch title, and an earlier fleet-wide instruction to set
+`NEX_SECURE_STREAM_ID=2` was retracted — it is a per-title fact, and ARMS's facts say otherwise.
+
+**Transport is `websocket`**, now the default. Switch NEX titles speak PRUDP over WebSocket
+rather than UDP, and
 `provenance.md` records the evidence for ARMS specifically: the working earlier network server
 listens WSS on both endpoints and opens no UDP socket at all. `servers/nex` defaults to `udp`,
 so this is the one setting where the default is wrong for this title — and it is a silent
 wrong, since nothing arrives on a socket the console never dials.
+
+**The secure stream ID stays `1`**, the two-listener shape: authentication on `22140`, secure
+on its own dialable `22141`. Two facts from ARMS itself say so — its working earlier server
+runs two separate WSS listeners (`:443` auth, `:60006` secure), and the secure station URL it
+hands the console carries `sid=1`. The single-listener form, `NEX_SECURE_STREAM_ID=2` with a
+placeholder station URL, is used by Super Mario Bros. 35 and would break ARMS. If the stream ID
+is ever wrong the host logs `trying to connect to unbound PRUDPEndPoint`, so this is checkable
+rather than silent.
 
 Everything else in the handshake is already right by default: `provenance.md` shows the secure
 station URL `servers/nex` builds matches the working earlier one field for field.
@@ -97,6 +110,22 @@ does for a callback nobody set, so this is not a special case, just an unset one
 the server runnable on a laptop with only Postgres. A half-configured store (endpoint set,
 bucket or credentials missing) is a startup error rather than a surprise at the first upload.
 
+### This backend is a lift candidate, not a permanent home
+
+`servers/nex` has since agreed to move the DataStore object store into a shared subpackage,
+`github.com/openpak/nex/datastore`, with a one-call `store.Wire(common, host)` filling the
+generic surface. That is the right call and this code should be deleted when it lands.
+
+Nothing here is ARMS-shaped, which is what makes it liftable: the only title-specific values
+are the schema name `arms` and the S3 key bases. `DataStoreMetaInfo` is defined by NEX, so
+these columns are a transcription of the wire type rather than a schema anyone invented. What
+would have to change on the way across is scoping — this keeps rows in a per-title Postgres
+schema, and the shared store wants a title-key column so one database can hold several titles
+without a search in one leaking objects from another.
+
+Until it lands this stays, because ARMS needs a working DataStore and a stub is what we are
+replacing.
+
 ### Search
 
 `searchQuery` in `search.go` translates a `DataStoreSearchParam` into one SELECT with a
@@ -122,13 +151,24 @@ an unknown sort column falls back, and the page size is capped.
 ## Identity and friends
 
 `servers/nex` resolves a console to an OpenPak account through nx-baas and hands back the
-player's friend graph with it. `friendPIDs` in `main.go` wires that to the matchmaking
-manager's `GetUserFriendPIDs`, which is what the common library calls when a search asks for
-friends-only sessions. That is the whole of "Friends List lobby joining" — ARMS keeps no
-friend table, and a player is the same person to this title as to an NPLN one.
+player's friend graph with it. `host.FriendPIDs` is assigned to both the matchmaking manager's
+`GetUserFriendPIDs` and DataStore's, which are the two upstream callbacks documented as not
+working on Switch for the same reason: they ask by 32-bit PID and Pretendo has no Switch friend
+graph. OpenPak does. That is the whole of "Friends List lobby joining" — ARMS keeps no friend
+table, and a player is the same person to this title as to an NPLN one.
 
-It costs one nx-baas call per friend-scoped search, with no cache. `needsFriends` keeps the
-calls off every other search.
+Use the host's function, not a local one. It fails closed on a lookup error, so a friends-only
+lobby stays shut rather than opening to everyone, and it *drops* a friend whose PID does not
+fit 32 bits instead of truncating it — truncation would not lose a friend, it would name a
+different account and hand that stranger a friend's access.
+
+`needsFriends` keeps the nx-baas call off every search that does not need the graph.
+
+One thing to check if ARMS DataStore searches ever come back wrongly empty: a Switch logs in
+under its **NSA id**, not its PID, and some titles then name a player by that login name rather
+than by PID (Super Mario Maker 2's DataStore is the recorded case). None of the DataStore
+callbacks this server sets receives a name — every one of them is given a PID — so there is
+nothing to translate today. `Host.PIDForLoginName` is the hook if a capture shows otherwise.
 
 ## What is not here, and why
 

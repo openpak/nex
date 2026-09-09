@@ -5,7 +5,7 @@ NEX game server for **ARMS** on Nintendo Switch, built on Pretendo's AGPL `nex-g
 
 **Status (2026-09-09): runs, never seen a console.** Verified locally against a real Postgres:
 it starts, creates its schemas, serves `/healthz` on 22142, listens in WebSocket mode on
-22140/22141, and registers ARMS's matchmaking, NAT traversal, Utility and DataStore protocols
+22140 and 22141, and registers ARMS's matchmaking, NAT traversal, Utility and DataStore protocols
 on the shared host. The DataStore round trip — post, complete, read, search, rate, delete — is
 covered by tests that run against a real database. Whether **ARMS** reaches it and likes what
 it gets back is unanswered: [`docs/design.md`](docs/design.md) lists the five questions a first
@@ -19,7 +19,8 @@ Registers the protocol set ARMS speaks and supplies the two things
 - **Friend-list lobbies.** The matchmaking manager's friend lookup goes to
   [`nx-baas`](../../nx-baas) through `servers/nex`, so ARMS keeps no friend graph of its own
   and a player is the same person here as in an NPLN title.
-- **A real DataStore.** `earlier-nex` has none, so the earlier network ARMS server answers
+- **A real DataStore.** ARMS's update links a DataStore client (the base game does not).
+  `earlier-nex` has none, so the earlier network ARMS server answers
   every `0x73` call with an empty list. Here `GetMeta`, `GetMetas`, `SearchObject`,
   `PreparePostObject`, `PrepareGetObject`, `CompletePostObject`, `PostMetaBinary`,
   `ChangeMeta`, `RateObject` and `DeleteObject` are implemented against Postgres, with object
@@ -38,11 +39,12 @@ env $(grep -v '^#' .env | xargs) ./armsd
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22140` — this title's block from [ports.md](../../ports.md). Authentication `22140`, secure `22141` |
+| `NEX_PORT_BASE` | **required.** `22140` — this title's block from [ports.md](../../ports.md). Two listeners: authentication `22140`, secure `22141` |
 | `NEX_ACCESS_KEY` | **required.** ARMS's NEX access key. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
 | `NEX_VERSION` | NEX library ARMS links: `4.3.5`, what the update links. The base game links `4.0.3` |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
-| `NEX_TRANSPORT` | **`websocket`.** ARMS speaks PRUDP over WebSocket, not UDP — the default `udp` will not answer it |
+| `NEX_TRANSPORT` | leave unset. ARMS is `websocket`, which is now the `servers/nex` default |
+| `NEX_SECURE_STREAM_ID` | leave unset. ARMS uses the two-listener shape, stream `1`, which is the default. Setting `2` is the single-listener shape and would break it |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:22142` |
 | `NX_INTERNAL_URL` | nx-baas game API, default `http://127.0.0.1:20070` |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's internal key. Without it every login is refused |
