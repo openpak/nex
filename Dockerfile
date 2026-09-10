@@ -1,6 +1,6 @@
 # Multi-stage, cross-compiled: the build stage runs on the runner's native arch and Go emits
 # the target arch, so linux/arm64 builds need no QEMU.
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 ARG TARGETOS TARGETARCH
 # github.com/openpak/nex is a private repository, so the public module proxy and checksum
 # database cannot serve it. Fetching it needs credentials, mounted as a build secret so the
