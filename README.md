@@ -55,6 +55,14 @@ that one title; with no `NEX_TITLE` it is the bare host below. Each title keeps 
 docs and example.env in its directory. The former per-title repositories are archived; their
 history is merged here.
 
+## Deployed shape
+
+Production runs the passthrough form: Traefik routes each title's `g<id>-lp1.s.n.srv.nintendo.net`
+SNI to the title container's `+0` port and the title terminates TLS with one OpenPak-CA leaf
+covering `*.s.n.srv.nintendo.net` (`NEX_TLS_CERT`/`NEX_TLS_KEY`). Two-listener titles also
+publish `+1` on the host, because the secure station URL names that port directly. See
+[`ports.md`](../../ports.md).
+
 ## Use (as a library)
 
 ```go
