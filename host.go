@@ -111,27 +111,50 @@ type Config struct {
 	InternalKey string // nx-baas NX_INTERNAL_KEY, sent as X-Internal-Key
 }
 
-// FromEnv reads the configuration from the environment.
-func FromEnv() Config {
-	base, _ := strconv.Atoi(os.Getenv("NEX_PORT_BASE"))
+// Defaults is the configuration before the environment and before any title's own values.
+func Defaults() Config {
 	return Config{
-		Title:          env("NEX_TITLE", "nex"),
-		PortBase:       base,
-		AccessKey:      os.Getenv("NEX_ACCESS_KEY"),
-		Version:        env("NEX_VERSION", "4.4.0"),
-		SecureHost:     env("NEX_SECURE_HOST", "127.0.0.1"),
-		StationScheme:  env("NEX_STATION_SCHEME", "prudps"),
-		StreamID:       uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), 1)),
-		SecureStreamID: uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), 1)),
-		SecurePID:      uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), 2)),
-		SourceKeyBytes: atoiOr(os.Getenv("NEX_SOURCE_KEY_BYTES"), 32),
-		Transport:      env("NEX_TRANSPORT", "websocket"),
-		TLSCert:        os.Getenv("NEX_TLS_CERT"),
-		TLSKey:         os.Getenv("NEX_TLS_KEY"),
-		HTTPAddr:       env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", base+2)),
-		InternalURL:    env("NX_INTERNAL_URL", "http://127.0.0.1:20070"),
-		InternalKey:    os.Getenv("NX_INTERNAL_KEY"),
+		Title:          "nex",
+		Version:        "4.4.0",
+		SecureHost:     "127.0.0.1",
+		StationScheme:  "prudps",
+		StreamID:       1,
+		SecureStreamID: 1,
+		SecurePID:      2,
+		SourceKeyBytes: 32,
+		Transport:      "websocket",
+		InternalURL:    "http://127.0.0.1:20070",
 	}
+}
+
+// FromEnv reads the configuration from the environment over Defaults.
+func FromEnv() Config { return FromEnvWith(Defaults()) }
+
+// FromEnvWith reads the configuration from the environment over base: a variable that is set
+// wins, one that is not leaves base's value. A title's Defaults go into base, so the
+// operator's environment still has the last word.
+func FromEnvWith(base Config) Config {
+	c := base
+	c.Title = env("NEX_TITLE", c.Title)
+	c.PortBase = atoiOr(os.Getenv("NEX_PORT_BASE"), c.PortBase)
+	c.AccessKey = env("NEX_ACCESS_KEY", c.AccessKey)
+	c.Version = env("NEX_VERSION", c.Version)
+	c.SecureHost = env("NEX_SECURE_HOST", c.SecureHost)
+	c.StationScheme = env("NEX_STATION_SCHEME", c.StationScheme)
+	c.StreamID = uint8(atoiOr(os.Getenv("NEX_STREAM_ID"), int(c.StreamID)))
+	c.SecureStreamID = uint8(atoiOr(os.Getenv("NEX_SECURE_STREAM_ID"), int(c.SecureStreamID)))
+	c.SecurePID = uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), int(c.SecurePID)))
+	c.SourceKeyBytes = atoiOr(os.Getenv("NEX_SOURCE_KEY_BYTES"), c.SourceKeyBytes)
+	c.Transport = env("NEX_TRANSPORT", c.Transport)
+	c.TLSCert = env("NEX_TLS_CERT", c.TLSCert)
+	c.TLSKey = env("NEX_TLS_KEY", c.TLSKey)
+	c.HTTPAddr = env("NEX_HTTP_ADDR", c.HTTPAddr)
+	if c.HTTPAddr == "" {
+		c.HTTPAddr = fmt.Sprintf(":%d", c.PortBase+2)
+	}
+	c.InternalURL = env("NX_INTERNAL_URL", c.InternalURL)
+	c.InternalKey = env("NX_INTERNAL_KEY", c.InternalKey)
+	return c
 }
 
 func atoiOr(s string, fallback int) int {

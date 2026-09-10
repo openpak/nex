@@ -14,27 +14,27 @@ func TestFromEnvDefaults(t *testing.T) {
 	t.Setenv("NX_INTERNAL_KEY", "test-internal-key")
 	t.Setenv("LM3_DATABASE_URL", "postgres://x/y") // presence only; Run pings it, New does not
 
-	cfg := FromEnv()
+	cfg := Title.Config()
 
-	if cfg.Host.PortBase != PortBase {
-		t.Errorf("PortBase = %d, want %d", cfg.Host.PortBase, PortBase)
+	if cfg.PortBase != PortBase {
+		t.Errorf("PortBase = %d, want %d", cfg.PortBase, PortBase)
 	}
-	if cfg.Host.Version != NEXVersion {
-		t.Errorf("Version = %q, want %q", cfg.Host.Version, NEXVersion)
+	if cfg.Version != NEXVersion {
+		t.Errorf("Version = %q, want %q", cfg.Version, NEXVersion)
 	}
-	if cfg.Host.StationScheme != StationScheme {
-		t.Errorf("StationScheme = %q, want %q", cfg.Host.StationScheme, StationScheme)
+	if cfg.StationScheme != StationScheme {
+		t.Errorf("StationScheme = %q, want %q", cfg.StationScheme, StationScheme)
 	}
-	if cfg.Host.SecureStreamID != SecureStreamID {
-		t.Errorf("SecureStreamID = %d, want %d", cfg.Host.SecureStreamID, SecureStreamID)
+	if cfg.SecureStreamID != SecureStreamID {
+		t.Errorf("SecureStreamID = %d, want %d", cfg.SecureStreamID, SecureStreamID)
 	}
-	if cfg.Host.SourceKeyBytes != SourceKeyBytes {
-		t.Errorf("SourceKeyBytes = %d, want %d", cfg.Host.SourceKeyBytes, SourceKeyBytes)
+	if cfg.SourceKeyBytes != SourceKeyBytes {
+		t.Errorf("SourceKeyBytes = %d, want %d", cfg.SourceKeyBytes, SourceKeyBytes)
 	}
 
 	// New validates the config and builds the endpoints (it does not listen). If any per-title
 	// fact were out of range, this is where it fails.
-	if _, err := nexhost.New(cfg.Host); err != nil {
+	if _, err := nexhost.New(cfg); err != nil {
 		t.Fatalf("nexhost.New with LM3 defaults: %v", err)
 	}
 }
@@ -45,7 +45,7 @@ func TestFromEnvOverride(t *testing.T) {
 	t.Setenv("NX_INTERNAL_KEY", "test-internal-key")
 	t.Setenv("NEX_VERSION", "4.0.3")
 
-	if got := FromEnv().Host.Version; got != "4.0.3" {
+	if got := Title.Config().Version; got != "4.0.3" {
 		t.Errorf("Version override = %q, want 4.0.3", got)
 	}
 }

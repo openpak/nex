@@ -239,3 +239,19 @@ func (s *Server) afterJoinWithParam(packet nex.PacketInterface, _ match_making_t
 func (s *Server) afterJoin(packet nex.PacketInterface, _ types.UInt32, _ types.String) {
 	s.sendEagleHandoff(packet)
 }
+
+// Register wires the title's protocols onto the shared host.
+func Register(host *nexhost.Host) error {
+	cfg, err := FromEnv()
+	if err != nil {
+		return err
+	}
+	_, err = New(host, cfg) // lives as long as the process; nothing closes it
+	return err
+}
+
+// Title is this game's entry in the shared NEX host.
+var Title = nexhost.Title{Name: "super-mario-bros-35", Defaults: defaults, Register: Register}
+
+func defaults(c *nexhost.Config) {
+}

@@ -1,6 +1,8 @@
 # nex
 
-The shared NEX host every OpenPak NEX title server imports. Thin by design: Pretendo's
+The shared NEX host and, under `titles/`, every OpenPak NEX title. One module, one image
+(`ghcr.io/openpak/nex`), one tag per release; a container runs one title, chosen by `NEX_TITLE`.
+The shared NEX host every OpenPak NEX title imports. Thin by design: Pretendo's
 AGPL-3.0 [`nex-go`](https://github.com/PretendoNetwork/nex-go),
 [`nex-protocols-go`](https://github.com/PretendoNetwork/nex-protocols-go) and
 [`nex-protocols-common-go`](https://github.com/PretendoNetwork/nex-protocols-common-go) do
@@ -37,7 +39,23 @@ a genuine console's login is still refused. See the end of [`docs/design.md`](do
   [`ports.md`](../../ports.md), with an HTTP `/healthz` because nothing in OpenPak infers
   liveness from a UDP socket.
 
-## Use
+## Titles
+
+Each game is a package `titles/<game>` exposing one value:
+
+```go
+var Title = nexhost.Title{Name: "arms", Defaults: defaults, Register: Register}
+```
+
+`Defaults` sets the per-title facts (NEX version, stream shape, port block) that the
+environment may still override; `Register` puts the title's protocols on `host.Secure`.
+`titles/titles.go` lists them all — adding a game is a new package and one line there.
+`cmd/nexd` reads `NEX_TITLE`, builds the config as `Defaults → title → environment` and runs
+that one title; with no `NEX_TITLE` it is the bare host below. Each title keeps its own README,
+docs and example.env in its directory. The former per-title repositories are archived; their
+history is merged here.
+
+## Use (as a library)
 
 ```go
 host, err := nexhost.New(nexhost.FromEnv())

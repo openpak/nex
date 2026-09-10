@@ -60,65 +60,14 @@ const (
 	PortBase = 22110
 )
 
-// Config is the whole configuration of the server: the shared host's, plus the database the
-// matchmaking and utility protocols keep their state in.
-type Config struct {
-	Host nexhost.Config
-
-	// DatabaseURL is the Postgres the common matchmaking and utility protocols keep their
-	// state in. Required: without it the game has no lobbies.
-	DatabaseURL string
-}
-
-// FromEnv reads the configuration from the environment, defaulting everything this title
-// already knows about itself. Every default here is a measured value from
-// docs/provenance.md, not a house style, so overriding one needs a reason.
-func FromEnv() Config {
-	host := nexhost.FromEnv()
-	if host.Title == "nex" {
-		host.Title = "mario-party-superstars"
-	}
-	if host.PortBase == 0 {
-		host.PortBase = PortBase
-		host.HTTPAddr = env("NEX_HTTP_ADDR", fmt.Sprintf(":%d", PortBase+2))
-	}
-	if os.Getenv("NEX_VERSION") == "" {
-		host.Version = NEXVersion
-	}
-	if os.Getenv("NEX_STATION_SCHEME") == "" {
-		host.StationScheme = StationScheme
-	}
-	if os.Getenv("NEX_SECURE_STREAM_ID") == "" {
-		host.SecureStreamID = SecureStreamID
-	}
-	if os.Getenv("NEX_SOURCE_KEY_BYTES") == "" {
-		host.SourceKeyBytes = SourceKeyBytes
-	}
-	return Config{
-		Host:        host,
-		DatabaseURL: os.Getenv("MPS_DATABASE_URL"),
-	}
-}
-
-func env(name, fallback string) string {
-	if v := os.Getenv(name); v != "" {
-		return v
-	}
-	return fallback
-}
-
-// Run starts the server and blocks.
-func Run(cfg Config) error {
-	if cfg.DatabaseURL == "" {
+// Register wires the title's protocols onto the shared host.
+func Register(host *nexhost.Host) error {
+	url := os.Getenv("MPS_DATABASE_URL")
+	if url == "" {
 		return errors.New("MPS_DATABASE_URL is required: matchmaking and NEX unique IDs both keep their state in Postgres")
 	}
 
-	host, err := nexhost.New(cfg.Host)
-	if err != nil {
-		return err
-	}
-
-	db, err := sql.Open("postgres", cfg.DatabaseURL)
+	db, err := sql.Open("postgres", url)
 	if err != nil {
 		return err
 	}
@@ -138,7 +87,7 @@ func Run(cfg Config) error {
 	host.Secure.RegisterServiceProtocol(natProtocol)
 	common_nat_traversal.NewCommonProtocol(natProtocol)
 
-	return host.Run()
+	return nil
 }
 
 // registerMatchmaking wires the three matchmaking protocols to one manager, then adds the
@@ -176,4 +125,15 @@ func registerUtility(host *nexhost.Host, db *sql.DB) {
 	manager.GetIntegerSettings = integerSettings
 	manager.GetStringSettings = stringSettings
 	common.SetManager(manager)
+}
+
+// Title is this game's entry in the shared NEX host.
+var Title = nexhost.Title{Name: "mario-party-superstars", Defaults: defaults, Register: Register}
+
+func defaults(c *nexhost.Config) {
+	c.PortBase = PortBase
+	c.Version = NEXVersion
+	c.StationScheme = StationScheme
+	c.SecureStreamID = SecureStreamID
+	c.SourceKeyBytes = SourceKeyBytes
 }

@@ -60,30 +60,30 @@ func TestFromEnvDefaultsToThisTitle(t *testing.T) {
 	t.Setenv("NX_INTERNAL_KEY", "test")
 	t.Setenv("MPS_DATABASE_URL", "postgres://localhost/test")
 
-	cfg := FromEnv()
+	cfg := Title.Config()
 
-	if cfg.Host.PortBase != PortBase {
-		t.Errorf("want the title's own block %d, got %d", PortBase, cfg.Host.PortBase)
+	if cfg.PortBase != PortBase {
+		t.Errorf("want the title's own block %d, got %d", PortBase, cfg.PortBase)
 	}
-	if cfg.Host.Version != NEXVersion {
-		t.Errorf("want NEX %s, got %s", NEXVersion, cfg.Host.Version)
+	if cfg.Version != NEXVersion {
+		t.Errorf("want NEX %s, got %s", NEXVersion, cfg.Version)
 	}
-	if cfg.Host.HTTPAddr != ":22112" {
-		t.Errorf("want healthz on the block's +2, got %s", cfg.Host.HTTPAddr)
+	if cfg.HTTPAddr != ":22112" {
+		t.Errorf("want healthz on the block's +2, got %s", cfg.HTTPAddr)
 	}
 	// Both of these are per-title measured values, not house defaults. The wrong station
 	// scheme fails late, when the game needs the session; the wrong secure stream ID puts
 	// the secure endpoint where this title does not look for it.
-	if cfg.Host.StationScheme != StationScheme {
-		t.Errorf("want station scheme %s, got %s", StationScheme, cfg.Host.StationScheme)
+	if cfg.StationScheme != StationScheme {
+		t.Errorf("want station scheme %s, got %s", StationScheme, cfg.StationScheme)
 	}
-	if cfg.Host.SecureStreamID != SecureStreamID {
-		t.Errorf("want secure stream ID %d (two listeners), got %d", SecureStreamID, cfg.Host.SecureStreamID)
+	if cfg.SecureStreamID != SecureStreamID {
+		t.Errorf("want secure stream ID %d (two listeners), got %d", SecureStreamID, cfg.SecureStreamID)
 	}
 	// The wrong source key length fails silently: the login just does not work, and
 	// nothing is logged on either side. Pinned rather than inherited for that reason.
-	if cfg.Host.SourceKeyBytes != SourceKeyBytes {
-		t.Errorf("want a %d-byte source key, got %d", SourceKeyBytes, cfg.Host.SourceKeyBytes)
+	if cfg.SourceKeyBytes != SourceKeyBytes {
+		t.Errorf("want a %d-byte source key, got %d", SourceKeyBytes, cfg.SourceKeyBytes)
 	}
 }
 
@@ -93,13 +93,13 @@ func TestFromEnvHonoursOverrides(t *testing.T) {
 	t.Setenv("NEX_ACCESS_KEY", "e915510f")
 	t.Setenv("NX_INTERNAL_KEY", "test")
 
-	cfg := FromEnv()
+	cfg := Title.Config()
 
-	if cfg.Host.PortBase != 22300 {
-		t.Errorf("NEX_PORT_BASE must win, got %d", cfg.Host.PortBase)
+	if cfg.PortBase != 22300 {
+		t.Errorf("NEX_PORT_BASE must win, got %d", cfg.PortBase)
 	}
-	if cfg.Host.Version != "4.4.0" {
-		t.Errorf("NEX_VERSION must win, got %s", cfg.Host.Version)
+	if cfg.Version != "4.4.0" {
+		t.Errorf("NEX_VERSION must win, got %s", cfg.Version)
 	}
 }
 
@@ -109,12 +109,12 @@ func TestFromEnvHonoursWireShapeOverrides(t *testing.T) {
 	t.Setenv("NEX_STATION_SCHEME", "prudp")
 	t.Setenv("NEX_SECURE_STREAM_ID", "2")
 
-	cfg := FromEnv()
+	cfg := Title.Config()
 
-	if cfg.Host.StationScheme != "prudp" {
-		t.Errorf("NEX_STATION_SCHEME must win, got %s", cfg.Host.StationScheme)
+	if cfg.StationScheme != "prudp" {
+		t.Errorf("NEX_STATION_SCHEME must win, got %s", cfg.StationScheme)
 	}
-	if cfg.Host.SecureStreamID != 2 {
-		t.Errorf("NEX_SECURE_STREAM_ID must win, got %d", cfg.Host.SecureStreamID)
+	if cfg.SecureStreamID != 2 {
+		t.Errorf("NEX_SECURE_STREAM_ID must win, got %d", cfg.SecureStreamID)
 	}
 }
