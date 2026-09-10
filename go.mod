@@ -1,6 +1,6 @@
 module github.com/openpak/animal-crossing-new-horizons
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/PretendoNetwork/nex-go/v2 v2.3.1
