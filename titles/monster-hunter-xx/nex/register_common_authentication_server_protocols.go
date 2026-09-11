@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -14,7 +14,8 @@ import (
 
 func registerCommonAuthenticationServerProtocols() {
 	ticketGrantingProtocol := ticketgranting.NewProtocol()
-	ticketGrantingProtocol.SetUseCrossplay(true)
+	// upstream's dev branch called SetUseCrossplay(true) on a nex-protocols-go fork; the released
+	// library has no such knob, so the line is dropped.
 	globals.AuthenticationEndpoint.RegisterServiceProtocol(ticketGrantingProtocol)
 	commonTicketGrantingProtocol := commonticketgranting.NewCommonProtocol(ticketGrantingProtocol)
 	// HACK: replace with ConfigurePNValidation once MHXX branch is rebased up to latest

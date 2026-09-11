@@ -1,22 +1,22 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/miracle-cure/globals"
-	"github.com/PretendoNetwork/miracle-cure/database"
-	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
-	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
-	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
-	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
-	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
-	common_ranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
-	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
+	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	common_nat_traversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
-	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	common_ranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
 	common_secure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
+	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
+	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
+	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
+	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
+	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
+	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/miracle-cure/database"
+	"github.com/openpak/nex/titles/miracle-cure/globals"
 
-	nex_matchmake_extension_common "github.com/PretendoNetwork/miracle-cure/nex/matchmake-extension/common"
+	nex_matchmake_extension_common "github.com/openpak/nex/titles/miracle-cure/nex/matchmake-extension/common"
 )
 
 func registerCommonSecureServerProtocols() {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 )
 
 func StartSecureServer() {

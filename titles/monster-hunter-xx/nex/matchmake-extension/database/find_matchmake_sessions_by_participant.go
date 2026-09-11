@@ -96,7 +96,7 @@ func FindMatchmakeSessionByParticipant(manager *common_globals.MatchmakingManage
 			&findByParticipantResult.Session.ApplicationBuffer,
 			&findByParticipantResult.Session.ProgressScore,
 			&findByParticipantResult.Session.SessionKey,
-			&findByParticipantResult.Session.Option,
+			&findByParticipantResult.Session.Option0,
 			&resultMatchmakeParam,
 			&findByParticipantResult.Session.UserPassword,
 			&findByParticipantResult.Session.ReferGID,

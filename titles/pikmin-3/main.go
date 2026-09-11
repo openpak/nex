@@ -1,14 +1,14 @@
-package main
+package pikmin3
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/pikmin-3/nex"
+	"github.com/openpak/nex/titles/pikmin-3/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/pikmin-3/globals"
+import "github.com/openpak/nex/titles/pikmin-3/globals"
 
 func initPostgres() {
 	var err error

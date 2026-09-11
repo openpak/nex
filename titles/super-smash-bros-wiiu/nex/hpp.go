@@ -10,7 +10,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	globals "github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
+	globals "github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
 )
 
 func GetNotificationURL(err error, packet nex.PacketInterface, callID uint32, param datastore_types.DataStoreGetNotificationURLParam) (*nex.RMCMessage, *nex.Error) {

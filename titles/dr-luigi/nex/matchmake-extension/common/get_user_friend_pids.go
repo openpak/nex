@@ -3,8 +3,8 @@ package nex_matchmake_extension_common
 import (
 	"context"
 
-	pb_friends "github.com/PretendoNetwork/grpc-go/friends"
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 	"google.golang.org/grpc/metadata"
 )
 

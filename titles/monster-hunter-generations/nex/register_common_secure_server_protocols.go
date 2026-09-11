@@ -1,8 +1,8 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/monster-hunter-generations/database"
-	"github.com/PretendoNetwork/monster-hunter-generations/globals"
+	"github.com/openpak/nex/titles/monster-hunter-generations/database"
+	"github.com/openpak/nex/titles/monster-hunter-generations/globals"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"

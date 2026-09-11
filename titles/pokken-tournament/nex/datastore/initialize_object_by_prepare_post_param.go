@@ -2,7 +2,7 @@ package datastore
 
 import (
 	"database/sql"
-	"github.com/PretendoNetwork/pokken-tournament/globals"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
 	"time"
 
 	"github.com/PretendoNetwork/nex-go/v2"

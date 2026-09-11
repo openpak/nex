@@ -3,8 +3,8 @@ package datastore_db
 import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func DeleteObjectByDataID(dataID types.UInt64) *nex.Error {

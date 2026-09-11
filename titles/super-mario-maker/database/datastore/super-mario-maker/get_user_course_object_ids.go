@@ -5,9 +5,9 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func GetUserCourseObjectIDs(ownerPID types.PID) (types.List[types.UInt64], *nex.Error) {

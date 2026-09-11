@@ -1,4 +1,4 @@
-package main
+package ssfiv
 
 import (
 	"crypto/rand"
@@ -17,11 +17,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/PretendoNetwork/super-street-fighter-iv/database"
-	"github.com/PretendoNetwork/super-street-fighter-iv/globals"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/database"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/globals"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

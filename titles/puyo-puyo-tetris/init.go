@@ -1,4 +1,4 @@
-package main
+package ppt
 
 import (
 	"database/sql"
@@ -7,22 +7,20 @@ import (
 	"strconv"
 	"strings"
 
-	commonglobals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
-
 	pbaccount "github.com/PretendoNetwork/grpc/go/account"
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/puyo-puyo-tetris/globals"
 	"github.com/joho/godotenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/openpak/nex/titles/puyo-puyo-tetris/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
@@ -158,7 +156,6 @@ func init() {
 	}
 
 	globals.MinIOClient = minIOClient
-	globals.S3Manager = commonglobals.NewMinIOManager(minIOClient)
 	globals.S3Bucket = s3Bucket
 	globals.S3KeyBase = s3KeyBase
 

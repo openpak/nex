@@ -1,14 +1,14 @@
-package main
+package ssb3ds
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/super-smash-bros-3ds/nex"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

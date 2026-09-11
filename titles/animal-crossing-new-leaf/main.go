@@ -1,14 +1,14 @@
-package main
+package acnl
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/nex"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

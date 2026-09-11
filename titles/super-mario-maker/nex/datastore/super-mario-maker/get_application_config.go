@@ -6,8 +6,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_mario_maker "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
-	"github.com/PretendoNetwork/super-mario-maker/nex/datastore/super-mario-maker/constants"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/nex/datastore/super-mario-maker/constants"
 )
 
 func GetApplicationConfig(err error, packet nex.PacketInterface, callID uint32, applicationID types.UInt32) (*nex.RMCMessage, *nex.Error) {

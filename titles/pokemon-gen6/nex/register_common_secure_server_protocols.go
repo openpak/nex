@@ -21,11 +21,10 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
-	"github.com/PretendoNetwork/pokemon-gen6/database"
-	database_utility "github.com/PretendoNetwork/pokemon-gen6/database/utility"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/database"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 
-	nex_matchmake_extension_common "github.com/PretendoNetwork/pokemon-gen6/nex/matchmake-extension/common"
+	nex_matchmake_extension_common "github.com/openpak/nex/titles/pokemon-gen6/nex/matchmake-extension/common"
 )
 
 func registerCommonSecureServerProtocols() {
@@ -48,7 +47,9 @@ func registerCommonSecureServerProtocols() {
 	utilityProtocol := utility.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(utilityProtocol)
 	commonUtilityProtocol := common_utility.NewCommonProtocol(utilityProtocol)
-	commonUtilityProtocol.GenerateNEXUniqueID = database_utility.GenerateNEXUniqueID
+	// nex-protocols-common-go v2.6.1 moved unique IDs into a UtilityManager with its own Postgres
+	// table; upstream's generator (database/utility) is superseded by the manager's default.
+	commonUtilityProtocol.SetManager(common_globals.NewUtilityManager(globals.SecureEndpoint, database.Postgres))
 
 	matchMakingProtocol := match_making.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingProtocol)

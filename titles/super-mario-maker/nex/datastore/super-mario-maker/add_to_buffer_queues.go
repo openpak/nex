@@ -5,9 +5,9 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_mario_maker "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker"
 	datastore_super_mario_maker_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker/types"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	datastore_smm_db "github.com/PretendoNetwork/super-mario-maker/database/datastore/super-mario-maker"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	datastore_smm_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore/super-mario-maker"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func AddToBufferQueues(err error, packet nex.PacketInterface, callID uint32, params types.List[datastore_super_mario_maker_types.BufferQueueParam], buffers types.List[types.QBuffer]) (*nex.RMCMessage, *nex.Error) {

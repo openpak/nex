@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"

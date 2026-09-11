@@ -1,7 +1,6 @@
 package nex
 
-import (
-)
+import ()
 
 func registerSecureServerNEXProtocols() {
 }

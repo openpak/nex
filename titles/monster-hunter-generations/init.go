@@ -1,4 +1,4 @@
-package main
+package mhgen
 
 import (
 	"crypto/rand"
@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PretendoNetwork/monster-hunter-generations/database"
-	"github.com/PretendoNetwork/monster-hunter-generations/globals"
+	"github.com/openpak/nex/titles/monster-hunter-generations/database"
+	"github.com/openpak/nex/titles/monster-hunter-generations/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -15,7 +15,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

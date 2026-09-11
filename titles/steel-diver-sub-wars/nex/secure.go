@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/steel-diver-sub-wars/globals"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/globals"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 )

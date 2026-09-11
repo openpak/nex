@@ -1,4 +1,4 @@
-package main
+package f12011
 
 import (
 	"crypto/rand"
@@ -17,11 +17,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/PretendoNetwork/f1-2011/database"
-	"github.com/PretendoNetwork/f1-2011/globals"
+	"github.com/openpak/nex/titles/f1-2011/database"
+	"github.com/openpak/nex/titles/f1-2011/globals"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

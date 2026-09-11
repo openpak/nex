@@ -7,7 +7,7 @@ import (
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/encryption"
-	"github.com/PretendoNetwork/super-street-fighter-iv/globals"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/globals"
 )
 
 func StartSecureServer() {

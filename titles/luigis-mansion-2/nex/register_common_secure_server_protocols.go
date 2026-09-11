@@ -1,8 +1,8 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/luigis-mansion-2/database"
-	"github.com/PretendoNetwork/luigis-mansion-2/globals"
+	"github.com/openpak/nex/titles/luigis-mansion-2/database"
+	"github.com/openpak/nex/titles/luigis-mansion-2/globals"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"

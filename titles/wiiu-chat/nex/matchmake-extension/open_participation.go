@@ -3,7 +3,7 @@ package nex_matchmake_extension
 import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 )

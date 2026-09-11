@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 var serverBuildString string

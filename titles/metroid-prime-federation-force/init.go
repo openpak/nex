@@ -1,4 +1,4 @@
-package main
+package mpff
 
 import (
 	"crypto/rand"
@@ -17,11 +17,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/PretendoNetwork/metroid-prime-federation-force/database"
-	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/database"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

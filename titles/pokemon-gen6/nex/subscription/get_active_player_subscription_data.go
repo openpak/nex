@@ -5,7 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
 	subscription_types "github.com/PretendoNetwork/nex-protocols-go/v2/subscription/types"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
 func GetActivePlayerSubscriptionData(err error, packet nex.PacketInterface, callID uint32, unk1, unk2, unk3 types.UInt32) (*nex.RMCMessage, *nex.Error) {

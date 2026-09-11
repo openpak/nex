@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/pikmin-3/globals"
+	"github.com/openpak/nex/titles/pikmin-3/globals"
 )
 
 var Postgres *sql.DB

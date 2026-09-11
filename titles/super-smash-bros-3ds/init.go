@@ -1,4 +1,4 @@
-package main
+package ssb3ds
 
 import (
 	"crypto/rand"
@@ -12,8 +12,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/database"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/database"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 	"github.com/joho/godotenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

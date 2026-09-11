@@ -6,8 +6,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_smm_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	"github.com/lib/pq"
 )
 

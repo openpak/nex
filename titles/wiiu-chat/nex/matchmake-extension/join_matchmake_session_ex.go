@@ -4,8 +4,8 @@ import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
-	"github.com/PretendoNetwork/wiiu-chat/database"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/database"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func JoinMatchmakeSessionEx(err error, packet nex.PacketInterface, callID uint32, gid types.UInt32, strMessage types.String, dontCareMyBlockList types.Bool, participationCount types.UInt16) (*nex.RMCMessage, *nex.Error) {

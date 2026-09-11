@@ -17,8 +17,8 @@ import (
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/puyo-puyo-tetris/globals"
-	megaranking "github.com/PretendoNetwork/puyo-puyo-tetris/ranking"
+	"github.com/openpak/nex/titles/puyo-puyo-tetris/globals"
+	megaranking "github.com/openpak/nex/titles/puyo-puyo-tetris/ranking"
 
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
@@ -123,7 +123,14 @@ func registerCommonSecureServerProtocols() {
 	datastoreProtocol := datastore.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(datastoreProtocol)
 	commonDatastoreProtocol := commondatastore.NewCommonProtocol(datastoreProtocol)
-	commonDatastoreProtocol.SetManager(globals.DatastoreManager)
+	// ponytail: nex-protocols-common-go v2.6.1 dropped the Postgres-backed DataStoreManager
+	// upstream wired here (it targeted v2.4.1). Object bodies still go to S3; the metadata
+	// handlers (GetObjectInfoByDataID and friends) are unset, so stats/replays/clubs answer
+	// Core::NotImplemented until an OpenPak store is wired like the Switch titles do.
+	commonDatastoreProtocol.SetMinIOClient(globals.MinIOClient)
+	commonDatastoreProtocol.S3Bucket = globals.S3Bucket
+	commonDatastoreProtocol.SetDataKeyBase(globals.S3KeyBase)
+	commonDatastoreProtocol.GetUserFriendPIDs = globals.GetUserFriendPIDs
 
 	// Ranking - National Puzzle League leaderboards
 	rankingProtocol := ranking.NewProtocol()

@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"strconv"
 
-	"github.com/PretendoNetwork/pokemon-gen6/database"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/database"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
 func GenerateNEXUniqueID() uint64 {

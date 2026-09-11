@@ -9,7 +9,7 @@ import (
 	datastore_super_smash_bros_4_protocol "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4"
 	datastore_super_smash_bros_4_protocol_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 )
 
 var ServerReplaysTemp types.List[datastore_super_smash_bros_4_protocol_types.DataStoreReplayMetaInfo]

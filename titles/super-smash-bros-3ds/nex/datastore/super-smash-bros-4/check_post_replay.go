@@ -7,7 +7,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_smash_bros_4_protocol "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4"
 	datastore_super_smash_bros_4_protocol_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4/types"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 )
 
 func CheckPostReplay(err error, packet nex.PacketInterface, callID uint32, param datastore_super_smash_bros_4_protocol_types.DataStorePreparePostReplayParam) (*nex.RMCMessage, *nex.Error) {

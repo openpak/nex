@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 )
 
 func StartSecureServer() {

@@ -1,4 +1,4 @@
-package main
+package sm3dwu
 
 import (
 	"crypto/rand"
@@ -7,19 +7,19 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/super-mario-3d-world/database"
-	"github.com/PretendoNetwork/super-mario-3d-world/globals"
+	"github.com/openpak/nex/titles/super-mario-3d-world/database"
+	"github.com/openpak/nex/titles/super-mario-3d-world/globals"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
@@ -51,8 +51,8 @@ func init() {
 
 	globals.KerberosPassword = string(kerberosPassword)
 
-	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword)
-	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword)
+	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword, false)
+	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword, false)
 
 	if strings.TrimSpace(authenticationServerPort) == "" {
 		globals.Logger.Error("PN_SM3DW_AUTHENTICATION_SERVER_PORT environment variable not set")

@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 )
 
 func GetTotalRankingsByCategory(category uint32) (error, uint32) {

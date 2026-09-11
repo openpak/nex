@@ -1,14 +1,14 @@
-package main
+package sdsw
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/steel-diver-sub-wars/nex"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

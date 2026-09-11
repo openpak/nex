@@ -6,7 +6,7 @@ import (
 	"net"
 
 	pb "github.com/PretendoNetwork/grpc/go/smm/v1"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	"google.golang.org/grpc"
 )
 

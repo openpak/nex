@@ -1,14 +1,14 @@
-package main
+package pokken
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/pokken-tournament/nex"
+	"github.com/openpak/nex/titles/pokken-tournament/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

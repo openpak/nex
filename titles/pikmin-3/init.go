@@ -1,4 +1,4 @@
-package main
+package pikmin3
 
 import (
 	"crypto/rand"
@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
+	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/pikmin-3/database"
-	"github.com/PretendoNetwork/pikmin-3/globals"
+	"github.com/openpak/nex/titles/pikmin-3/database"
+	"github.com/openpak/nex/titles/pikmin-3/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
@@ -51,8 +51,8 @@ func init() {
 
 	globals.KerberosPassword = string(kerberosPassword)
 
-	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword)
-	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword)
+	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword, false)
+	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword, false)
 
 	if strings.TrimSpace(authenticationServerPort) == "" {
 		globals.Logger.Error("PN_PIKMIN3_AUTHENTICATION_SERVER_PORT environment variable not set")

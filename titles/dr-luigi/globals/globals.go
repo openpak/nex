@@ -2,8 +2,8 @@ package globals
 
 import (
 	"database/sql"
-	pb_account "github.com/PretendoNetwork/grpc-go/account"
-	pb_friends "github.com/PretendoNetwork/grpc-go/friends"
+	pb_account "github.com/PretendoNetwork/grpc/go/account"
+	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"

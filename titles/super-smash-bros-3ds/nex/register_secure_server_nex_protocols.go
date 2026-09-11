@@ -4,8 +4,8 @@ import (
 	datastore_super_smash_bros_4_protocol "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4"
 	matchmake_referee "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-referee"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
-	datastore_super_smash_bros_4 "github.com/PretendoNetwork/super-smash-bros-3ds/nex/datastore/super-smash-bros-4"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
+	datastore_super_smash_bros_4 "github.com/openpak/nex/titles/super-smash-bros-3ds/nex/datastore/super-smash-bros-4"
 )
 
 func registerSecureServerNEXProtocols() {

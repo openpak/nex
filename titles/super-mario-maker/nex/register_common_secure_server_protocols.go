@@ -8,9 +8,9 @@ import (
 	securecommon "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	datastoresmm "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
-	nex_datastore_super_mario_maker "github.com/PretendoNetwork/super-mario-maker/nex/datastore/super-mario-maker"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
+	nex_datastore_super_mario_maker "github.com/openpak/nex/titles/super-mario-maker/nex/datastore/super-mario-maker"
 )
 
 func registerCommonSecureProtocols() {

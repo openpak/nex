@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/miracle-cure/globals"
+import "github.com/openpak/nex/titles/miracle-cure/globals"
 
 func initPostgres() {
 	var err error

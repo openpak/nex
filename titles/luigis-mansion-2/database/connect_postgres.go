@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/luigis-mansion-2/globals"
+	"github.com/openpak/nex/titles/luigis-mansion-2/globals"
 )
 
 var Postgres *sql.DB

@@ -8,9 +8,9 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	mmdatabase "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension/database"
 	matchmake_extension_super_smash_bros_4 "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension/super-smash-bros-4"
-	globals "github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
-	matchmake_extension_super_smash_bros_4_database "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/database"
-	matchmake_extension_super_smash_bros_4_types "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
+	globals "github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
+	matchmake_extension_super_smash_bros_4_database "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/database"
+	matchmake_extension_super_smash_bros_4_types "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
 )
 
 func RegisterCommunityCompetition(err error, packet nex.PacketInterface, callID uint32, packetPayload []byte) (*nex.RMCMessage, *nex.Error) {

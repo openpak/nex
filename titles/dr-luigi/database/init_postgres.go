@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/dr-luigi/globals"
+import "github.com/openpak/nex/titles/dr-luigi/globals"
 
 func initPostgres() {
 	var err error

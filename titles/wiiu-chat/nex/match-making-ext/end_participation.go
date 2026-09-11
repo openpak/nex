@@ -6,7 +6,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func EndParticipation(err error, packet nex.PacketInterface, callID uint32, idGathering types.UInt32, strMessage types.String) (*nex.RMCMessage, *nex.Error) {

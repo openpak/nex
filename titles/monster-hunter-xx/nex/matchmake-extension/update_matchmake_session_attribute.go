@@ -1,7 +1,7 @@
 package local_matchmake_extension
 
 import (
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"

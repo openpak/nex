@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 )
 
 var serverBuildString string

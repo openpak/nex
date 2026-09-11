@@ -1,14 +1,14 @@
-package main
+package ssfiv
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/super-street-fighter-iv/nex"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

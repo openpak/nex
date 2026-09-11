@@ -4,7 +4,7 @@ import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func GetSessionUrls(err error, packet nex.PacketInterface, callID uint32, gid types.UInt32) (*nex.RMCMessage, *nex.Error) {

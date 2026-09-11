@@ -1,14 +1,14 @@
-package main
+package pokegen6
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/pokemon-gen6/nex"
+	"github.com/openpak/nex/titles/pokemon-gen6/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

@@ -5,9 +5,9 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func InsertOrUpdateCourseRecord(dataID types.UInt64, slot types.UInt8, pid types.PID, score types.Int32) *nex.Error {

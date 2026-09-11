@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 )
 
 var serverBuildString string

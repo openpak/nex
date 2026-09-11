@@ -4,7 +4,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	rating "github.com/PretendoNetwork/nex-protocols-go/v2/rating"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
 func Unk1(err error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage, *nex.Error) {

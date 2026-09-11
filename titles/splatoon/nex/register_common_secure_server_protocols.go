@@ -15,7 +15,7 @@ import (
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/splatoon"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/splatoon/globals"
+	"github.com/openpak/nex/titles/splatoon/globals"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {

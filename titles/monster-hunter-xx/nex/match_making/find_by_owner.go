@@ -5,8 +5,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
-	nex_match_making_database "github.com/PretendoNetwork/monster-hunter-xx/nex/match_making/database"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
+	nex_match_making_database "github.com/openpak/nex/titles/monster-hunter-xx/nex/match_making/database"
 )
 
 func FindByOwner(err error, packet nex.PacketInterface, callID uint32, id types.PID, resultRange types.ResultRange) (*nex.RMCMessage, *nex.Error) {

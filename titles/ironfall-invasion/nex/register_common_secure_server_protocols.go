@@ -15,8 +15,8 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 
-	"github.com/PretendoNetwork/ironfall-invasion/database"
-	"github.com/PretendoNetwork/ironfall-invasion/globals"
+	"github.com/openpak/nex/titles/ironfall-invasion/database"
+	"github.com/openpak/nex/titles/ironfall-invasion/globals"
 )
 
 func registerCommonSecureServerProtocols() {

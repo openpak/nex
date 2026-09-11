@@ -12,8 +12,8 @@ var AuthenticationServerAccount *nex.Account
 var SecureServerAccount *nex.Account
 
 func InitAccounts() {
-	AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", KerberosPassword)
-	SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", KerberosPassword)
+	AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", KerberosPassword, false)
+	SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", KerberosPassword, false)
 }
 
 func AccountDetailsByPID(pid types.PID) (*nex.Account, *nex.Error) {
@@ -30,7 +30,7 @@ func AccountDetailsByPID(pid types.PID) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(errorCode, "Failed to get password from PID")
 	}
 
-	account := nex.NewAccount(pid, strconv.Itoa(int(pid)), password)
+	account := nex.NewAccount(pid, strconv.Itoa(int(pid)), password, false)
 
 	return account, nil
 }
@@ -58,7 +58,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(errorCode, "Failed to get password from PID")
 	}
 
-	account := nex.NewAccount(pid, username, password)
+	account := nex.NewAccount(pid, username, password, false)
 
 	return account, nil
 }

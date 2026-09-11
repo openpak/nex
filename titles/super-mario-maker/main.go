@@ -1,15 +1,15 @@
-package main
+package smmwiiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/super-mario-maker/grpc"
-	"github.com/PretendoNetwork/super-mario-maker/nex"
+	"github.com/openpak/nex/titles/super-mario-maker/grpc"
+	"github.com/openpak/nex/titles/super-mario-maker/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	go grpc.StartGRPCServer()

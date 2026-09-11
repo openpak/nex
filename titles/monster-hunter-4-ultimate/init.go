@@ -1,4 +1,4 @@
-package main
+package mh4u
 
 import (
 	"crypto/rand"
@@ -12,11 +12,11 @@ import (
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
 
-	"github.com/PretendoNetwork/monster-hunter-4-ultimate/database"
-	"github.com/PretendoNetwork/monster-hunter-4-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-4-ultimate/database"
+	"github.com/openpak/nex/titles/monster-hunter-4-ultimate/globals"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

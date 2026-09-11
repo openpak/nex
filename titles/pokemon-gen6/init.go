@@ -1,4 +1,4 @@
-package main
+package pokegen6
 
 import (
 	"crypto/rand"
@@ -8,20 +8,20 @@ import (
 	"strconv"
 	"strings"
 
-	pb_account "github.com/PretendoNetwork/grpc-go/account"
-	pb_friends "github.com/PretendoNetwork/grpc-go/friends"
+	pb_account "github.com/PretendoNetwork/grpc/go/account"
+	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/pokemon-gen6/database"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/database"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

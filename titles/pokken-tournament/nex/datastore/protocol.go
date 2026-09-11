@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"github.com/PretendoNetwork/pokken-tournament/globals"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
 
 	commondatastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 )

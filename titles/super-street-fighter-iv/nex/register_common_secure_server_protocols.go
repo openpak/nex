@@ -12,8 +12,8 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/super-street-fighter-iv/database"
-	"github.com/PretendoNetwork/super-street-fighter-iv/globals"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/database"
+	"github.com/openpak/nex/titles/super-street-fighter-iv/globals"
 )
 
 func registerCommonSecureServerProtocols() {

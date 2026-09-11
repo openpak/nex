@@ -4,6 +4,31 @@ package titles
 import (
 	nexhost "github.com/openpak/nex"
 
+	// Wii U and 3DS, adapted from Pretendo (Run shape)
+	acnl "github.com/openpak/nex/titles/animal-crossing-new-leaf"
+	drluigi "github.com/openpak/nex/titles/dr-luigi"
+	f12011 "github.com/openpak/nex/titles/f1-2011"
+	ironfall "github.com/openpak/nex/titles/ironfall-invasion"
+	lm2 "github.com/openpak/nex/titles/luigis-mansion-2"
+	mpff "github.com/openpak/nex/titles/metroid-prime-federation-force"
+	miraclecure "github.com/openpak/nex/titles/miracle-cure"
+	mh4u "github.com/openpak/nex/titles/monster-hunter-4-ultimate"
+	mhgen "github.com/openpak/nex/titles/monster-hunter-generations"
+	mhxx "github.com/openpak/nex/titles/monster-hunter-xx"
+	pikmin3 "github.com/openpak/nex/titles/pikmin-3"
+	pokegen6 "github.com/openpak/nex/titles/pokemon-gen6"
+	pokken "github.com/openpak/nex/titles/pokken-tournament"
+	ppt "github.com/openpak/nex/titles/puyo-puyo-tetris"
+	splatoonwiiu "github.com/openpak/nex/titles/splatoon"
+	sdsw "github.com/openpak/nex/titles/steel-diver-sub-wars"
+	sm3dwu "github.com/openpak/nex/titles/super-mario-3d-world"
+	smmwiiu "github.com/openpak/nex/titles/super-mario-maker"
+	ssb3ds "github.com/openpak/nex/titles/super-smash-bros-3ds"
+	ssbwiiu "github.com/openpak/nex/titles/super-smash-bros-wiiu"
+	ssfiv "github.com/openpak/nex/titles/super-street-fighter-iv"
+	wiiuchat "github.com/openpak/nex/titles/wiiu-chat"
+
+	// Switch (Register shape)
 	acnh "github.com/openpak/nex/titles/animal-crossing-new-horizons"
 	arms "github.com/openpak/nex/titles/arms"
 	kdb "github.com/openpak/nex/titles/kirbys-dream-buffet"
@@ -25,6 +50,28 @@ import (
 
 // All is every title, by the NEX_TITLE value that selects it. Adding a game is one line here.
 var All = index(
+	acnl.Title,
+	drluigi.Title,
+	f12011.Title,
+	ironfall.Title,
+	lm2.Title,
+	mpff.Title,
+	miraclecure.Title,
+	mh4u.Title,
+	mhgen.Title,
+	mhxx.Title,
+	pikmin3.Title,
+	pokegen6.Title,
+	pokken.Title,
+	ppt.Title,
+	splatoonwiiu.Title,
+	sdsw.Title,
+	sm3dwu.Title,
+	smmwiiu.Title,
+	ssb3ds.Title,
+	ssbwiiu.Title,
+	ssfiv.Title,
+	wiiuchat.Title,
 	acnh.Title,
 	arms.Title,
 	lm3.Title,

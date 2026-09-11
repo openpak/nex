@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
-	matchmake_extension_super_smash_bros_4_types "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
+	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
+	matchmake_extension_super_smash_bros_4_types "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
 )
 
 var SelectCommunityCompetitionByParamStmt *sql.Stmt

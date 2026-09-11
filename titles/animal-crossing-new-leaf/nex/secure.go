@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 )

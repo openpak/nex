@@ -1,14 +1,14 @@
-package main
+package splatoonwiiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/splatoon/nex"
+	"github.com/openpak/nex/titles/splatoon/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

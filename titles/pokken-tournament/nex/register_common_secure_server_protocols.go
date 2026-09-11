@@ -5,7 +5,7 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_datastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
-	local_common_datastore "github.com/PretendoNetwork/pokken-tournament/nex/datastore"
+	local_common_datastore "github.com/openpak/nex/titles/pokken-tournament/nex/datastore"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -20,8 +20,8 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/pokken-tournament/globals"
-	local_ranking "github.com/PretendoNetwork/pokken-tournament/nex/ranking"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
+	local_ranking "github.com/openpak/nex/titles/pokken-tournament/nex/ranking"
 	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 )
 

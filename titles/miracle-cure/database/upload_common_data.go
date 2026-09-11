@@ -6,7 +6,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )
 
-func UploadCommonData(pid *types.PID, uniqueID *types.PrimitiveU64, commonData *types.Buffer) error {
+func UploadCommonData(pid types.PID, uniqueID types.UInt64, commonData types.Buffer) error {
 	now := time.Now().UnixNano()
 
 	_, err := Postgres.Exec(`
@@ -19,9 +19,9 @@ func UploadCommonData(pid *types.PID, uniqueID *types.PrimitiveU64, commonData *
 		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (owner_pid, unique_id) DO UPDATE 
 		SET common_data = excluded.common_data;`,
-		pid.Value(),
-		uniqueID.Value,
-		commonData.Value,
+		uint64(pid),
+		uint64(uniqueID),
+		[]byte(commonData),
 		now,
 	)
 

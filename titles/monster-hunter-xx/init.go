@@ -1,4 +1,4 @@
-package main
+package mhxx
 
 import (
 	"crypto/rand"
@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	pb "github.com/PretendoNetwork/grpc-go/account"
-	pbfriends "github.com/PretendoNetwork/grpc-go/friends"
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	pb "github.com/PretendoNetwork/grpc/go/account"
+	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

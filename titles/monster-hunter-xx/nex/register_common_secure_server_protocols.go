@@ -3,7 +3,7 @@ package nex
 import (
 	//"fmt"
 
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
@@ -22,8 +22,8 @@ import (
 	messagedelivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 
-	local_match_making "github.com/PretendoNetwork/monster-hunter-xx/nex/match_making"
-	local_matchmake_extension "github.com/PretendoNetwork/monster-hunter-xx/nex/matchmake-extension"
+	local_match_making "github.com/openpak/nex/titles/monster-hunter-xx/nex/match_making"
+	local_matchmake_extension "github.com/openpak/nex/titles/monster-hunter-xx/nex/matchmake-extension"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {

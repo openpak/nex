@@ -3,7 +3,7 @@ package nex
 import (
 	"fmt"
 
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
@@ -30,7 +30,7 @@ import (
 	messagedelivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	notifications_types "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/types"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
-	local_utility "github.com/PretendoNetwork/animal-crossing-new-leaf/nex/utility"
+	local_utility "github.com/openpak/nex/titles/animal-crossing-new-leaf/nex/utility"
 )
 
 func updateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType types.UInt32, uiParam1 types.UInt32, uiParam2 types.UInt32, strParam types.String) (*nex.RMCMessage, *nex.Error) {

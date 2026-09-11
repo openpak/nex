@@ -6,7 +6,7 @@ import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func FindBySingleID(err error, packet nex.PacketInterface, callID uint32, id types.UInt32) (*nex.RMCMessage, *nex.Error) {

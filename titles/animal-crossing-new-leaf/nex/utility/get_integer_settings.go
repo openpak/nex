@@ -1,7 +1,7 @@
 package utility 
 
 import(
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"

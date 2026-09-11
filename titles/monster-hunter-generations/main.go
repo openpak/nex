@@ -1,14 +1,14 @@
-package main
+package mhgen
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/monster-hunter-generations/nex"
+	"github.com/openpak/nex/titles/monster-hunter-generations/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

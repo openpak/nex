@@ -8,7 +8,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_ticket_granting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticket_granting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func registerCommonAuthenticationServerProtocols() {

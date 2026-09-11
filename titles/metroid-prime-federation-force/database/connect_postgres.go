@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 )
 
 var Postgres *sql.DB

@@ -5,11 +5,12 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	notifications "github.com/PretendoNetwork/nex-protocols-go/v2/notifications"
+	notification_constants "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/constants"
 	notifications_types "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/types"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
-func ProcessNotificationEvent(callID uint32, packet nex.PacketInterface, uiType types.UInt32, uiParam1 types.UInt32, uiParam2 types.UInt32, strParam types.String) {
+func ProcessNotificationEvent(callID uint32, packet nex.PacketInterface, uiType notification_constants.NotificationEvents, uiParam1 types.UInt64, uiParam2 types.UInt64, strParam types.String) {
 	event := notifications_types.NewNotificationEvent()
 
 	event.PIDSource = packet.Sender().PID() // Sender PID

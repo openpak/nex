@@ -13,9 +13,9 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/database"
-	"github.com/PretendoNetwork/super-smash-bros-3ds/globals"
-	local_globals "github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/database"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
+	local_globals "github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 )
 
 func registerCommonSecureServerProtocols() {

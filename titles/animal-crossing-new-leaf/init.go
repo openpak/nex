@@ -1,4 +1,4 @@
-package main
+package acnl
 
 import (
 	"database/sql"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PretendoNetwork/animal-crossing-new-leaf/globals"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/super-mario-3d-world/globals"
+	"github.com/openpak/nex/titles/super-mario-3d-world/globals"
 )
 
 var Postgres *sql.DB

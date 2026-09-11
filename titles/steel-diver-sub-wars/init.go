@@ -1,4 +1,4 @@
-package main
+package sdsw
 
 import (
 	"crypto/rand"
@@ -7,20 +7,20 @@ import (
 	"strconv"
 	"strings"
 
-	pb_account "github.com/PretendoNetwork/grpc-go/account"
-	pb_friends "github.com/PretendoNetwork/grpc-go/friends"
+	pb_account "github.com/PretendoNetwork/grpc/go/account"
+	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/steel-diver-sub-wars/database"
-	"github.com/PretendoNetwork/steel-diver-sub-wars/globals"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/database"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/globals"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
@@ -55,8 +55,8 @@ func init() {
 
 	globals.KerberosPassword = string(kerberosPassword)
 
-	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword)
-	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword)
+	globals.AuthenticationServerAccount = nex.NewAccount(types.NewPID(1), "Quazal Authentication", globals.KerberosPassword, false)
+	globals.SecureServerAccount = nex.NewAccount(types.NewPID(2), "Quazal Rendez-Vous", globals.KerberosPassword, false)
 
 	if strings.TrimSpace(authenticationServerPort) == "" {
 		globals.Logger.Error("PN_SDSB_AUTHENTICATION_SERVER_PORT environment variable not set")

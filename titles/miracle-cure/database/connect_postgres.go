@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/miracle-cure/globals"
+	"github.com/openpak/nex/titles/miracle-cure/globals"
 )
 
 var Postgres *sql.DB

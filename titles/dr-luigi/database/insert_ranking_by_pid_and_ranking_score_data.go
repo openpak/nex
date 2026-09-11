@@ -5,7 +5,7 @@ import (
 
 	ranking_types "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
 
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 	
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )

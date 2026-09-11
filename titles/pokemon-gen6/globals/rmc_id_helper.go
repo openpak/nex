@@ -1,7 +1,7 @@
 package globals
 
 import (
-	globals_rmc "github.com/PretendoNetwork/pokemon-gen6/globals/rmc"
+	globals_rmc "github.com/openpak/nex/titles/pokemon-gen6/globals/rmc"
 )
 
 func GetProtocolByID(protocolId uint16) globals_rmc.ProtocolInfo {

@@ -1,14 +1,14 @@
-package main
+package wiiuchat
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/wiiu-chat/nex"
+	"github.com/openpak/nex/titles/wiiu-chat/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

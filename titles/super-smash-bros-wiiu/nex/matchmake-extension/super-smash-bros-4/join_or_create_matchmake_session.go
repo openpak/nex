@@ -10,7 +10,7 @@ import (
 	//mmdatabase "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension/database"\
 	mm_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmake_extension_super_smash_bros_4 "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension/super-smash-bros-4"
-	"github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
+	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
 )
 
 // INCOMING:

@@ -7,9 +7,9 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_mario_maker_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func GetCourseRecordByDataIDAndSlot(dataID types.UInt64, slot types.UInt8) (datastore_super_mario_maker_types.DataStoreGetCourseRecordResult, *nex.Error) {

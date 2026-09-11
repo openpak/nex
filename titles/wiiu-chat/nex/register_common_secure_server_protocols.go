@@ -9,10 +9,10 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	local_globals "github.com/PretendoNetwork/wiiu-chat/globals"
-	local_match_making "github.com/PretendoNetwork/wiiu-chat/nex/match-making"
-	local_match_making_ext "github.com/PretendoNetwork/wiiu-chat/nex/match-making-ext"
-	local_matchmake_extension "github.com/PretendoNetwork/wiiu-chat/nex/matchmake-extension"
+	local_globals "github.com/openpak/nex/titles/wiiu-chat/globals"
+	local_match_making "github.com/openpak/nex/titles/wiiu-chat/nex/match-making"
+	local_match_making_ext "github.com/openpak/nex/titles/wiiu-chat/nex/match-making-ext"
+	local_matchmake_extension "github.com/openpak/nex/titles/wiiu-chat/nex/matchmake-extension"
 )
 
 func registerCommonSecureServerProtocols() {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/ironfall-invasion/globals"
+	"github.com/openpak/nex/titles/ironfall-invasion/globals"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 )

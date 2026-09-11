@@ -1,7 +1,7 @@
 package local_matchmake_extension
 
 import (
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -23,7 +23,7 @@ func BrowseMatchmakeSessionNoHolder(err error, packet nex.PacketInterface, callI
 
 	searchCriterias := []match_making_types.MatchmakeSessionSearchCriteria{searchCriteria}
 
-	sessions, nexError := database.FindMatchmakeSessionBySearchCriteria(globals.MatchmakingManager, connection, searchCriterias, resultRange, nil)
+	sessions, nexError := database.FindMatchmakeSessionBySearchCriteria(globals.MatchmakingManager, connection, searchCriterias, resultRange, nil, false)
 	if nexError != nil {
 		globals.MatchmakingManager.Mutex.RUnlock()
 		return nil, nexError

@@ -55,6 +55,17 @@ that one title; with no `NEX_TITLE` it is the bare host below. Each title keeps 
 docs and example.env in its directory. The former per-title repositories are archived; their
 history is merged here.
 
+## Wii U and 3DS titles (Pretendo-derived)
+
+Twenty-two of Pretendo's AGPL game servers live here too, one package each, history merged.
+They are the other `Title` shape: `Run` instead of `Register`. Upstream's code builds its own
+authentication and secure PRUDP servers over UDP and logs consoles in through the account
+server (nn-account) and friends server (nn-friends) over gRPC; `title.go` in each package only
+translates the host Config (port block, secure host, database, gRPC addresses and keys) into
+the `PN_*` environment upstream reads, then calls upstream's former `init()` and `main()`.
+`OPENPAK.md` beside each upstream README lists the mapping and the pass-through variables.
+Consoles find these servers through nn-account's `servers` table, not Traefik.
+
 ## Deployed shape
 
 Production runs the passthrough form: Traefik routes each title's `g<id>-lp1.s.n.srv.nintendo.net`

@@ -4,8 +4,8 @@ import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
-	"github.com/PretendoNetwork/wiiu-chat/database"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/database"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func UnregisterGathering(err error, packet nex.PacketInterface, callID uint32, idGathering types.UInt32) (*nex.RMCMessage, *nex.Error) {

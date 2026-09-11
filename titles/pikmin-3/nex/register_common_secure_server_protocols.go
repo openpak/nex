@@ -6,8 +6,8 @@ import (
 
 	common_ranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
-	"github.com/PretendoNetwork/pikmin-3/database"
-	"github.com/PretendoNetwork/pikmin-3/globals"
+	"github.com/openpak/nex/titles/pikmin-3/database"
+	"github.com/openpak/nex/titles/pikmin-3/globals"
 )
 
 func registerCommonSecureServerProtocols() {

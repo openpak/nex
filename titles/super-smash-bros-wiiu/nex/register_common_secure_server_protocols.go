@@ -12,9 +12,9 @@ import (
 	matchmake_extension_super_smash_bros_4 "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension/super-smash-bros-4"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
-	//local_matchmake_extension_super_smash_bros_4 "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4"
-	//local_matchmake_extension_database_super_smash_bros_4 "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/database"
+	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
+	//local_matchmake_extension_super_smash_bros_4 "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4"
+	//local_matchmake_extension_database_super_smash_bros_4 "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/database"
 )
 
 func registerCommonSecureServerProtocols() {

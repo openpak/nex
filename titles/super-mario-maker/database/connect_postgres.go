@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	_ "github.com/lib/pq"
 )
 

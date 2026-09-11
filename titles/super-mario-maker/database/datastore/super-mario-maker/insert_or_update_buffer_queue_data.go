@@ -6,8 +6,8 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
 )
 
 func InsertOrUpdateBufferQueueData(dataID types.UInt64, slot types.UInt32, buffer types.QBuffer) *nex.Error {

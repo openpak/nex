@@ -6,7 +6,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	rankingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
-	"github.com/PretendoNetwork/puyo-puyo-tetris/globals"
+	"github.com/openpak/nex/titles/puyo-puyo-tetris/globals"
 )
 
 var getFriendsRankings *sql.Stmt

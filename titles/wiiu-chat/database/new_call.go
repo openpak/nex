@@ -2,7 +2,7 @@ package database
 
 import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func NewCall(caller types.PID, target types.PID) {

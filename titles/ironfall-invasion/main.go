@@ -1,14 +1,14 @@
-package main
+package ironfall
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/ironfall-invasion/nex"
+	"github.com/openpak/nex/titles/ironfall-invasion/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

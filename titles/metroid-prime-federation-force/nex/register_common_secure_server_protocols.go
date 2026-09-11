@@ -1,8 +1,8 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/metroid-prime-federation-force/database"
-	"github.com/PretendoNetwork/metroid-prime-federation-force/globals"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/database"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"

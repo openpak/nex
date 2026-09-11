@@ -10,7 +10,7 @@ import (
 var AuthenticationServerAccount *nex.Account
 var SecureServerAccount *nex.Account
 
-func AccountDetailsByPID(pid *types.PID) (*nex.Account, *nex.Error) {
+func AccountDetailsByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	if pid.Equals(AuthenticationServerAccount.PID) {
 		return AuthenticationServerAccount, nil
 	}
@@ -24,7 +24,7 @@ func AccountDetailsByPID(pid *types.PID) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(errorCode, "Failed to get password from PID")
 	}
 
-	account := nex.NewAccount(pid, strconv.Itoa(int(pid.LegacyValue())), password)
+	account := nex.NewAccount(pid, strconv.Itoa(int(uint32(pid))), password, false)
 
 	return account, nil
 }
@@ -50,7 +50,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(errorCode, "Failed to get password from PID")
 	}
 
-	account := nex.NewAccount(pid, username, password)
+	account := nex.NewAccount(pid, username, password, false)
 
 	return account, nil
 }

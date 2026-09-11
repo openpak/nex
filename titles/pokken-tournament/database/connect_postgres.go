@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/pokken-tournament/globals"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
 )
 
 func ConnectPostgres() {

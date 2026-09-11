@@ -1,14 +1,14 @@
-package main
+package f12011
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/f1-2011/nex"
+	"github.com/openpak/nex/titles/f1-2011/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

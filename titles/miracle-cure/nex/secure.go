@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/miracle-cure/globals"
+	"github.com/openpak/nex/titles/miracle-cure/globals"
 )
 
 func StartSecureServer() {
@@ -19,7 +19,7 @@ func StartSecureServer() {
 	globals.SecureEndpoint.AccountDetailsByUsername = globals.AccountDetailsByUsername
 	globals.SecureServer.BindPRUDPEndPoint(globals.SecureEndpoint)
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = true
-	
+
 	globals.SecureServer.LibraryVersions.SetDefault(nex.NewLibraryVersion(3, 7, 1))
 	globals.SecureServer.AccessKey = "07f4860a"
 

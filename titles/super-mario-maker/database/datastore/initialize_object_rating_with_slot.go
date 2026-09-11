@@ -3,8 +3,8 @@ package datastore_db
 import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func InitializeObjectRatingWithSlot(dataID uint64, param datastore_types.DataStoreRatingInitParamWithSlot) *nex.Error {

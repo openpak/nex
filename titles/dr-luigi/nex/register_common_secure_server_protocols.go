@@ -1,8 +1,8 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/dr-luigi/database"
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	"github.com/openpak/nex/titles/dr-luigi/database"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
@@ -18,7 +18,7 @@ import (
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 
-	nex_matchmake_extension_common "github.com/PretendoNetwork/dr-luigi/nex/matchmake-extension/common"
+	nex_matchmake_extension_common "github.com/openpak/nex/titles/dr-luigi/nex/matchmake-extension/common"
 )
 
 func registerCommonSecureServerProtocols() {

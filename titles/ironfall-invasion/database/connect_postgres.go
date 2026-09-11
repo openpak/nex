@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/ironfall-invasion/globals"
+	"github.com/openpak/nex/titles/ironfall-invasion/globals"
 )
 
 var Postgres *sql.DB

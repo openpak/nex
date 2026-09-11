@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

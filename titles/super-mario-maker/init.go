@@ -1,4 +1,4 @@
-package main
+package smmwiiu
 
 import (
 	"crypto/rand"
@@ -9,8 +9,8 @@ import (
 
 	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/super-mario-maker/database"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	"github.com/openpak/nex/titles/super-mario-maker/database"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	"github.com/joho/godotenv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
@@ -61,8 +61,8 @@ func init() {
 
 	globals.KerberosPassword = string(kerberosPassword)
 
-	globals.AuthenticationServerAccount = nex.NewAccount(1, "Quazal Authentication", globals.KerberosPassword)
-	globals.SecureServerAccount = nex.NewAccount(2, "Quazal Rendez-Vous", globals.KerberosPassword)
+	globals.AuthenticationServerAccount = nex.NewAccount(1, "Quazal Authentication", globals.KerberosPassword, false)
+	globals.SecureServerAccount = nex.NewAccount(2, "Quazal Rendez-Vous", globals.KerberosPassword, false)
 
 	if strings.TrimSpace(authenticationServerPort) == "" {
 		globals.Logger.Error("PN_SMM_AUTHENTICATION_SERVER_PORT environment variable not set")

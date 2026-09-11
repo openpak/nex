@@ -1,14 +1,14 @@
-package main
+package miraclecure
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/miracle-cure/nex"
+	"github.com/openpak/nex/titles/miracle-cure/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

@@ -1,14 +1,14 @@
-package main
+package ssbwiiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/super-smash-bros-wiiu/nex"
+	"github.com/openpak/nex/titles/super-smash-bros-wiiu/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

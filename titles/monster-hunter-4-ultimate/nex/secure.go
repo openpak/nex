@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/monster-hunter-4-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-4-ultimate/globals"
 )
 
 func StartSecureServer() {

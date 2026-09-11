@@ -8,8 +8,8 @@ import (
 
 	pb "github.com/PretendoNetwork/grpc/go/smm/v1"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	datastore_db "github.com/PretendoNetwork/super-mario-maker/database/datastore"
-	"github.com/PretendoNetwork/super-mario-maker/globals"
+	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func (s *gRPCSMMServer) DeleteCourse(ctx context.Context, in *pb.DeleteCourseRequest) (*pb.DeleteCourseResponse, error) {

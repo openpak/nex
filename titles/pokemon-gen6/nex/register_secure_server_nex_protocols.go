@@ -4,10 +4,10 @@ import (
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	rating "github.com/PretendoNetwork/nex-protocols-go/v2/rating"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
-	"github.com/PretendoNetwork/pokemon-gen6/globals"
+	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 
-	nex_rating "github.com/PretendoNetwork/pokemon-gen6/nex/rating"
-	nex_subscription "github.com/PretendoNetwork/pokemon-gen6/nex/subscription"
+	nex_rating "github.com/openpak/nex/titles/pokemon-gen6/nex/rating"
+	nex_subscription "github.com/openpak/nex/titles/pokemon-gen6/nex/subscription"
 )
 
 func registerSecureServerNEXProtocols() {

@@ -1,14 +1,14 @@
-package main
+package mpff
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/metroid-prime-federation-force/nex"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

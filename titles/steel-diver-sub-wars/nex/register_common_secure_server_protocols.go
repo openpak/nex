@@ -15,9 +15,9 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 
-	"github.com/PretendoNetwork/steel-diver-sub-wars/database"
-	"github.com/PretendoNetwork/steel-diver-sub-wars/globals"
-	nex_secure_conenction "github.com/PretendoNetwork/steel-diver-sub-wars/nex/secure_conenction"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/database"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/globals"
+	nex_secure_conenction "github.com/openpak/nex/titles/steel-diver-sub-wars/nex/secure_conenction"
 )
 
 func registerCommonSecureServerProtocols() {

@@ -3,6 +3,7 @@ package globals
 import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	notification_constants "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/constants"
 	notification_types "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/types"
 )
 
@@ -20,7 +21,7 @@ func HandleSubscriptionChangeNotification(source types.PID, notifyTargets bool) 
 func handleSubscriptionNotification(source types.PID, notificationType uint32, notifyTargets bool) {
 	notificationEvent := notification_types.NewNotificationEvent()
 	notificationEvent.PIDSource = source
-	notificationEvent.Type = types.UInt32(notificationType)
+	notificationEvent.Type = notification_constants.NotificationEvents(notificationType)
 
 	targets := GetOnlineFriendPIDs(uint32(source))
 

@@ -3,8 +3,8 @@ package nex_matchmake_extension_super_smash_bros_4_database
 import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	mmdatabase "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension/database"
-	globals "github.com/PretendoNetwork/super-smash-bros-wiiu/globals"
-	matchmake_extension_super_smash_bros_4_types "github.com/PretendoNetwork/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
+	globals "github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
+	matchmake_extension_super_smash_bros_4_types "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/matchmake-extension/super-smash-bros-4/types"
 )
 
 func CreateCommunityCompetition(communityCompetition *matchmake_extension_super_smash_bros_4_types.CommunityCompetition, connection *nex.PRUDPConnection) *nex.Error {

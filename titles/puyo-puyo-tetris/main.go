@@ -1,14 +1,14 @@
-package main
+package ppt
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/puyo-puyo-tetris/nex"
+	"github.com/openpak/nex/titles/puyo-puyo-tetris/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

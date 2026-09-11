@@ -5,8 +5,8 @@ import (
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	matchmaking_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
-	"github.com/PretendoNetwork/monster-hunter-xx/globals"
-	local_matchmake_extension_database "github.com/PretendoNetwork/monster-hunter-xx/nex/matchmake-extension/database"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
+	local_matchmake_extension_database "github.com/openpak/nex/titles/monster-hunter-xx/nex/matchmake-extension/database"
 )
 
 func FindMatchmakeSessionByParticipant(err error, packet nex.PacketInterface, callID uint32, param matchmaking_types.FindMatchmakeSessionByParticipantParam) (*nex.RMCMessage, *nex.Error) {

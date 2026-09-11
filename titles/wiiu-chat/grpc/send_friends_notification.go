@@ -3,12 +3,12 @@ package grpc
 import (
 	"context"
 
-	pb "github.com/PretendoNetwork/grpc-go/friends"
+	pb "github.com/PretendoNetwork/grpc/go/friends"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	friends_wiiu_types "github.com/PretendoNetwork/nex-protocols-go/v2/friends-wiiu/types"
 	nintendo_notifications_types "github.com/PretendoNetwork/nex-protocols-go/v2/nintendo-notifications/types"
-	"github.com/PretendoNetwork/wiiu-chat/globals"
+	"github.com/openpak/nex/titles/wiiu-chat/globals"
 	"google.golang.org/grpc/metadata"
 )
 

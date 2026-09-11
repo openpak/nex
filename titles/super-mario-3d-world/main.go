@@ -1,14 +1,14 @@
-package main
+package sm3dwu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/super-mario-3d-world/nex"
+	"github.com/openpak/nex/titles/super-mario-3d-world/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

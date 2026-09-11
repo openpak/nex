@@ -5,7 +5,7 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	ranking_types "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
-	"github.com/PretendoNetwork/pikmin-3/globals"
+	"github.com/openpak/nex/titles/pikmin-3/globals"
 )
 
 func GetRankingsAndCountByCategoryAndRankingOrderParam(category types.UInt32, rankingOrderParam ranking_types.RankingOrderParam) (types.List[ranking_types.RankingRankData], uint32, error) {

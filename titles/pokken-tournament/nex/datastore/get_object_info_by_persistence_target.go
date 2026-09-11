@@ -3,7 +3,7 @@ package datastore
 import (
 	"database/sql"
 	"errors"
-	"github.com/PretendoNetwork/pokken-tournament/globals"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	datastoretypes "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"

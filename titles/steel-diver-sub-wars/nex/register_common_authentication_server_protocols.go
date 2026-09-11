@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/steel-diver-sub-wars/globals"
+	"github.com/openpak/nex/titles/steel-diver-sub-wars/globals"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_ticket_granting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"

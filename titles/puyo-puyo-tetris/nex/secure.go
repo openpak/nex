@@ -8,7 +8,7 @@ import (
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/puyo-puyo-tetris/globals"
+	"github.com/openpak/nex/titles/puyo-puyo-tetris/globals"
 )
 
 func StartSecureServer() {
@@ -40,9 +40,6 @@ func StartSecureServer() {
 
 	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, globals.Postgres)
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
-	globals.DatastoreManager = common_globals.NewDataStoreManager(globals.SecureEndpoint, globals.Postgres)
-	globals.DatastoreManager.SetS3Config(globals.S3Bucket, globals.S3KeyBase, globals.S3Manager)
-	globals.DatastoreManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 
 	registerCommonSecureServerProtocols()
 

@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/pokken-tournament/globals"
+import "github.com/openpak/nex/titles/pokken-tournament/globals"
 
 func initPostgres() {
 	var err error
@@ -13,7 +13,6 @@ func initPostgres() {
 	if err != nil {
 		globals.Logger.Critical(err.Error())
 		panic(err)
-		return
 	}
 
 	globals.Logger.Success("Postgres tables created")

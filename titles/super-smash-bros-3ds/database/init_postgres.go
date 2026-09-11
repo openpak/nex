@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/super-smash-bros-3ds/globals"
+import "github.com/openpak/nex/titles/super-smash-bros-3ds/globals"
 
 func initPostgres() {
 	var err error

@@ -15,7 +15,6 @@ import (
 
 var Postgres *sql.DB
 var MatchmakingManager *common_globals.MatchmakingManager
-var DatastoreManager *common_globals.DataStoreManager
 
 var Logger *plogger.Logger
 var KerberosPassword = "password" // * Default password
@@ -35,7 +34,6 @@ var GRPCFriendsClient pbfriends.FriendsClient
 var GRPCFriendsCommonMetadata metadata.MD
 
 var MinIOClient *minio.Client
-var S3Manager *common_globals.MinIOManager
 var S3Bucket string
 var S3KeyBase string
 

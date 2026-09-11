@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/wiiu-chat/globals"
+import "github.com/openpak/nex/titles/wiiu-chat/globals"
 
 func InitPostgres() {
 	var err error

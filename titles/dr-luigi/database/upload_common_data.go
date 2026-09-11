@@ -2,7 +2,7 @@ package database
 
 import (
 	"time"
-	"github.com/PretendoNetwork/dr-luigi/globals"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )

@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/monster-hunter-4-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-4-ultimate/globals"
 )
 
 var Postgres *sql.DB

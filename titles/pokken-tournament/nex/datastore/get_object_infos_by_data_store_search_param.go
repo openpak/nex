@@ -3,7 +3,7 @@ package datastore
 import (
 	"database/sql"
 	"errors"
-	"github.com/PretendoNetwork/pokken-tournament/globals"
+	"github.com/openpak/nex/titles/pokken-tournament/globals"
 	"slices"
 
 	"github.com/PretendoNetwork/nex-go/v2"
