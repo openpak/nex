@@ -32,6 +32,7 @@ import (
 	kiu "github.com/openpak/nex/titles/kid-icarus-uprising"
 	mk7 "github.com/openpak/nex/titles/mario-kart-7"
 	mk8wiiu "github.com/openpak/nex/titles/mario-kart-8"
+	mvdk "github.com/openpak/nex/titles/mario-vs-donkey-kong-tipping-stars"
 	minecraftwiiu "github.com/openpak/nex/titles/minecraft-wiiu"
 	mh4 "github.com/openpak/nex/titles/monster-hunter-4"
 	mhstories "github.com/openpak/nex/titles/monster-hunter-stories"
@@ -70,6 +71,7 @@ var All = index(
 	kiu.Title,
 	mk7.Title,
 	mk8wiiu.Title,
+	mvdk.Title,
 	minecraftwiiu.Title,
 	mh4.Title,
 	mhstories.Title,
