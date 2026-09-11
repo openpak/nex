@@ -23,3 +23,5 @@ No other variables.
 Consoles reach it through nn-account: the title's row in nn-account's `servers` table names this
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
+
+**Registration (2026-09-11):** Wii U game-server id not in Kinnay's Wii U list; a Wii U asks nn-account by game_server_id, so no row yet. The container runs; a console cannot be pointed at it until that fact is observed.
