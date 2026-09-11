@@ -7,8 +7,8 @@ func TestEveryTitleIsComplete(t *testing.T) {
 		t.Fatalf("17 titles expected, %d registered", len(All))
 	}
 	for name, title := range All {
-		if title.Defaults == nil || title.Register == nil {
-			t.Errorf("%s: Defaults and Register are both required", name)
+		if title.Defaults == nil || (title.Register == nil) == (title.Run == nil) {
+			t.Errorf("%s: Defaults and exactly one of Register or Run are required", name)
 		}
 	}
 }

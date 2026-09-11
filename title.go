@@ -12,6 +12,12 @@ type Title struct {
 	Name     string            // the NEX_TITLE value that selects it; also the default Config.Title
 	Defaults func(*Config)     // per-title values the environment may still override
 	Register func(*Host) error // registers the title's protocols on host.Secure
+	// Run is the other shape: the title owns its own listeners (the Wii U and 3DS servers
+	// adapted from Pretendo build their authentication and secure PRUDP servers themselves,
+	// over UDP, and log in through the account server rather than a Switch ticket). A Run
+	// title gets the Config and blocks for the life of the process; nexd serves /healthz on
+	// its behalf. Exactly one of Register and Run is set.
+	Run func(Config) error
 }
 
 // Config is the title's configuration as the binary builds it: Defaults, then the title's

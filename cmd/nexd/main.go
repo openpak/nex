@@ -24,6 +24,14 @@ func main() {
 	}
 	cfg := title.Config() // the zero Title is the bare host
 
+	if title.Run != nil {
+		// The title owns its listeners (Wii U / 3DS shape); nexd only adds the health endpoint.
+		if err := nexhost.ServeHealth(cfg.HTTPAddr, cfg.Title); err != nil {
+			log.Fatal(err)
+		}
+		log.Fatalf("%s: %v", title.Name, title.Run(cfg))
+	}
+
 	host, err := nexhost.New(cfg)
 	if err != nil {
 		log.Fatal(err)

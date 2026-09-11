@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -109,6 +110,13 @@ type Config struct {
 	HTTPAddr    string // /healthz listener
 	InternalURL string // nx-baas game/internal API
 	InternalKey string // nx-baas NX_INTERNAL_KEY, sent as X-Internal-Key
+	// The Wii U and 3DS titles (Run shape) log consoles in through the account server and
+	// read friend lists from the friends server, both over gRPC; Switch titles ignore these.
+	DatabaseURL     string // the title's Postgres (NEX_DATABASE_URL); Switch titles read their own <TITLE>_DATABASE_URL
+	AccountGRPCAddr string // nn-account gRPC, host:port (NEX_ACCOUNT_GRPC_ADDR)
+	AccountGRPCKey  string // its API key (NEX_ACCOUNT_GRPC_KEY)
+	FriendsGRPCAddr string // nn-friends gRPC, host:port (NEX_FRIENDS_GRPC_ADDR)
+	FriendsGRPCKey  string // its API key (NEX_FRIENDS_GRPC_KEY)
 }
 
 // Defaults is the configuration before the environment and before any title's own values.
@@ -154,7 +162,28 @@ func FromEnvWith(base Config) Config {
 	}
 	c.InternalURL = env("NX_INTERNAL_URL", c.InternalURL)
 	c.InternalKey = env("NX_INTERNAL_KEY", c.InternalKey)
+	c.DatabaseURL = env("NEX_DATABASE_URL", c.DatabaseURL)
+	c.AccountGRPCAddr = env("NEX_ACCOUNT_GRPC_ADDR", c.AccountGRPCAddr)
+	c.AccountGRPCKey = env("NEX_ACCOUNT_GRPC_KEY", c.AccountGRPCKey)
+	c.FriendsGRPCAddr = env("NEX_FRIENDS_GRPC_ADDR", c.FriendsGRPCAddr)
+	c.FriendsGRPCKey = env("NEX_FRIENDS_GRPC_KEY", c.FriendsGRPCKey)
 	return c
+}
+
+// ServeHealth answers GET /healthz on addr for a Run-shaped title, so "is it up" is an HTTP
+// question for every title regardless of who owns the PRUDP listeners. It returns as soon as
+// the listener is bound; the server runs for the life of the process.
+func ServeHealth(addr, title string) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintf(w, "ok %s\n", title)
+	})
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("healthz %s: %w", addr, err)
+	}
+	go func() { _ = http.Serve(ln, mux) }()
+	return nil
 }
 
 func atoiOr(s string, fallback int) int {
