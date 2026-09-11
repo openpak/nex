@@ -22,3 +22,5 @@ container's host and the block's `+0` port; the console asks nn-account for the 
 `game_server_id` and gets that address, its NEX password and a token.
 
 **Registration (2026-09-11):** row in nn-account's `servers` table (title ids from Pretendo's nex-viewer title database; Wii U game-server ids from Kinnay's Wii U list, where the id is the low 32 bits of the title id). Deployed as one container from the shared image. Not console-verified.
+
+**Event course metadata (2026-09-11):** upstream refuses to start unless `900000.bin` exists in the S3 bucket (the reserved DataID 900000 that opens Course World). Production holds an **empty placeholder** so the server runs; Course World needs the real event-course metadata blob uploaded over it.

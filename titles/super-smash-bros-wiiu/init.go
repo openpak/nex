@@ -13,10 +13,10 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
 	"github.com/joho/godotenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -175,9 +175,17 @@ func initialize() {
 
 	staticCredentials := credentials.NewStaticV4(globals.S3Key, globals.S3Secret, "")
 
-	minIOClient, err := minio.New(globals.S3Url, &minio.Options{
+	// The S3 URL may carry its scheme (http://openpak-minio:9000 on the internal network);
+	// minio-go wants a bare host and a Secure flag, so split them here instead of assuming TLS.
+	s3Endpoint, s3Secure := globals.S3Url, true
+	if strings.HasPrefix(s3Endpoint, "http://") {
+		s3Endpoint, s3Secure = strings.TrimPrefix(s3Endpoint, "http://"), false
+	} else if strings.HasPrefix(s3Endpoint, "https://") {
+		s3Endpoint = strings.TrimPrefix(s3Endpoint, "https://")
+	}
+	minIOClient, err := minio.New(s3Endpoint, &minio.Options{
 		Creds:  staticCredentials,
-		Secure: true,
+		Secure: s3Secure,
 	})
 	if err != nil {
 		globals.Logger.Criticalf("Error occured during minio connection: %v", err)
