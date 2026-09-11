@@ -129,3 +129,5 @@ This server therefore registers Pretendo's common DataStore protocol directly an
 `servers/mario-tennis-aces` — deliberately, so the convergence pass can lift the common parts
 into the shared subpackage and have both titles import it. The Splatoon 2-specific code is
 `splatfest.go` and the login/config facts above; nothing there belongs in the shared package.
+
+| Game-server id / secure host | `g2df33d01-lp1.s.n.srv.nintendo.net` (`NEX_SECURE_HOST`, set on production 2026-09-11) | Kinnay's Game Server List, Switch table: Splatoon 2 | 24E30D00, 2C4BFF00, 2DF33D01 (Testfire, World premiere, Main server). The host shape `g<id>-lp1.s.n.srv.nintendo.net` matches the four hosts the earlier server's SNI router names |

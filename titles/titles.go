@@ -6,6 +6,7 @@ import (
 
 	acnh "github.com/openpak/nex/titles/animal-crossing-new-horizons"
 	arms "github.com/openpak/nex/titles/arms"
+	kdb "github.com/openpak/nex/titles/kirbys-dream-buffet"
 	lm3 "github.com/openpak/nex/titles/luigis-mansion-3"
 	golf "github.com/openpak/nex/titles/mario-golf-super-rush"
 	mk8d "github.com/openpak/nex/titles/mario-kart-8-deluxe"
@@ -15,6 +16,7 @@ import (
 	minecraft "github.com/openpak/nex/titles/minecraft"
 	mhgu "github.com/openpak/nex/titles/monster-hunter-generations-ultimate"
 	splatoon2 "github.com/openpak/nex/titles/splatoon-2"
+	sm3dw "github.com/openpak/nex/titles/super-mario-3d-world-bowsers-fury"
 	smb35 "github.com/openpak/nex/titles/super-mario-bros-35"
 	smm2 "github.com/openpak/nex/titles/super-mario-maker-2"
 	smo "github.com/openpak/nex/titles/super-mario-odyssey"
@@ -27,6 +29,7 @@ var All = index(
 	arms.Title,
 	lm3.Title,
 	golf.Title,
+	kdb.Title,
 	mk8d.Title,
 	mps.Title,
 	strikers.Title,
@@ -34,6 +37,7 @@ var All = index(
 	minecraft.Title,
 	mhgu.Title,
 	splatoon2.Title,
+	sm3dw.Title,
 	smb35.Title,
 	smm2.Title,
 	smo.Title,

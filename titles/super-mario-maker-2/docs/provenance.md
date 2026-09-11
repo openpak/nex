@@ -183,3 +183,5 @@ NSA id` names elsewhere in the fleet.
 | Account identity, friend graph | `Host.PlayerByPID` / `Host.FriendPIDs` over nx-baas `/internal/switch/identity` | `servers/nex` |
 | Matchmaking, tracking and utility tables | created by `nex-protocols-common-go` when its managers are set | Pretendo source; this repository creates only the `datastore` and `ranking` schemas |
 | Course object key base | `super-mario-maker-2` / `super-mario-maker-2-notify` | this repository's `datastore.go` |
+
+| Game-server id / secure host | `g22306d00-lp1.s.n.srv.nintendo.net` (`NEX_SECURE_HOST`, set on production 2026-09-11) | Kinnay's Game Server List, Switch table: Super Mario Maker 2 | 22306D00 is the row marked Main server beside access key fdf6617f. The host shape `g<id>-lp1.s.n.srv.nintendo.net` matches the four hosts the earlier server's SNI router names |

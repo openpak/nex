@@ -1,0 +1,23 @@
+# super-mario-3d-world-bowsers-fury
+
+Super Mario 3D World + Bowser's Fury (`010028600EBDA000`) on the shared NEX host. **Scaffold.** Port block `22370`
+([ports.md](../../../../ports.md)): auth `22370`, secure `22371`, `/healthz` `22372`.
+
+## What has to be found out before a console can use it
+
+| Fact | Status | Where it comes from |
+| --- | --- | --- |
+| NEX access key (`NEX_ACCESS_KEY`) | **unknown**; the host refuses to start without one | the game binary, or a measured CONNECT signature (see `titles/minecraft/docs/provenance.md` for how that verification looks) |
+| Game-server id, i.e. the `g<id>-lp1.s.n.srv.nintendo.net` host (`NEX_SECURE_HOST`) | **unknown** | the SNI the console dials on 443; not in Kinnay's Game Server List (checked 2026-09-11) |
+| NEX library version | unknown, default `4.4.0` | `apiVersionGeneral` in the first packets |
+| Protocol set actually called | unknown | `Core::NotImplemented` lines once a console talks to it |
+
+the earlier server's repository for this title (checked 2026-09-11) is a licence-only placeholder, so
+there is no public server to learn from either.
+
+## Run
+
+```sh
+NEX_TITLE=super-mario-3d-world-bowsers-fury NEX_PORT_BASE=22370 NEX_ACCESS_KEY=… NEX_SECURE_HOST=g…-lp1.s.n.srv.nintendo.net \
+SM3DW_DATABASE_URL=postgres://… NX_INTERNAL_URL=… NX_INTERNAL_KEY=… go run ../../cmd/nexd
+```
