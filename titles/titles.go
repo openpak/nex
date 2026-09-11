@@ -31,6 +31,7 @@ import (
 	isz "github.com/openpak/nex/titles/ice-station-z"
 	kiu "github.com/openpak/nex/titles/kid-icarus-uprising"
 	mk7 "github.com/openpak/nex/titles/mario-kart-7"
+	mk8wiiu "github.com/openpak/nex/titles/mario-kart-8"
 	minecraftwiiu "github.com/openpak/nex/titles/minecraft-wiiu"
 	mh4 "github.com/openpak/nex/titles/monster-hunter-4"
 	mhstories "github.com/openpak/nex/titles/monster-hunter-stories"
@@ -68,6 +69,7 @@ var All = index(
 	isz.Title,
 	kiu.Title,
 	mk7.Title,
+	mk8wiiu.Title,
 	minecraftwiiu.Title,
 	mh4.Title,
 	mhstories.Title,

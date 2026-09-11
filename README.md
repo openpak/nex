@@ -57,7 +57,7 @@ history is merged here.
 
 ## Wii U and 3DS titles (Pretendo-derived)
 
-Twenty-two of Pretendo's AGPL game servers live here too, one package each, history merged.
+Thirty-six of Pretendo's AGPL game servers live here too, and `titles/mario-kart-8` is OpenPak's Go port of Pretendo's Python Mario Kart 8 server, one package each, history merged.
 They are the other `Title` shape: `Run` instead of `Register`. Upstream's code builds its own
 authentication and secure PRUDP servers over UDP and logs consoles in through the account
 server (nn-account) and friends server (nn-friends) over gRPC; `title.go` in each package only
