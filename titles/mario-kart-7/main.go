@@ -1,14 +1,14 @@
-package main
+package mk7
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/mario-kart-7/nex"
+	"github.com/openpak/nex/titles/mario-kart-7/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

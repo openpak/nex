@@ -3,9 +3,9 @@ package nex
 import (
 	"context"
 
-	"github.com/PretendoNetwork/kid-icarus-uprising/database"
-	"github.com/PretendoNetwork/kid-icarus-uprising/globals"
-	local_globals "github.com/PretendoNetwork/kid-icarus-uprising/globals"
+	"github.com/openpak/nex/titles/kid-icarus-uprising/database"
+	"github.com/openpak/nex/titles/kid-icarus-uprising/globals"
+	local_globals "github.com/openpak/nex/titles/kid-icarus-uprising/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"

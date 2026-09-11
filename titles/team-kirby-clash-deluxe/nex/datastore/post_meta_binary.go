@@ -1,8 +1,8 @@
 package nex_datastore
 
 import (
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/database"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/database"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"

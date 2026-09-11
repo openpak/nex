@@ -6,9 +6,9 @@ import (
 
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/types"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/types"
 )
 
 func GetMetaBinariesByDataStoreSearchParam(param datastore_types.DataStoreSearchParam) []*types.MetaBinary {

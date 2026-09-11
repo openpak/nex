@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/mario-kart-7/globals"
+	"github.com/openpak/nex/titles/mario-kart-7/globals"
 )
 
 var serverBuildString string

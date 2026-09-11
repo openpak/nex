@@ -4,9 +4,9 @@ import (
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	service_item_team_kirby_clash_deluxe "github.com/PretendoNetwork/nex-protocols-go/v2/service-item/team-kirby-clash-deluxe"
 
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
-	nex_datastore "github.com/PretendoNetwork/team-kirby-clash-deluxe/nex/datastore"
-	nex_service_item_team_kirby_clash_deluxe "github.com/PretendoNetwork/team-kirby-clash-deluxe/nex/service-item/team-kirby-clash-deluxe"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
+	nex_datastore "github.com/openpak/nex/titles/team-kirby-clash-deluxe/nex/datastore"
+	nex_service_item_team_kirby_clash_deluxe "github.com/openpak/nex/titles/team-kirby-clash-deluxe/nex/service-item/team-kirby-clash-deluxe"
 )
 
 func registerSecureServerNEXProtocols() {

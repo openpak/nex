@@ -1,14 +1,14 @@
-package main
+package remerc3d
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/nex"
+	"github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

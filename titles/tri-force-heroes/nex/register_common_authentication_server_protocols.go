@@ -9,7 +9,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_ticket_granting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticket_granting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
-	"github.com/PretendoNetwork/tri-force-heroes/globals"
+	"github.com/openpak/nex/titles/tri-force-heroes/globals"
 )
 
 func registerCommonAuthenticationServerProtocols() {

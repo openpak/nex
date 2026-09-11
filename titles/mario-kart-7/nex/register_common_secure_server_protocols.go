@@ -1,8 +1,8 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/mario-kart-7/database"
-	"github.com/PretendoNetwork/mario-kart-7/globals"
+	"github.com/openpak/nex/titles/mario-kart-7/database"
+	"github.com/openpak/nex/titles/mario-kart-7/globals"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -15,7 +15,7 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 
-	nex_matchmake_extension_common "github.com/PretendoNetwork/mario-kart-7/nex/matchmake-extension/common"
+	nex_matchmake_extension_common "github.com/openpak/nex/titles/mario-kart-7/nex/matchmake-extension/common"
 )
 
 func registerCommonSecureServerProtocols() {

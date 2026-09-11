@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/mario-kart-7/globals"
+	"github.com/openpak/nex/titles/mario-kart-7/globals"
 )
 
 var Postgres *sql.DB

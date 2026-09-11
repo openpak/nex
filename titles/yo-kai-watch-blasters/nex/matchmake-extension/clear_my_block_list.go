@@ -3,7 +3,7 @@ package matchmake_extension
 import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
-	"github.com/PretendoNetwork/yo-kai-watch-blasters/globals"
+	"github.com/openpak/nex/titles/yo-kai-watch-blasters/globals"
 )
 
 // replace later

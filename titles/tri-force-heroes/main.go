@@ -1,14 +1,14 @@
-package main
+package tfh
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/tri-force-heroes/nex"
+	"github.com/openpak/nex/titles/tri-force-heroes/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

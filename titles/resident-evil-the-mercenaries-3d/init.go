@@ -1,4 +1,4 @@
-package main
+package remerc3d
 
 import (
 	"crypto/rand"
@@ -12,14 +12,14 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals"
+	"github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/globals"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

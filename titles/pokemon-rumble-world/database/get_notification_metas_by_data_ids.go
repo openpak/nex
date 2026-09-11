@@ -7,8 +7,8 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func GetNotificationMetasByDataIDs(dataIDs []uint32) types.List[datastore_types.DataStoreSpecificMetaInfoV1] {

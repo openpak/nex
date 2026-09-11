@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/yo-kai-watch-blasters/globals"
+	"github.com/openpak/nex/titles/yo-kai-watch-blasters/globals"
 )
 
 func StartAuthenticationServer() {

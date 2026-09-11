@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/minecraft-wiiu/globals"
+	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 )
 

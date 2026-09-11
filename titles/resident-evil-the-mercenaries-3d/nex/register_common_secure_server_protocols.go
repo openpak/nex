@@ -8,7 +8,7 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals"
+	"github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -22,7 +22,7 @@ import (
 	messagedelivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 
-	local_matchmake_extension "github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/nex/matchmake-extension"
+	local_matchmake_extension "github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/nex/matchmake-extension"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {

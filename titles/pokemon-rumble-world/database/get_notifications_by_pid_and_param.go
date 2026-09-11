@@ -5,7 +5,7 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func GetNotificationsByPIDAndParam(pid uint32, param datastore_types.DataStoreGetNewArrivedNotificationsParam) types.List[datastore_types.DataStoreNotificationV1] {

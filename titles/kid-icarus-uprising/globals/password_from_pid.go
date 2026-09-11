@@ -3,7 +3,7 @@ package globals
 import (
 	"context"
 
-	pbaccount "github.com/PretendoNetwork/grpc-go/account"
+	pbaccount "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/nex-protocols-go/v2/globals"

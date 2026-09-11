@@ -1,8 +1,8 @@
 package nex_datastore
 
 import (
-	"github.com/PretendoNetwork/pokemon-rumble-world/database"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/database"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"

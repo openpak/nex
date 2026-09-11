@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func GetTotalMetaInfosByDataTypes(dataTypes []uint16) uint32 {

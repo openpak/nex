@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 )

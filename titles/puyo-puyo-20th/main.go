@@ -1,14 +1,14 @@
-package main
+package puyo20th
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/puyo-puyo-20th/nex"
+	"github.com/openpak/nex/titles/puyo-puyo-20th/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

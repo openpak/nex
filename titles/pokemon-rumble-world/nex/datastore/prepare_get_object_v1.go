@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"

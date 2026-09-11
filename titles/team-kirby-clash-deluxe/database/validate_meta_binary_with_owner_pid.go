@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
 )
 
 func ValidateMetaBinaryByOwnerPID(dataID uint32, pid uint32) *nex.Error {

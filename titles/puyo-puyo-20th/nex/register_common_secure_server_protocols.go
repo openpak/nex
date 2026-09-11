@@ -6,17 +6,13 @@ import (
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	commonmatchmakeextension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
-	commonrankinglegacy "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking-legacy"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
-	commonstoragemanager "github.com/PretendoNetwork/nex-protocols-common-go/v2/storage-manager"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
-	rankinglegacy "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/legacy"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	storagemanager "github.com/PretendoNetwork/nex-protocols-go/v2/storage-manager"
-	"github.com/PretendoNetwork/puyo-puyo-20th/globals"
+	"github.com/openpak/nex/titles/puyo-puyo-20th/globals"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
@@ -49,13 +45,8 @@ func registerCommonSecureServerProtocols() {
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
 
-	rankingProtocol := rankinglegacy.NewProtocol()
-	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
-	commonRankingProtocol := commonrankinglegacy.NewCommonProtocol(rankingProtocol)
-	commonRankingProtocol.SetManager(globals.RankingManager)
-
-	storageManagerProtocol := storagemanager.NewProtocol()
-	globals.SecureEndpoint.RegisterServiceProtocol(storageManagerProtocol)
-	commonStorageManagerProtocol := commonstoragemanager.NewCommonProtocol(storageManagerProtocol)
-	commonStorageManagerProtocol.SetManager(globals.StorageManagerManager)
+	// ponytail: upstream registers Ranking (legacy) and StorageManager through common
+	// implementations that exist only on a Pretendo development branch, not in any released
+	// nex-protocols-common-go. Until those ship, the two protocols are not registered and
+	// answer Core::NotImplemented; matchmaking and NAT traversal are unaffected.
 }

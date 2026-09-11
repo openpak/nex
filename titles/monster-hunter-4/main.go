@@ -1,14 +1,14 @@
-package main
+package mh4
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/monster-hunter-4/nex"
+	"github.com/openpak/nex/titles/monster-hunter-4/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

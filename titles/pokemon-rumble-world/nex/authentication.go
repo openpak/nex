@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 var serverBuildString string

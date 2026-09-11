@@ -27,7 +27,4 @@ var GRPCFriendsCommonMetadata metadata.MD
 var Postgres *sql.DB
 var MatchmakingManager *common_globals.MatchmakingManager
 
-var StorageManagerManager *common_globals.StorageManagerManager
-var RankingManager *common_globals.RankingManager
-
 var LocalAuthMode bool

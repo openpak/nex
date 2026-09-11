@@ -8,7 +8,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticketgranting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
-	"github.com/PretendoNetwork/yo-kai-watch-2/globals"
+	"github.com/openpak/nex/titles/yo-kai-watch-2/globals"
 )
 
 func registerCommonAuthenticationServerProtocols() {

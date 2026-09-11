@@ -1,4 +1,4 @@
-package main
+package minecraftwiiu
 
 import (
 	"crypto/rand"
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PretendoNetwork/minecraft-wiiu/globals"
+	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

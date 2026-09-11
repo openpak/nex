@@ -1,7 +1,7 @@
 package nex_service_item_team_kirby_clash_deluxe
 
 import (
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"

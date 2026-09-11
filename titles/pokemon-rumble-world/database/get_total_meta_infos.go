@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/pokemon-rumble-world/globals"
+import "github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 
 func GetTotalMetaInfos() uint32 {
 	var total uint32

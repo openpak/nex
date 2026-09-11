@@ -6,9 +6,9 @@ import (
 
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
-	"github.com/PretendoNetwork/pokemon-rumble-world/types"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/types"
 )
 
 func GetMetaInfosByDataStoreSearchParam(param datastore_types.DataStoreSearchParam) []*types.MetaBinary {

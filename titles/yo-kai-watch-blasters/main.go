@@ -1,14 +1,14 @@
-package main
+package ykwb
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/yo-kai-watch-blasters/nex"
+	"github.com/openpak/nex/titles/yo-kai-watch-blasters/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

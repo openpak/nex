@@ -8,7 +8,7 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	"github.com/PretendoNetwork/yo-kai-watch-2/globals"
+	"github.com/openpak/nex/titles/yo-kai-watch-2/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -24,8 +24,8 @@ import (
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 
-	local_match_making "github.com/PretendoNetwork/yo-kai-watch-2/nex/match-making"
-	local_matchmake_extension "github.com/PretendoNetwork/yo-kai-watch-2/nex/matchmake-extension"
+	local_match_making "github.com/openpak/nex/titles/yo-kai-watch-2/nex/match-making"
+	local_matchmake_extension "github.com/openpak/nex/titles/yo-kai-watch-2/nex/matchmake-extension"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {

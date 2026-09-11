@@ -3,8 +3,8 @@ package titles
 import "testing"
 
 func TestEveryTitleIsComplete(t *testing.T) {
-	if len(All) != 39 {
-		t.Fatalf("39 titles expected, %d registered", len(All))
+	if len(All) != 53 {
+		t.Fatalf("53 titles expected, %d registered", len(All))
 	}
 	for name, title := range All {
 		if title.Defaults == nil || (title.Register == nil) == (title.Run == nil) {

@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/mario-kart-7/globals"
+import "github.com/openpak/nex/titles/mario-kart-7/globals"
 
 func initPostgres() {
 	var err error

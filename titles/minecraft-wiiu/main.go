@@ -1,14 +1,14 @@
-package main
+package minecraftwiiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/minecraft-wiiu/nex"
+	"github.com/openpak/nex/titles/minecraft-wiiu/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

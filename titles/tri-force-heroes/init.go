@@ -1,4 +1,4 @@
-package main
+package tfh
 
 import (
 	"crypto/rand"
@@ -12,15 +12,15 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/PretendoNetwork/tri-force-heroes/database"
-	"github.com/PretendoNetwork/tri-force-heroes/globals"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/tri-force-heroes/database"
+	"github.com/openpak/nex/titles/tri-force-heroes/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error

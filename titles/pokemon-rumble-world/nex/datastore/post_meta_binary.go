@@ -4,8 +4,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/database"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/database"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func PostMetaBinary(err error, packet nex.PacketInterface, callID uint32, param datastore_types.DataStorePreparePostParam) (*nex.RMCMessage, *nex.Error) {

@@ -8,7 +8,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/encryption"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
-	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals"
+	"github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/globals"
 )
 
 func StartSecureServer() {

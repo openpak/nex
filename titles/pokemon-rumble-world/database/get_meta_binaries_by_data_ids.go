@@ -5,9 +5,9 @@ import (
 	"time"
 
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
-	"github.com/PretendoNetwork/pokemon-rumble-world/types"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/types"
 )
 
 func GetMetaBinariesByDataIDs(dataIDs []uint64) []*types.MetaBinary {

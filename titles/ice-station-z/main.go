@@ -1,14 +1,14 @@
-package main
+package isz
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/ice-station-z/nex"
+	"github.com/openpak/nex/titles/ice-station-z/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

@@ -1,7 +1,7 @@
 package globals
 
 import (
-	globals_rmc "github.com/PretendoNetwork/monster-hunter-stories/globals/rmc"
+	globals_rmc "github.com/openpak/nex/titles/monster-hunter-stories/globals/rmc"
 )
 
 func GetProtocolByID(protocolId uint16) globals_rmc.ProtocolInfoInterface {

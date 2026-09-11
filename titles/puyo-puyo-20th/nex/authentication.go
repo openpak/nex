@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/puyo-puyo-20th/globals"
+	"github.com/openpak/nex/titles/puyo-puyo-20th/globals"
 )
 
 func StartAuthenticationServer() {

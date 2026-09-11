@@ -21,8 +21,8 @@ import (
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
-	"github.com/PretendoNetwork/tri-force-heroes/database"
-	"github.com/PretendoNetwork/tri-force-heroes/globals"
+	"github.com/openpak/nex/titles/tri-force-heroes/database"
+	"github.com/openpak/nex/titles/tri-force-heroes/globals"
 )
 
 func cleanupMatchmakeSessionSearchCriterias(searchCriterias types.List[match_making_types.MatchmakeSessionSearchCriteria]) {
@@ -95,7 +95,9 @@ func registerCommonSecureServerProtocols() {
 	utilityProtocol := utility.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(utilityProtocol)
 	commonUtilityProtocol := common_utility.NewCommonProtocol(utilityProtocol)
-	commonUtilityProtocol.GenerateNEXUniqueID = generateNEXUniqueIDHandler
+	// nex-protocols-common-go v2.6.1 keeps unique IDs in a UtilityManager with its own table; the
+	// manager's default replaces upstream's generateNEXUniqueIDHandler.
+	commonUtilityProtocol.SetManager(common_globals.NewUtilityManager(globals.SecureEndpoint, database.Postgres))
 
 	matchMakingExtProtocol := match_making_ext.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingExtProtocol)

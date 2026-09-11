@@ -2,8 +2,8 @@ package nex
 
 import (
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
-	nex_datastore "github.com/PretendoNetwork/pokemon-rumble-world/nex/datastore"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
+	nex_datastore "github.com/openpak/nex/titles/pokemon-rumble-world/nex/datastore"
 )
 
 func registerHPPServerNEXProtocols() {

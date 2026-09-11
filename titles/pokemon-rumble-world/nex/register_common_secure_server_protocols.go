@@ -1,9 +1,9 @@
 package nex
 
 import (
-	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	common_secure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func registerCommonSecureServerProtocols() {

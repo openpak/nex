@@ -1,14 +1,14 @@
-package main
+package prw
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/pokemon-rumble-world/nex"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/types"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/types"
 )
 
 func GetMetaBinaryByOwnerPID(pid uint32) *types.MetaBinary {

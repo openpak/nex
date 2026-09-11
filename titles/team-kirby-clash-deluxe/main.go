@@ -1,14 +1,14 @@
-package main
+package tkcd
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/nex"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

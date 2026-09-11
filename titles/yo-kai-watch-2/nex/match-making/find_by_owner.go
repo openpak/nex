@@ -6,8 +6,8 @@ import (
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
-	"github.com/PretendoNetwork/yo-kai-watch-2/globals"
-	nex_match_making_database "github.com/PretendoNetwork/yo-kai-watch-2/nex/match-making/database"
+	"github.com/openpak/nex/titles/yo-kai-watch-2/globals"
+	nex_match_making_database "github.com/openpak/nex/titles/yo-kai-watch-2/nex/match-making/database"
 )
 
 func FindByOwner(err error, packet nex.PacketInterface, callID uint32, id types.PID, resultRange types.ResultRange) (*nex.RMCMessage, *nex.Error) {

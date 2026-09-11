@@ -1,14 +1,14 @@
-package main
+package tetrisaxis
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/tetris-axis/nex"
+	"github.com/openpak/nex/titles/tetris-axis/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

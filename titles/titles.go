@@ -28,6 +28,21 @@ import (
 	ssfiv "github.com/openpak/nex/titles/super-street-fighter-iv"
 	wiiuchat "github.com/openpak/nex/titles/wiiu-chat"
 
+	isz "github.com/openpak/nex/titles/ice-station-z"
+	kiu "github.com/openpak/nex/titles/kid-icarus-uprising"
+	mk7 "github.com/openpak/nex/titles/mario-kart-7"
+	minecraftwiiu "github.com/openpak/nex/titles/minecraft-wiiu"
+	mh4 "github.com/openpak/nex/titles/monster-hunter-4"
+	mhstories "github.com/openpak/nex/titles/monster-hunter-stories"
+	prw "github.com/openpak/nex/titles/pokemon-rumble-world"
+	puyo20th "github.com/openpak/nex/titles/puyo-puyo-20th"
+	remerc3d "github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d"
+	tkcd "github.com/openpak/nex/titles/team-kirby-clash-deluxe"
+	tetrisaxis "github.com/openpak/nex/titles/tetris-axis"
+	tfh "github.com/openpak/nex/titles/tri-force-heroes"
+	ykw2 "github.com/openpak/nex/titles/yo-kai-watch-2"
+	ykwb "github.com/openpak/nex/titles/yo-kai-watch-blasters"
+
 	// Switch (Register shape)
 	acnh "github.com/openpak/nex/titles/animal-crossing-new-horizons"
 	arms "github.com/openpak/nex/titles/arms"
@@ -50,6 +65,20 @@ import (
 
 // All is every title, by the NEX_TITLE value that selects it. Adding a game is one line here.
 var All = index(
+	isz.Title,
+	kiu.Title,
+	mk7.Title,
+	minecraftwiiu.Title,
+	mh4.Title,
+	mhstories.Title,
+	prw.Title,
+	puyo20th.Title,
+	remerc3d.Title,
+	tkcd.Title,
+	tetrisaxis.Title,
+	tfh.Title,
+	ykw2.Title,
+	ykwb.Title,
 	acnl.Title,
 	drluigi.Title,
 	f12011.Title,

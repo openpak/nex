@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/PretendoNetwork/tri-force-heroes/globals"
+	"github.com/openpak/nex/titles/tri-force-heroes/globals"
 )
 
 var Postgres *sql.DB

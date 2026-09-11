@@ -4,10 +4,11 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
+	datastore_constants "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/constants"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/database"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
-	"github.com/PretendoNetwork/pokemon-rumble-world/types"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/database"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/types"
 )
 
 func SearchObject(err error, packet nex.PacketInterface, callID uint32, param datastore_types.DataStoreSearchParam) (*nex.RMCMessage, *nex.Error) {
@@ -60,10 +61,10 @@ func SearchObject(err error, packet nex.PacketInterface, callID uint32, param da
 		result.Name = nex_types.NewString(metaBinary.Name)
 		result.DataType = nex_types.NewUInt16(metaBinary.DataType)
 		result.Permission = datastore_types.NewDataStorePermission()
-		result.Permission.Permission = nex_types.NewUInt8(metaBinary.Permission)
+		result.Permission.Permission = datastore_constants.Permission(metaBinary.Permission)
 		result.Permission.RecipientIDs = make([]nex_types.PID, 0)
 		result.DelPermission = datastore_types.NewDataStorePermission()
-		result.DelPermission.Permission = nex_types.NewUInt8(metaBinary.DeletePermission)
+		result.DelPermission.Permission = datastore_constants.Permission(metaBinary.DeletePermission)
 		result.DelPermission.RecipientIDs = make([]nex_types.PID, 0)
 		result.CreatedTime = metaBinary.CreationTime
 		result.UpdatedTime = metaBinary.UpdatedTime
@@ -71,7 +72,7 @@ func SearchObject(err error, packet nex.PacketInterface, callID uint32, param da
 		result.Status = 0      // TODO - Figure this out
 		result.ReferredCnt = 0 // TODO - Figure this out
 		result.ReferDataID = 0 // TODO - Figure this out
-		result.Flag = nex_types.NewUInt32(metaBinary.Flag)
+		result.Flag = datastore_constants.DataFlag(metaBinary.Flag)
 		result.ReferredTime = metaBinary.ReferredTime
 		result.ExpireTime = metaBinary.ExpireTime
 

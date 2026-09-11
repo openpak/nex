@@ -1,13 +1,13 @@
 package globals
 
 import (
-	pb_account "github.com/PretendoNetwork/grpc-go/account"
-	pb_friends "github.com/PretendoNetwork/grpc-go/friends"
+	pb_account "github.com/PretendoNetwork/grpc/go/account"
+	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 var Logger = plogger.NewLogger()

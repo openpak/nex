@@ -1,7 +1,7 @@
 package globals
 
 import (
-	globals_rmc "github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals/rmc"
+	globals_rmc "github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/globals/rmc"
 )
 
 func GetProtocolByID(protocolId uint16) globals_rmc.ProtocolInfoInterface {

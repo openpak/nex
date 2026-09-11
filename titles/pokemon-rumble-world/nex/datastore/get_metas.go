@@ -4,9 +4,10 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
+	datastore_constants "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/constants"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
-	"github.com/PretendoNetwork/pokemon-rumble-world/database"
-	"github.com/PretendoNetwork/pokemon-rumble-world/globals"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/database"
+	"github.com/openpak/nex/titles/pokemon-rumble-world/globals"
 )
 
 func GetMetas(err error, packet nex.PacketInterface, callID uint32, dataIDs types.List[types.UInt64], param datastore_types.DataStoreGetMetaParam) (*nex.RMCMessage, *nex.Error) {
@@ -39,10 +40,10 @@ func GetMetas(err error, packet nex.PacketInterface, callID uint32, dataIDs type
 		metaInfo.DataType = types.NewUInt16(metaBinary.DataType)
 		metaInfo.MetaBinary = metaBinary.Buffer
 		metaInfo.Permission = datastore_types.NewDataStorePermission()
-		metaInfo.Permission.Permission = types.NewUInt8(metaBinary.Permission)
+		metaInfo.Permission.Permission = datastore_constants.Permission(metaBinary.Permission)
 		metaInfo.Permission.RecipientIDs = make([]types.PID, 0)
 		metaInfo.DelPermission = datastore_types.NewDataStorePermission()
-		metaInfo.DelPermission.Permission = types.NewUInt8(metaBinary.DeletePermission)
+		metaInfo.DelPermission.Permission = datastore_constants.Permission(metaBinary.DeletePermission)
 		metaInfo.DelPermission.RecipientIDs = make([]types.PID, 0)
 		metaInfo.CreatedTime = metaBinary.CreationTime
 		metaInfo.UpdatedTime = metaBinary.UpdatedTime
@@ -50,7 +51,7 @@ func GetMetas(err error, packet nex.PacketInterface, callID uint32, dataIDs type
 		metaInfo.Status = 0      // TODO - Figure this out
 		metaInfo.ReferredCnt = 0 // TODO - Figure this out
 		metaInfo.ReferDataID = 0 // TODO - Figure this out
-		metaInfo.Flag = types.NewUInt32(metaBinary.Flag)
+		metaInfo.Flag = datastore_constants.DataFlag(metaBinary.Flag)
 		metaInfo.ReferredTime = metaBinary.ReferredTime
 		metaInfo.ExpireTime = metaBinary.ExpireTime
 

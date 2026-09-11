@@ -1,7 +1,7 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/minecraft-wiiu/globals"
+	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonglobals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"

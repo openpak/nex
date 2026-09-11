@@ -7,7 +7,7 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/encryption"
-	"github.com/PretendoNetwork/resident-evil-the-mercenaries-3d/globals"
+	"github.com/openpak/nex/titles/resident-evil-the-mercenaries-3d/globals"
 )
 
 func StartAuthenticationServer() {

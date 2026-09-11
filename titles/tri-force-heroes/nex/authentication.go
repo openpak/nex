@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/tri-force-heroes/globals"
+	"github.com/openpak/nex/titles/tri-force-heroes/globals"
 )
 
 var serverBuildString string

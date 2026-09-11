@@ -1,9 +1,10 @@
 package nex_datastore
 
 import (
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/database"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/globals"
-	"github.com/PretendoNetwork/team-kirby-clash-deluxe/types"
+	datastore_constants "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/constants"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/database"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/globals"
+	"github.com/openpak/nex/titles/team-kirby-clash-deluxe/types"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
@@ -52,10 +53,10 @@ func SearchObjectLight(err error, packet nex.PacketInterface, callID uint32, par
 		result.DataType = nex_types.NewUInt16(metaBinary.DataType)
 		result.MetaBinary = nex_types.NewQBuffer(metaBinary.Buffer)
 		result.Permission = datastore_types.NewDataStorePermission()
-		result.Permission.Permission = nex_types.NewUInt8(metaBinary.Permission)
+		result.Permission.Permission = datastore_constants.Permission(metaBinary.Permission)
 		result.Permission.RecipientIDs = make([]nex_types.PID, 0)
 		result.DelPermission = datastore_types.NewDataStorePermission()
-		result.DelPermission.Permission = nex_types.NewUInt8(metaBinary.DeletePermission)
+		result.DelPermission.Permission = datastore_constants.Permission(metaBinary.DeletePermission)
 		result.DelPermission.RecipientIDs = make([]nex_types.PID, 0)
 		result.CreatedTime = metaBinary.CreationTime
 		result.UpdatedTime = metaBinary.UpdatedTime
@@ -63,7 +64,7 @@ func SearchObjectLight(err error, packet nex.PacketInterface, callID uint32, par
 		result.Status = 0      // TODO - Figure this out
 		result.ReferredCnt = 0 // TODO - Figure this out
 		result.ReferDataID = 0 // TODO - Figure this out
-		result.Flag = nex_types.NewUInt32(metaBinary.Flag)
+		result.Flag = datastore_constants.DataFlag(metaBinary.Flag)
 		result.ReferredTime = metaBinary.ReferredTime
 		result.ExpireTime = metaBinary.ExpireTime
 

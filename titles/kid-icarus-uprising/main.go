@@ -1,14 +1,14 @@
-package main
+package kiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/kid-icarus-uprising/nex"
+	"github.com/openpak/nex/titles/kid-icarus-uprising/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server
