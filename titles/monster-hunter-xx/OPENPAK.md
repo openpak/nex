@@ -24,4 +24,4 @@ Consoles reach it through nn-account: the title's row in nn-account's `servers` 
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
 
-**Registration (2026-09-11):** 3DS title ids not found in any public list; no nn-account row yet. Its AES key (PN_MHXX_AES_KEY) is already in the shared .env; the row must carry the same value. The container runs; a console cannot be pointed at it until that fact is observed.
+**Registration (2026-09-12):** 3DS title id found (JPN/Double Cross 0004000000197100, 3dsdb); game-server id unobserved — prepared row in [`servers/nex/registration.sql`](../../registration.sql) section B until observed.

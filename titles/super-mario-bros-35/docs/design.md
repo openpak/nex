@@ -230,4 +230,4 @@ the tests check.
 - NintendoClients `nintendo/nex/matchmaking_eagle.py` and `ranking2_eagle.py`
 - Pretendo's `nex-go/v2`, `nex-protocols-go/v2`, `nex-protocols-common-go/v2`, read as
   AGPL-3.0 source
-- OpenPak's own [`servers/nex`](../../nex), `nx-baas` and [`ports.md`](../../../ports.md)
+- OpenPak's own [`servers/nex`](../../../README.md), `nx-baas` and [`ports.md`](../../../../../ports.md)

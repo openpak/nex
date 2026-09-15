@@ -1,7 +1,7 @@
 # monster-hunter-generations-ultimate
 
 The OpenPak NEX server for **Monster Hunter Generations Ultimate** (Nintendo Switch). It is
-[`servers/nex`](../nex) plus this title's protocol registrations plus a real DataStore.
+[`servers/nex`](../../README.md) plus this title's protocol registrations plus a real DataStore.
 
 **Status (2026-09-09):** builds, starts, serves `/healthz`, listens on its NEX block, creates
 its schema and round-trips DataStore against Postgres. **Never run against the game.** MHGU
@@ -31,7 +31,7 @@ cp example.env .env   # then edit
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22120` — this title's block from [ports.md](../../ports.md). Authentication 22120/udp, secure 22121/udp, `/healthz` 22122 |
+| `NEX_PORT_BASE` | **required.** `22120` — this title's block from [ports.md](../../../../ports.md). Authentication 22120/udp, secure 22121/udp, `/healthz` 22122 |
 | `NEX_ACCESS_KEY` | **required.** `4152f312`, the title's NEX access key ([docs/provenance.md](docs/provenance.md)) |
 | `NEX_VERSION` | `40400` — MHGU links NEX 4.4.0 |
 | `NEX_TRANSPORT` | `udp`. MHGU speaks raw PRUDP, not the WebSocket transport native Switch titles use |
@@ -60,10 +60,10 @@ runtime error.
 
 ## Ground rules
 
-- Clean room. [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md); every protocol
+- Clean room. [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md); every protocol
   fact cites its source in [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Monster Hunter Generations
 Ultimate's publisher, or any original service provider. It contains no proprietary game code,

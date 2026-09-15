@@ -10,7 +10,7 @@ Almost nothing here is Mario Party Superstars code. Three layers do the work:
 | Layer | What it does | Whose code |
 | --- | --- | --- |
 | `nex-go`, `nex-protocols-go`, `nex-protocols-common-go` | PRUDP, kerberos, RMC, and working handlers for every standard NEX protocol | Pretendo, AGPL-3.0 |
-| [`servers/nex`](../../nex) | Switch login (`ValidateAndRequestTicketWith{Param,CustomData}`), OpenPak identity through nx-baas, the port block, `/healthz` | OpenPak |
+| [`servers/nex`](../../../README.md) | Switch login (`ValidateAndRequestTicketWith{Param,CustomData}`), OpenPak identity through nx-baas, the port block, `/healthz` | OpenPak |
 | this repository | The two things neither of those covers for this title, and the per-title wire-shape values | OpenPak |
 
 If a line here could have been a call into one of the layers above, it should be. The whole

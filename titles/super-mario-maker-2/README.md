@@ -1,7 +1,7 @@
 # super-mario-maker-2
 
 NEX game server for **Super Mario Maker 2** on Nintendo Switch, built on Pretendo's AGPL
-`nex-go` through [`servers/nex`](../nex).
+`nex-go` through [`servers/nex`](../../README.md).
 
 SMM2's whole online mode is DataStore: Course World is course upload, download, search,
 comments, bookmarks, world maps and per-maker profiles — all one protocol (`0x73`). This is
@@ -44,11 +44,11 @@ GOWORK=off go test ./...   # DB-backed tests skip without SMM2_TEST_DATABASE_URL
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed code
   are the only inputs.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Super Mario Maker 2's publisher, or
 any original service provider. It contains no proprietary game code, assets, SDK material,

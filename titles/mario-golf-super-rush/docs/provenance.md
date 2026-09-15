@@ -97,6 +97,6 @@ GetStringSettings; NAT Traversal `0x02` InitiateProbe, `0x03` RequestProbeInitia
 | Fact | Source |
 | --- | --- |
 | Identity, and the friend graph, come from nx-baas `POST /internal/switch/identity` | OpenPak's own `nx-baas` and `servers/nex` `account.go` |
-| Port block 22130 — one listener on 22130 carrying both endpoints, healthz 22132, 22131 reserved and unbound | [`ports.md`](../../../ports.md), claimed by this repository |
+| Port block 22130 — one listener on 22130 carrying both endpoints, healthz 22132, 22131 reserved and unbound | [`ports.md`](../../../../../ports.md), claimed by this repository |
 | Matchmaking, utility, NAT traversal handlers, and every table they use | Pretendo's AGPL-3.0 `nex-protocols-common-go/v2` v2.6.1, imported. The schemas are created by the library's own `SetManager`, not written by us |
 | `nex-protocols-go` v2.3.5 cannot wire Ranking: `ranking.Protocol.SetHandlerGetStats` takes `constants.StatsFlag`, `ranking.Interface` declares `types.UInt32`, so `common_ranking.NewCommonProtocol` does not compile | read from the two modules here, verified against a v2.3.7 build, and reported to `servers/nex`, which has since bumped the pin to v2.3.7 |

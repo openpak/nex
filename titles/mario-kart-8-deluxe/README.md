@@ -1,7 +1,7 @@
 # mario-kart-8-deluxe
 
 NEX game server for **Mario Kart 8 Deluxe** on Nintendo Switch, built on the shared OpenPak
-NEX host in [`servers/nex`](../nex) and Pretendo's AGPL-3.0
+NEX host in [`servers/nex`](../../README.md) and Pretendo's AGPL-3.0
 [`nex-protocols-common-go`](https://github.com/PretendoNetwork/nex-protocols-common-go).
 
 **Status (2026-09-09): builds, starts, listens, never tested against a console.** The server
@@ -48,7 +48,7 @@ something that cannot work.
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22150` for this title ([ports.md](../../ports.md)): authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
+| `NEX_PORT_BASE` | **required.** `22150` for this title ([ports.md](../../../../ports.md)): authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
 | `NEX_ACCESS_KEY` | **required.** MK8D's NEX access key. Per title, derivable from the game; configuration, never a literal in this repository |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key`. Without it every login is refused |
 | `MK8D_DATABASE_URL` | **required.** Postgres URL. Matchmaking, utility and ranking keep their state here and create their schemas on first run |
@@ -80,12 +80,12 @@ silently misaligns every structure if it is wrong.
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs, and every fact taken from an existing implementation is recorded
   in [`docs/provenance.md`](docs/provenance.md) as a fact, never as code.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md); this title holds 22150.
+- Ports come from [`ports.md`](../../../../ports.md); this title holds 22150.
 
 This project is not affiliated with or endorsed by Nintendo, Mario Kart 8 Deluxe's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,

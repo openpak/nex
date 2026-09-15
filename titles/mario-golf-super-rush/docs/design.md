@@ -105,7 +105,7 @@ carries 0. No knob, no configuration, nothing to get wrong.
 
 ## Ports
 
-Block 22130 from [`ports.md`](../../../ports.md), but only one game port of it: 22130 for
+Block 22130 from [`ports.md`](../../../../../ports.md), but only one game port of it: 22130 for
 both endpoints, `/healthz` on 22132, and 22131 reserved and unbound. It is TCP, not UDP, so
 the firewall rule is `ufw allow 22130/tcp`, and Traefik's SNI passthrough for the DNS name
 above points at it.
@@ -140,7 +140,7 @@ protocol is left unregistered.
 ## Sources
 
 - [`docs/provenance.md`](provenance.md) — every fact and where it came from.
-- [`servers/nex/docs/design.md`](../../nex/docs/design.md) — the login, kerberos and
+- [`servers/nex/docs/design.md`](../../../docs/design.md) — the login, kerberos and
   identity story this server sits on.
 - [Kinnay, NintendoClients wiki](https://github.com/kinnay/NintendoClients/wiki) —
   authentication protocol, kerberos, common types.

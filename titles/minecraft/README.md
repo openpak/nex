@@ -1,7 +1,7 @@
 # minecraft
 
 NEX game server for **Minecraft** on Nintendo Switch, built on Pretendo's AGPL `nex-go`
-through the shared host in [`servers/nex`](../nex).
+through the shared host in [`servers/nex`](../../README.md).
 
 Minecraft's Switch online is session join: a console logs in, then hosts a world or joins
 one — including a friend's. This binary registers the protocol set Minecraft speaks on the
@@ -61,11 +61,11 @@ rm ~/.netrc
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md): block `22310`.
+- Ports come from [`ports.md`](../../../../ports.md): block `22310`.
 
 This project is not affiliated with or endorsed by Nintendo, Minecraft's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,

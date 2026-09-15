@@ -63,8 +63,8 @@ That is the gap this server fills, and the reason nothing here is a stub.
 
 | Fact | Source |
 | --- | --- |
-| Port block 22120 (auth 22120, secure 22121, healthz 22122) | [`ports.md`](../../../ports.md), claimed by this repository. |
-| Identity: BAAS id token -> nx-baas `/internal/switch/identity` -> PID, nickname, friends | [`servers/nex`](../../nex) `docs/design.md`; nx-baas's internal game API on ports.md 20070. |
+| Port block 22120 (auth 22120, secure 22121, healthz 22122) | [`ports.md`](../../../../../ports.md), claimed by this repository. |
+| Identity: BAAS id token -> nx-baas `/internal/switch/identity` -> PID, nickname, friends | [`servers/nex`](../../../README.md) `docs/design.md`; nx-baas's internal game API on ports.md 20070. |
 | Login methods, ticket construction, account callbacks | `servers/nex`, which implements them. This server adds none of it. |
 | Matchmaking, NAT traversal, unique IDs, DataStore handlers | Pretendo's AGPL-3.0 `nex-protocols-common-go/v2`. |
 | Postgres 23000, S3 23010 | `ports.md`. |

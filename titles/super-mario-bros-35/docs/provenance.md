@@ -226,6 +226,6 @@ function names, comments or documentation from them appears in this repository.
 
 ## Ports
 
-`22160` from [`ports.md`](../../../ports.md): the next free NEX block of ten at the time this
+`22160` from [`ports.md`](../../../../../ports.md): the next free NEX block of ten at the time this
 repository was written. Auth `+0`, secure `+1`, `/healthz` `+2`, per the shared host's
 convention.

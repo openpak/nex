@@ -1,7 +1,7 @@
 # mario-golf-super-rush
 
 NEX game server for **Mario Golf: Super Rush** on Nintendo Switch. It runs on
-[`servers/nex`](../nex), OpenPak's shared NEX host, which wraps Pretendo's AGPL-3.0
+[`servers/nex`](../../README.md), OpenPak's shared NEX host, which wraps Pretendo's AGPL-3.0
 `nex-go`, `nex-protocols-go` and `nex-protocols-common-go`.
 
 Golf is a peer-to-peer title: the server logs a console in, keeps the lobby list and
@@ -25,7 +25,7 @@ version is an era guess and the station scheme has never been measured for this 
 | Utility `0x6E` | Postgres |
 | Ranking `0x70`, DataStore `0x73` | not registered — see [`docs/design.md`](docs/design.md) |
 
-Friend-only lobbies are answered from [`nx-baas`](../../nx-baas), so there is no friend
+Friend-only lobbies are answered from [`nx-baas`](../../../../nx-baas), so there is no friend
 table here: a player's friends are the same people to every OpenPak service. Lobbies live in
 Postgres and survive a restart.
 
@@ -40,7 +40,7 @@ env $(grep -v '^#' .env | xargs) ./golf
 | Env | Meaning |
 | --- | --- |
 | `NEX_TITLE` | name in logs, default `mario-golf-super-rush` |
-| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](../../ports.md). One listener carries both endpoints on `+0`; `+1` stays reserved and unbound |
+| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](../../../../ports.md). One listener carries both endpoints on `+0`; `+1` stays reserved and unbound |
 | `NEX_ACCESS_KEY` | **required.** `1cb8027c` — Golf's NEX access key: eight hex digits, confirmed, and not the game server ID in the DNS name. Configuration, never a literal in source |
 | `NEX_VERSION` | NEX library version the title was built against. `4.6.5` here, an era guess. The integer form `40605` is accepted too |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on. A bare host or IP; the port comes from the block |
@@ -68,12 +68,12 @@ go build ./... && go vet ./... && go test ./...
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs. Every fact this server rests on cites its source in
   [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md). This repository holds block 22130.
+- Ports come from [`ports.md`](../../../../ports.md). This repository holds block 22130.
 
 This project is not affiliated with or endorsed by Nintendo, Mario Golf: Super Rush's
 publisher, or any original service provider. It contains no proprietary game code, assets,

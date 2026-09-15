@@ -24,4 +24,4 @@ Consoles reach it through nn-account: the title's row in nn-account's `servers` 
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
 
-**Registration (2026-09-11):** Wii U game-server id not in Kinnay's Wii U list; a Wii U asks nn-account by game_server_id, so no row yet. The container runs; a console cannot be pointed at it until that fact is observed.
+**Registration (2026-09-12):** row prepared in [`servers/nex/registration.sql`](../../registration.sql) section A, same derivation as every registered Wii U title (title ids JPN 0005000010150300, USA 0005000010152A00, EUR 0005000010152B00). Applies with the next deployment pass; container runs today.

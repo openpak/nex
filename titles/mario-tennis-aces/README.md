@@ -1,7 +1,7 @@
 # mario-tennis-aces
 
 The NEX game server for **Mario Tennis Aces** on Nintendo Switch, built on
-[`servers/nex`](../nex) and Pretendo's AGPL `nex-go` / `nex-protocols-go` /
+[`servers/nex`](../../README.md) and Pretendo's AGPL `nex-go` / `nex-protocols-go` /
 `nex-protocols-common-go`.
 
 **Status (2026-09-09): it builds, starts, serves `/healthz`, creates its schemas and answers
@@ -44,7 +44,7 @@ keeps DataStore objects and leaderboards there.
 | Env | Meaning |
 | --- | --- |
 | `DATABASE_URL` | **required.** Postgres connection string. The server creates its own schemas at startup |
-| `NEX_PORT_BASE` | **required.** `22170` — this title's block from [ports.md](../../ports.md). Authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
+| `NEX_PORT_BASE` | **required.** `22170` — this title's block from [ports.md](../../../../ports.md). Authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
 | `NEX_ACCESS_KEY` | **required.** `29f267b9`. Public, documented per title, and configuration rather than a literal in source |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's internal key; without it every login is refused |
 | `NX_INTERNAL_URL` | nx-baas game API, default `http://127.0.0.1:20070` |
@@ -81,12 +81,12 @@ MTA_TEST_DATABASE_URL='postgres://postgres:check@127.0.0.1:23099/postgres?sslmod
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs; every fact taken from the earlier server is a fact, recorded in
   [`docs/provenance.md`](docs/provenance.md), and none of its code is here.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Mario Tennis Aces's publisher, or
 any original service provider. It contains no proprietary game code, assets, SDK material,

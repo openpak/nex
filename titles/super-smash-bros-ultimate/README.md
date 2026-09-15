@@ -1,7 +1,7 @@
 # super-smash-bros-ultimate
 
 NEX game server for **Super Smash Bros. Ultimate** on Nintendo Switch, built on Pretendo's AGPL
-`nex-go` through [`servers/nex`](../nex).
+`nex-go` through [`servers/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** Verified locally: it builds, vets, passes
 its tests, and its DataStore queries run against a real Postgres. It starts, creates its schema,
@@ -24,7 +24,7 @@ server left as stubs:
   earlier network server answered them with an empty list. Here they return real, persistent
   IDs from `nex-protocols-common-go`'s Utility manager.
 - **Friend-list lobbies and friends-only DataStore searches.** The friend lookup goes to
-  [`nx-baas`](../../nx-baas) through `servers/nex`, so SSBU keeps no friend graph of its own and
+  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so SSBU keeps no friend graph of its own and
   a player is the same person here as in any other OpenPak title.
 
 Login, kerberos, PRUDP, SecureConnection and account identity are all `servers/nex`'s. This
@@ -41,7 +41,7 @@ env $(grep -v '^#' .env | xargs) ./super-smash-bros-ultimate
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22350` — this title's block from [ports.md](../../ports.md). Two listeners: authentication `22350`, secure `22351` |
+| `NEX_PORT_BASE` | **required.** `22350` — this title's block from [ports.md](../../../../ports.md). Two listeners: authentication `22350`, secure `22351` |
 | `NEX_ACCESS_KEY` | **required.** SSBU's NEX access key, `9587602b`. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
 | `NEX_VERSION` | **unverified.** `4.0.0` inherited from a Reference file that is a copied MK8 template; a capture reporting `apiVersionGeneral` settles it |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
@@ -89,11 +89,11 @@ Those tests skip when the variable is unset, so the default run needs no databas
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before writing
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before writing
   a line. Public protocol documentation, our own captures, and compatibly licensed code are the
   only inputs; `docs/provenance.md` records which was which.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Super Smash Bros. Ultimate's
 publisher, or any original service provider. It contains no proprietary game code, assets, SDK

@@ -347,6 +347,34 @@ func (h *Host) bindEndpoint(server *nex.PRUDPServer, streamID uint8) *nex.PRUDPE
 	endpoint.AccountDetailsByPID = h.accountByPID
 	endpoint.AccountDetailsByUsername = h.accountByUsername
 	server.BindPRUDPEndPoint(endpoint)
+
+	// Packet-level tracing for online debugging (NEX_PACKET_LOG=1): every DATA packet's
+	// virtual ports, size and the first RMC bytes, so a stalled title shows exactly where
+	// the conversation stops and which stream it was talking to when it did.
+	if os.Getenv("NEX_PACKET_LOG") == "1" {
+		endpoint.OnData(func(packet nex.PacketInterface) {
+			p, ok := packet.(nex.PRUDPPacketInterface)
+			if !ok {
+				log.Printf("[%s] DATA unhandled packet type %T", h.Config.Title, packet)
+				return
+			}
+
+			payload := p.Payload()
+			head := payload
+			if len(head) > 6 {
+				head = head[:6]
+			}
+
+			extra := ""
+			if rmc := p.RMCMessage(); rmc != nil {
+				extra = fmt.Sprintf(" proto=%d method=0x%X params=%dB", rmc.ProtocolID, rmc.MethodID, len(rmc.Parameters))
+			}
+
+			log.Printf("[%s] DATA dst-stream=%d src-stream=%d len=%d % X%s", h.Config.Title,
+				p.DestinationVirtualPortStreamID(), p.SourceVirtualPortStreamID(), len(payload), head, extra)
+		})
+	}
+
 	return endpoint
 }
 
@@ -433,6 +461,18 @@ func (h *Host) defaultSecureStationURL() types.StationURL {
 	address, port := h.Config.SecureHost, uint16(h.Config.SecurePort())
 	if h.Config.SingleListener() {
 		address, port = "0.0.0.1", 1
+
+		// An operator who names a real secure host wants the console to dial that host
+		// rather than switch streams on the connection it already has: MK8D was observed
+		// doing exactly that — it never opens the block's second port and it never sends
+		// secure traffic to the authentication connection, it re-dials. Hand it the named
+		// host on the front port the internet can actually reach (the edge's 443), with
+		// the stream id steering the new connection to this endpoint. NEX_SECURE_FRONT_PORT
+		// overrides the port for an edge that listens elsewhere.
+		if h.Config.SecureHost != "" && h.Config.SecureHost != "127.0.0.1" {
+			address = h.Config.SecureHost
+			port = uint16(atoiOr(os.Getenv("NEX_SECURE_FRONT_PORT"), 443))
+		}
 	}
 	url := types.NewStationURL("")
 	urlType := constants.StationURLPRUDPS

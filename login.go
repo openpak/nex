@@ -84,20 +84,27 @@ func (h *Host) validateAndRequestTicketWithCustomData(err error, packet nex.Pack
 		return nil, nexErr
 	}
 
-	connectionData := types.NewRVConnectionData()
-	connectionData.StationURL = h.SecureStationURL
-	connectionData.SpecialProtocols = types.List[types.UInt8]{}
-	connectionData.StationURLSpecialProtocols = types.NewStationURL("")
-	connectionData.Time = types.NewDateTime(0).Now()
-	connectionData.StructureVersion = 1
+	result := ticket_granting_types.NewValidateAndRequestTicketResult()
+	// The same ValidateAndRequestTicketResult structure method 6 returns, header included
+	// (version 1 + content length). The previous hand-rolled flat layout here (leading
+	// QResult, RVConnectionData wrapper, no structure header) could not be parsed by the
+	// console: it stayed silent after the response and gave up with 2306-0112.
+	result.StructureVersion = 1
+	result.SourcePID = types.NewPID(pid)
+	result.BufResponse = types.NewBuffer(ticket)
+	result.ServiceNodeURL = h.SecureStationURL
+	result.CurrentUTCTime = types.NewDateTime(0).Now()
+	result.ReturnMsg = types.NewString("OpenPak " + h.Config.Title)
+	result.SourceKey = types.NewString(hex.EncodeToString(sourceKey))
 
 	stream := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
-	types.NewQResultSuccess(nex.ResultCodes.Core.Unknown).WriteTo(stream)
-	types.NewPID(pid).WriteTo(stream)
-	types.NewBuffer(ticket).WriteTo(stream)
-	connectionData.WriteTo(stream)
-	types.NewString("OpenPak " + h.Config.Title).WriteTo(stream)
-	types.NewString(hex.EncodeToString(sourceKey)).WriteTo(stream)
+	result.WriteTo(stream)
+
+	// Debug: dump the exact LoginEx response so the wire shape can be verified
+	// field-by-field against what the title parses (2306-0112 investigation).
+	log.Printf("[%s] LoginEx resp url=%q ticket=%dB srcKey=%dB body=%d respHex=% X",
+		h.Config.Title, h.SecureStationURL.String(), len(ticket), len(sourceKey),
+		len(stream.Bytes()), stream.Bytes())
 
 	response := nex.NewRMCSuccess(endpoint, stream.Bytes())
 	response.ProtocolID = ticket_granting.ProtocolID

@@ -25,7 +25,7 @@ and where that observation comes from.
 ## What this repository is
 
 Wiring. Pretendo's AGPL-3.0 `nex-protocols-common-go` already implements every protocol in
-that list, and [`servers/nex`](../../nex) already implements the Switch login and OpenPak
+that list, and [`servers/nex`](../../../README.md) already implements the Switch login and OpenPak
 identity on top of `nex-go`. `cmd/mk8d` is two files:
 
 - `main.go` — MK8D's per-title configuration defaults, the Switch byte-stream profile, and

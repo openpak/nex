@@ -1,7 +1,7 @@
 # luigis-mansion-3
 
 NEX game server for **Luigi's Mansion 3** on Nintendo Switch, built on Pretendo's AGPL `nex-go`
-through [`servers/nex`](../nex).
+through [`servers/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** It starts, pings a real Postgres, serves
 `/healthz` on 22192, listens in WebSocket mode on 22190 (auth) and 22191 (secure), and registers
@@ -16,7 +16,7 @@ Registers the protocol set Luigi's Mansion 3 speaks and supplies the two things 
 library leaves to the operator:
 
 - **Friend-only lobbies.** The matchmaking manager's friend lookup goes to
-  [`nx-baas`](../../nx-baas) through `servers/nex`, so this title keeps no friend graph of its own
+  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so this title keeps no friend graph of its own
   and a player is the same person here as in any other OpenPak title.
 - **Utility settings.** The game reads integer settings the moment it connects; a reply it cannot
   parse drops the connection, so these are answered in the right shape (empty for now — no capture
@@ -42,7 +42,7 @@ env $(grep -v '^#' .env | xargs) ./luigis-mansion-3
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | `22190` — this title's block from [ports.md](../../ports.md). Two listeners: auth `22190`, secure `22191`. Defaulted by the server if unset |
+| `NEX_PORT_BASE` | `22190` — this title's block from [ports.md](../../../../ports.md). Two listeners: auth `22190`, secure `22191`. Defaulted by the server if unset |
 | `NEX_ACCESS_KEY` | **required.** Luigi's Mansion 3's NEX access key (`aab95246`). A per-title constant from the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently* |
 | `NEX_VERSION` | NEX library the game links: `4.0.0`. Defaulted |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
@@ -76,11 +76,11 @@ exactly the methods the game calls, and only those.
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before writing a
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before writing a
   line. Public protocol documentation, our own captures, and compatibly licensed code are the only
   inputs; `docs/provenance.md` records which was which.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Luigi's Mansion 3's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material, binaries,

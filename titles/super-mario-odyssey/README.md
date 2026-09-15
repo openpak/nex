@@ -1,7 +1,7 @@
 # super-mario-odyssey
 
 OpenPak NEX game server for **Super Mario Odyssey** on Nintendo Switch, built on Pretendo's
-AGPL `nex-go` through the shared host [`servers/nex`](../nex) (`github.com/openpak/nex`).
+AGPL `nex-go` through the shared host [`servers/nex`](../../README.md) (`github.com/openpak/nex`).
 
 Odyssey is the odd one out of the NEX fleet: **no matchmaking, no lobby, no peer-to-peer play
 at all.** Its entire online feature is **Balloon World** — hide a balloon (a capture-pose
@@ -39,7 +39,7 @@ have the full story and what building it properly requires.
 ## Configuration
 
 Everything is environment-driven; see [`example.env`](example.env). Port block **22340** from
-[`ports.md`](../../ports.md): auth `22340`, secure `22341`, `/healthz` `22342`. Every
+[`ports.md`](../../../../ports.md): auth `22340`, secure `22341`, `/healthz` `22342`. Every
 `servers/nex` transport default is correct for Odyssey; the one unconfirmed value is
 `NEX_VERSION` (a `4.0.0` guess). No secrets live in the repository.
 
@@ -53,7 +53,7 @@ until then.
 
 ## Ground rules
 
-Clean room — see [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md). Public protocol
+Clean room — see [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md). Public protocol
 documentation, our own captures, and compatibly licensed code are the only inputs; the Reference
 Odyssey server was read for facts, never copied. AGPL-3.0-only, English only, Go 1.25.
 

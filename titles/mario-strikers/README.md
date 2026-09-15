@@ -1,7 +1,7 @@
 # mario-strikers
 
 NEX game server for **Mario Strikers: Battle League** on Nintendo Switch, built on Pretendo's
-AGPL `nex-go` through [`servers/nex`](../nex).
+AGPL `nex-go` through [`servers/nex`](../../README.md).
 
 **Status:** the confirmed protocol substrate is registered and the binary builds, vets and tests
 green; full club/online play is capture-driven next-round work. `servers/nex` owns login; this
@@ -18,7 +18,7 @@ binary registers what Strikers speaks on the secure endpoint.
 | Utility | `0x6E` | `nex-protocols-common-go`, Postgres |
 | DataStore | `0x73` | `nex-protocols-common-go`, Postgres + optional S3 |
 
-TicketGranting (`0x0A`) and SecureConnection (`0x0B`) come from [`servers/nex`](../nex).
+TicketGranting (`0x0A`) and SecureConnection (`0x0B`) come from [`servers/nex`](../../README.md).
 
 Ranking (`0x70`), MatchmakeReferee (`0x78`), Subscriber (`0x79`), Ranking2 (`0x7A`) and the
 Strikers-specific MatchmakeExtension **club** methods (`0x6D` method 54+) are **deferred** —
@@ -55,11 +55,11 @@ STRIKERS_TEST_DATABASE_URL=postgres://... go test ./...   # DataStore SQL agains
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../docs/clean-room-policy.md) before writing a
+- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before writing a
   line. The earlier server is read for facts — ports, keys, method IDs, wire shapes, flows —
   never copied. Facts and their sources are recorded in [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../ports.md).
+- Ports come from [`ports.md`](../../../../ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Mario Strikers: Battle League's
 publisher, or any original service provider. It contains no proprietary game code, assets, SDK

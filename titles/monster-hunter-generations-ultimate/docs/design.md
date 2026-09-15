@@ -5,7 +5,7 @@ does not, and what would have to be measured to close the difference.
 
 ## The whole server is wiring
 
-Two files under `cmd/mhgud`. `main.go` starts [`servers/nex`](../../nex) and registers the
+Two files under `cmd/mhgud`. `main.go` starts [`servers/nex`](../../../README.md) and registers the
 protocols; `datastore.go` gives the DataStore protocol somewhere to keep its rows. Nothing
 else exists, and nothing else should: PRUDP, kerberos, the login handshake and OpenPak
 identity are `servers/nex`'s, and matchmaking, NAT traversal, unique IDs and every DataStore
