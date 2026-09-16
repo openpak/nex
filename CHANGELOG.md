@@ -6,7 +6,7 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
-## Unreleased
+## v1.1.0 — 2026-09-16
 
 - host: `NEX_SECURE_TRANSPORT` splits the secure listener's transport from the auth
   listener's. Monster Hunter Generations Ultimate is the caller: its auth stage is wss
@@ -24,6 +24,16 @@ OpenPak work starts at the port/fork commit.
   `FindMatchmakeSessionByParticipant` (0x6D.0x33). Lifted from `titles/monster-hunter-xx`
   with the matchmaking manager passed in instead of read from a package global, so the
   Switch port of that game can register the same set.
+- fix: the release workflow parses again. `${{ runner.temp }}` in job-level `env` is not a
+  valid context there, and an unparseable workflow has no triggers at all — the `v1.0.1`
+  and first `v1.1.0` tags produced no run whatsoever, so no image had been published since
+  `v0.8.0` while every host auto-updates against `:latest`.
+- fix: the image builds again. `go mod download` cannot resolve the vendored nex-go
+  `replace` target unless that tree is copied in first.
+
+## v1.0.1 — 2026-09-15 (tagged, never built)
+
+- nex-go: write raw PRUDPLite responses to bare-TCP Switch clients [a4e46e3]
 - release: job-scoped registry auth file [7ba65b8]
 - release: build on the self-hosted runner with podman; private-repo minutes are metered [7b4b63b]
 
