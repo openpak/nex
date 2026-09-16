@@ -8,6 +8,22 @@ OpenPak work starts at the port/fork commit.
 
 ## Unreleased
 
+- host: `NEX_SECURE_TRANSPORT` splits the secure listener's transport from the auth
+  listener's. Monster Hunter Generations Ultimate is the caller: its auth stage is wss
+  behind Traefik's SNI passthrough, its secure stage raw PRUDP over UDP. Unset, the secure
+  listener takes `NEX_TRANSPORT` as before.
+- `titles/monster-hunter-generations-ultimate`: the auth listener is wss, not UDP, and the
+  protocol set now matches `titles/monster-hunter-xx` — this title is that game's Switch
+  port and runs its NEX code, down to the same access key. Message Delivery `0x1B`, Ranking
+  `0x70` registered without an implementation, `EnableInsecureRegister`, `SendReport`
+  accepting and discarding, `mmlegacy`, and the station URL type back to Public.
+- `mmlegacy`: the five matchmaking methods `nex-protocols-common-go` v2.6.1 does not
+  implement and the 3DS-lineage titles call — `FindByOwner` (0x15.0x16),
+  `UpdateMatchmakeSessionAttribute` (0x6D.0x0C), `FindMatchmakeSessionBySingleGatheringID`
+  (0x6D.0x31), `BrowseMatchmakeSessionNoHolderNoResultRange` (0x6D.0x34) and
+  `FindMatchmakeSessionByParticipant` (0x6D.0x33). Lifted from `titles/monster-hunter-xx`
+  with the matchmaking manager passed in instead of read from a package global, so the
+  Switch port of that game can register the same set.
 - release: job-scoped registry auth file [7ba65b8]
 - release: build on the self-hosted runner with podman; private-repo minutes are metered [7b4b63b]
 

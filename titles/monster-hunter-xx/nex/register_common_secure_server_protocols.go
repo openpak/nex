@@ -3,12 +3,12 @@ package nex
 import (
 	//"fmt"
 
-	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -22,8 +22,7 @@ import (
 	messagedelivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 
-	local_match_making "github.com/openpak/nex/titles/monster-hunter-xx/nex/match_making"
-	local_matchmake_extension "github.com/openpak/nex/titles/monster-hunter-xx/nex/matchmake-extension"
+	"github.com/openpak/nex/mmlegacy"
 )
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
@@ -46,7 +45,6 @@ func registerCommonSecureServerProtocols() {
 
 	matchMakingProtocol := matchmaking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchMakingProtocol)
-	matchMakingProtocol.FindByOwner = local_match_making.FindByOwner
 	commonmatchmaking.NewCommonProtocol(matchMakingProtocol).SetManager(globals.MatchmakingManager)
 
 	matchMakingExtProtocol := matchmakingext.NewProtocol()
@@ -60,10 +58,12 @@ func registerCommonSecureServerProtocols() {
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
-	matchmakeExtensionProtocol.FindMatchmakeSessionByParticipant = local_matchmake_extension.FindMatchmakeSessionByParticipant
-	matchmakeExtensionProtocol.BrowseMatchmakeSessionNoHolderNoResultRange = local_matchmake_extension.BrowseMatchmakeSessionNoHolderNoResultRange
-	matchmakeExtensionProtocol.UpdateMatchmakeSessionAttribute = local_matchmake_extension.UpdateMatchmakeSessionAttribute
-	matchmakeExtensionProtocol.FindMatchmakeSessionBySingleGatheringID = local_matchmake_extension.FindMatchmakeSessionBySingleGatheringId
+
+	// The five methods nex-protocols-common-go does not implement and this title calls.
+	// They used to live in this repository under nex/match_making and
+	// nex/matchmake-extension; they are now mmlegacy, shared with the Switch port of this
+	// game, which runs the same NEX code and calls the same set.
+	mmlegacy.Register(matchMakingProtocol, matchmakeExtensionProtocol, globals.MatchmakingManager)
 
 	messageDeliveryProtocol := messagedelivery.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(messageDeliveryProtocol)

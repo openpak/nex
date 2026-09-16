@@ -99,6 +99,12 @@ type Config struct {
 	// Selecting websocket also selects PRUDP Lite: nex-go reads a packet as Lite only when a
 	// websocket server is present, so the transport and the packet format are one choice.
 	Transport string
+	// SecureTransport overrides Transport for the secure listener alone; empty means "same
+	// as Transport", which is every title but one. MHGU needs them to differ: its auth stage
+	// is wss behind Traefik's SNI passthrough (the measured server has no UDP auth listener
+	// at all, and the live dynamic.yml routes g2896bd04's SNI to the auth port over TCP),
+	// while its secure stage is the 3DS-era raw PRUDP over UDP.
+	SecureTransport string
 	// TLSCert and TLSKey terminate TLS on the websocket listener. A console reaches a NEX
 	// title over wss, so one of two things has to be true: either Traefik terminates and
 	// forwards plain ws here (leave both empty), or Traefik passes the SNI through and this
@@ -154,6 +160,7 @@ func FromEnvWith(base Config) Config {
 	c.SecurePID = uint64(atoiOr(os.Getenv("NEX_SECURE_PID"), int(c.SecurePID)))
 	c.SourceKeyBytes = atoiOr(os.Getenv("NEX_SOURCE_KEY_BYTES"), c.SourceKeyBytes)
 	c.Transport = env("NEX_TRANSPORT", c.Transport)
+	c.SecureTransport = env("NEX_SECURE_TRANSPORT", c.SecureTransport)
 	c.TLSCert = env("NEX_TLS_CERT", c.TLSCert)
 	c.TLSKey = env("NEX_TLS_KEY", c.TLSKey)
 	c.HTTPAddr = env("NEX_HTTP_ADDR", c.HTTPAddr)
@@ -209,6 +216,15 @@ func (c Config) SecurePort() int { return c.PortBase + 1 }
 // when they are on different streams -- see StreamID.
 func (c Config) SingleListener() bool { return c.SecureStreamID != c.StreamID }
 
+// SecureTransportOr is the secure listener's transport: NEX_SECURE_TRANSPORT when set,
+// otherwise NEX_TRANSPORT.
+func (c Config) SecureTransportOr() string {
+	if c.SecureTransport != "" {
+		return c.SecureTransport
+	}
+	return c.Transport
+}
+
 // validate fails loudly at startup rather than quietly serving on the wrong port.
 func (c Config) validate() error {
 	inNEXRange := (c.PortBase >= 22100 && c.PortBase <= 22190) || (c.PortBase >= 22300 && c.PortBase <= 22590)
@@ -223,6 +239,11 @@ func (c Config) validate() error {
 		return fmt.Errorf("NEX_STATION_SCHEME=%q: want prudps or prudp", c.StationScheme)
 	case c.Transport != "udp" && c.Transport != "websocket":
 		return fmt.Errorf("NEX_TRANSPORT=%q: want udp or websocket", c.Transport)
+	case c.SecureTransport != "" && c.SecureTransport != "udp" && c.SecureTransport != "websocket":
+		return fmt.Errorf("NEX_SECURE_TRANSPORT=%q: want udp or websocket", c.SecureTransport)
+	case c.SecureTransport != "" && c.SingleListener():
+		// One listener carries both streams, so there is only one transport to pick.
+		return errors.New("NEX_SECURE_TRANSPORT is set but NEX_SECURE_STREAM_ID makes one listener carry both streams")
 	case c.StreamID == 0 || c.StreamID > 15 || c.SecureStreamID == 0 || c.SecureStreamID > 15:
 		// PRUDP v0 and v1 carry the stream ID in four bits.
 		return fmt.Errorf("stream IDs must be 1-15, got auth %d secure %d", c.StreamID, c.SecureStreamID)
@@ -234,8 +255,8 @@ func (c Config) validate() error {
 		return errors.New("NEX_SECURE_PID must not be 0: it is the kerberos ticket's target")
 	case (c.TLSCert == "") != (c.TLSKey == ""):
 		return errors.New("NEX_TLS_CERT and NEX_TLS_KEY go together: set both to terminate TLS here, or neither to let the front proxy do it")
-	case c.Transport == "udp" && c.TLSCert != "":
-		return errors.New("NEX_TLS_CERT is set but NEX_TRANSPORT=udp: PRUDP over UDP has no TLS layer")
+	case c.Transport == "udp" && c.SecureTransportOr() == "udp" && c.TLSCert != "":
+		return errors.New("NEX_TLS_CERT is set but both listeners are NEX_TRANSPORT=udp: PRUDP over UDP has no TLS layer")
 	}
 	if _, err := parseVersion(c.Version); err != nil {
 		return err
@@ -499,8 +520,9 @@ func (h *Host) Run() error {
 				h.Config.Transport, h.Config.AuthPort(), h.Config.StreamID, h.Config.SecureStreamID)
 			return
 		}
-		fmt.Fprintf(w, "ok %s %s auth=%d secure=%d\n", h.Config.Title, h.Config.Transport,
-			h.Config.AuthPort(), h.Config.SecurePort())
+		fmt.Fprintf(w, "ok %s auth=%d/%s secure=%d/%s\n", h.Config.Title,
+			h.Config.AuthPort(), h.Config.Transport,
+			h.Config.SecurePort(), h.Config.SecureTransportOr())
 	})
 	srv := &http.Server{Addr: h.Config.HTTPAddr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 
@@ -510,23 +532,24 @@ func (h *Host) Run() error {
 
 	if h.Config.SingleListener() {
 		log.Printf("[%s] %s :%d (auth stream %d, secure stream %d) healthz %s nex %s",
-			h.Config.Title, h.transportName(), h.Config.AuthPort(),
+			h.Config.Title, h.transportName(h.Config.Transport), h.Config.AuthPort(),
 			h.Config.StreamID, h.Config.SecureStreamID, h.Config.HTTPAddr, h.Config.Version)
-		go h.listen(h.authServer, h.Config.AuthPort())
+		go h.listen(h.authServer, h.Config.AuthPort(), h.Config.Transport)
 	} else {
-		log.Printf("[%s] %s auth :%d secure :%d healthz %s nex %s",
-			h.Config.Title, h.transportName(), h.Config.AuthPort(), h.Config.SecurePort(),
+		log.Printf("[%s] auth :%d %s, secure :%d %s, healthz %s nex %s",
+			h.Config.Title, h.Config.AuthPort(), h.transportName(h.Config.Transport),
+			h.Config.SecurePort(), h.transportName(h.Config.SecureTransportOr()),
 			h.Config.HTTPAddr, h.Config.Version)
-		go h.listen(h.authServer, h.Config.AuthPort())
-		go h.listen(h.secureServer, h.Config.SecurePort())
+		go h.listen(h.authServer, h.Config.AuthPort(), h.Config.Transport)
+		go h.listen(h.secureServer, h.Config.SecurePort(), h.Config.SecureTransportOr())
 	}
 	return srv.ListenAndServe()
 }
 
 // transportName says which of the three listener shapes is running. A console failing its
 // TLS handshake against a plain ws listener looks like silence, so this is worth a line.
-func (h *Host) transportName() string {
-	if h.Config.Transport != "websocket" {
+func (h *Host) transportName(transport string) string {
+	if transport != "websocket" {
 		return "udp"
 	}
 	if h.Config.TLSCert != "" {
@@ -536,11 +559,11 @@ func (h *Host) transportName() string {
 }
 
 // listen blocks; both callers run it in a goroutine.
-func (h *Host) listen(server *nex.PRUDPServer, port int) {
+func (h *Host) listen(server *nex.PRUDPServer, port int, transport string) {
 	switch {
-	case h.Config.Transport == "websocket" && h.Config.TLSCert != "":
+	case transport == "websocket" && h.Config.TLSCert != "":
 		server.ListenWebSocketSecure(port, h.Config.TLSCert, h.Config.TLSKey)
-	case h.Config.Transport == "websocket":
+	case transport == "websocket":
 		server.ListenWebSocket(port)
 	default:
 		server.Listen(port)

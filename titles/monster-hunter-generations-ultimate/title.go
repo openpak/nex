@@ -15,22 +15,25 @@ import (
 	"os"
 
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/mmlegacy"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_datastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
+	common_message_delivery "github.com/PretendoNetwork/nex-protocols-common-go/v2/message-delivery"
 	common_nat_traversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	common_utility "github.com/PretendoNetwork/nex-protocols-common-go/v2/utility"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
+	message_delivery "github.com/PretendoNetwork/nex-protocols-go/v2/message-delivery"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
+	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/minio/minio-go/v7"
@@ -47,10 +50,19 @@ func Register(host *nexhost.Host) error {
 	host.Auth.Server.KerberosTicketVersion = 0
 	host.Secure.Server.KerberosTicketVersion = 0
 
-	// The station the console is told to dial for the secure server. The default is the
-	// Public flag alone; MHGU's Pia is the 3DS-era one and is recorded as wanting
-	// BehindNAT|Public. See docs/provenance.md — this one is a claim, not a capture.
-	host.SecureStationURL.SetType(uint8(constants.StationURLFlagBehindNAT | constants.StationURLFlagPublic))
+	// Station URL type stays at servers/nex's default, the Public flag alone: that is what
+	// Pretendo's Monster Hunter XX server sends, and MHGU runs Monster Hunter XX's NEX code.
+	// The other stack sets BehindNAT|Public here but records it as its own reading rather
+	// than a capture, against a title it has never got a packet out of. See
+	// docs/provenance.md: a shipped server for the same engine outranks a reading.
+
+	// Register (0x0B.1) rather than RegisterEx (0x0B.4). The 3DS-era Pia calls the plain
+	// one, which nex-protocols-common-go refuses unless this is switched on.
+	host.SecureConnection.EnableInsecureRegister()
+	// SendReport (0x0B.6) with nothing behind it answers Core::NotImplemented. Monster
+	// Hunter XX accepts the report and drops it, which is the difference between the title
+	// filing a report and the title being told the call does not exist.
+	host.SecureConnection.CreateReportDBRecord = func(types.PID, types.UInt32, types.QBuffer) error { return nil }
 
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
@@ -94,6 +106,23 @@ func Register(host *nexhost.Host) error {
 	matchMakingExt := match_making_ext.NewProtocol()
 	host.Secure.RegisterServiceProtocol(matchMakingExt)
 	common_match_making_ext.NewCommonProtocol(matchMakingExt).SetManager(matchmaking)
+
+	// The five methods nex-protocols-common-go does not implement and this title calls:
+	// FindByOwner, FindMatchmakeSessionByParticipant, FindMatchmakeSessionBySingleGatheringID,
+	// BrowseMatchmakeSessionNoHolderNoResultRange, UpdateMatchmakeSessionAttribute. Monster
+	// Hunter XX ships its own copies of exactly these five; this is that set, shared.
+	mmlegacy.Register(matchMaking, matchmakeExtension, matchmaking)
+
+	// Message Delivery 0x1B. Monster Hunter XX registers it, so the Switch port has it too.
+	messaging := common_globals.NewMessagingManager(host.Secure, db)
+	messageDelivery := message_delivery.NewProtocol()
+	host.Secure.RegisterServiceProtocol(messageDelivery)
+	common_message_delivery.NewCommonProtocol(messageDelivery).SetManager(messaging)
+
+	// Ranking 0x70, registered without an implementation, which is what Monster Hunter XX
+	// does. A registered protocol answers Core::NotImplemented per method and is logged;
+	// what this title wants from ranking is unmeasured, and the log is how that is found.
+	host.Secure.RegisterServiceProtocol(ranking.NewProtocol())
 
 	natTraversal := nat_traversal.NewProtocol()
 	host.Secure.RegisterServiceProtocol(natTraversal)
