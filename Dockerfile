@@ -3,7 +3,9 @@
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 ARG TARGETOS TARGETARCH
 WORKDIR /src
+# nex-go-patched is a local `replace` target, so it has to be here before download
 COPY go.mod go.sum ./
+COPY nex-go-patched/ ./nex-go-patched/
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/app ./cmd/nexd

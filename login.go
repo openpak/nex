@@ -100,12 +100,6 @@ func (h *Host) validateAndRequestTicketWithCustomData(err error, packet nex.Pack
 	stream := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
 	result.WriteTo(stream)
 
-	// Debug: dump the exact LoginEx response so the wire shape can be verified
-	// field-by-field against what the title parses (2306-0112 investigation).
-	log.Printf("[%s] LoginEx resp url=%q ticket=%dB srcKey=%dB body=%d respHex=% X",
-		h.Config.Title, h.SecureStationURL.String(), len(ticket), len(sourceKey),
-		len(stream.Bytes()), stream.Bytes())
-
 	response := nex.NewRMCSuccess(endpoint, stream.Bytes())
 	response.ProtocolID = ticket_granting.ProtocolID
 	response.MethodID = ticket_granting.MethodLoginEx
