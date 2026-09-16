@@ -17,9 +17,21 @@ again is writing it worse.
 A Switch port of a 3DS game, and its online code is the 3DS's. Two consequences drive
 everything here (facts and sources in [provenance.md](provenance.md)):
 
-**It talks raw PRUDP over UDP.** Native Switch NEX titles use PRUDP-Lite over a WebSocket;
-MHGU's secure-connect code opens a UDP socket. That is `NEX_TRANSPORT=udp`, and it is the
-`servers/nex` default, so there is nothing to set.
+**Its two stages use two transports.** This is the one thing about MHGU nothing else in the
+fleet needs, and the record here was wrong until 2026-09-16.
+
+The *secure* stage is 3DS: its secure-connect code opens a UDP socket, and Pretendo's MHXX
+server listens raw PRUDP for the same engine. The *authentication* stage is not. The console
+resolves `g2896bd04-lp1.s.n.srv.nintendo.net` and opens TLS on 443, which Traefik passes
+through by SNI — a TCP connection. The other stack's MHGU server has no UDP auth listener at
+all, only a wss one, and OpenPak's own production Traefik has been routing that SNI to this
+title's auth port over TCP the whole time. A UDP-only server was never going to hear from a
+console, whichever lineage owned it.
+
+So: `NEX_TRANSPORT=websocket` with `NEX_TLS_CERT`/`NEX_TLS_KEY` for the auth listener, and
+`NEX_SECURE_TRANSPORT=udp` for the secure one. `NEX_SECURE_TRANSPORT` exists in
+[`servers/nex`](../../../README.md) for this title and no other; every other title sets one transport
+and both listeners take it.
 
 **Its ticket is the old one.** `KerberosTicketVersion = 0`: no random-key wrapper in front of
 the encrypted body, 124 bytes instead of 148. `servers/nex` hardcodes version 1, which is
@@ -42,7 +54,10 @@ Registered on the secure endpoint, all of them Pretendo's common implementations
 | NAT Traversal `0x03` | Probe initiation, NAT property and traversal reporting. |
 | Utility `0x6E` | NEX unique IDs, stored in Postgres. Integer and string settings answer an empty map. |
 | DataStore `0x73` | The real thing — see below. |
-| Ticket Granting `0x0A`, Secure Connection `0x0B` | From `servers/nex`, registered before this server sees the host. |
+| Ticket Granting `0x0A`, Secure Connection `0x0B` | From `servers/nex`, registered before this server sees the host. `EnableInsecureRegister()` here, because the 3DS-era Pia calls plain `Register` (`0x0B.1`) and the common protocol refuses it by default; `SendReport` accepts and discards. |
+| Message Delivery `0x1B` | Pretendo's common implementation over a `MessagingManager`. MHXX registers it, so the port has it. |
+| Ranking `0x70` | Registered with no implementation, which is what MHXX does: every method answers `Core::NotImplemented` **and is logged**. What this title wants from ranking is unmeasured, and that log is how it gets measured. |
+| `mmlegacy` (`0x15.0x16`, `0x6D.0x0C`/`0x2B`/`0x2D`/`0x33`) | The five methods `nex-protocols-common-go` has no file for and this title calls. Lifted from MHXX into [`servers/nex/mmlegacy`](../../../mmlegacy) so it is shared rather than copied. Without them the title's own searches — find by owner, follow a friend, browse, rewrite a session's attributes — are all `Core::NotImplemented`. |
 
 ### DataStore, which is the point
 
@@ -72,9 +87,9 @@ cost the matchmaking too.
 
 ## What is not implemented, and why
 
-- **Ranking `0x70`, Ranking2, Messaging, Message Delivery, Matchmake Referee.** No evidence
-  MHGU calls any of them. The binary's SDK strings name DataStore and Utility; the rest would
-  be code written for a call that may never come.
+- **Ranking2, Matchmake Referee, Messaging `0x17`.** MHXX registers none of them and no
+  binary string names them. Ranking `0x70` and Message Delivery `0x1B` moved out of this list
+  on 2026-09-16, because MHXX registers both.
 - **Anything MHGU-specific.** No hunt-specific matchmaking rules, no per-title search
   behaviour, no guild-card semantics. Nobody has measured a single MHGU RMC call. Writing
   title behaviour now would be guessing with a compiler.
@@ -90,14 +105,21 @@ Each of those is one `// ponytail:` comment in the code where it bites.
 1. **Does ticket version 0 clear `2306-0116`?** The whole title is blocked behind this on the
    other stack. **Evidence:** a run against this server; either the secure endpoint sees a
    CONNECT, or the console shows the same error and the ticket is not the only oversize part.
+   Note that the other stack holds two theories about this error, not one: their README
+   blames the ticket, their `AuthConfig` comment blames the method 6 response shape. This
+   server already answers method 6 with the fuller struct-headered result, so if the shape is
+   the cause, that half is done.
+1a. **Does the split transport get a login through at all?** This is now the first thing to
+   watch, ahead of the ticket: the auth listener is TCP for the first time, so "nothing in
+   the log" stops being the expected result. **Evidence:** any RMC line on the auth endpoint.
 2. **Which login method, and does the console send a token we can prove?** `servers/nex`
    implements methods 2 and 6 and requires an nx-baas-provable id token. A 3DS-lineage title
    may well send method 1, or send something else in `AuthenticationInfo`. **Evidence:** the
    RMC method ID and the token field of the first login packet.
-3. **The station URL type flags.** We set BehindNAT|Public (3) rather than the OpenPak
-   default of Public (2), on the other stack's reading of what a 3DS-era Pia wants. Neither
-   value has been observed working. **Evidence:** whether the console dials the secure port
-   at all, and what it does with the station it is handed.
+3. **The station URL type flags.** We now send Public (2), which is what MHXX sends, rather
+   than the BehindNAT|Public (3) the other stack reasons its way to. Neither has been
+   observed against MHGU itself. **Evidence:** whether the console dials the secure port at
+   all, and what it does with the station it is handed. Flipping it is one line.
 4. **Which DataStore methods MHGU actually calls, and with what data types.** The store is
    generic because the title's use of it is unmeasured. **Evidence:** the first rows a
    console writes; every field it sets is in the table.
@@ -108,6 +130,7 @@ Each of those is one `// ponytail:` comment in the code where it bites.
 6. **Stream IDs.** Both endpoints bind stream 1, the Wii U/3DS shape, which matches this
    title's lineage. **Evidence:** the virtual port in the CONNECT packet.
 
-Until 1 and 2 are answered on hardware, what this repository can claim is: it starts, it
-serves `/healthz`, it listens on its block, it creates its schema, and its DataStore round
-trips against a real Postgres. The tests check exactly that much.
+Until 1, 1a and 2 are answered on hardware, what this repository can claim is: it starts, it
+serves `/healthz`, it listens on its block with the auth stage on TCP and the secure stage on
+UDP, it creates its schema, and its DataStore round trips against a real Postgres. The tests
+check exactly that much.

@@ -117,6 +117,8 @@ failure mode, not just their value.
 | | `prudp` | Mario Kart 8 Deluxe | As above, mirrored |
 | `NEX_SOURCE_KEY_BYTES` | `32` (default) | Mario Kart 8 Deluxe, Mario Party Superstars — both derive it with SHA-256 and return all 32 | **Fully silent.** The login fails with nothing logged on either side |
 | | `16` | a public reference server working against a retail Super Mario Bros. 35 | As above |
+| `NEX_SECURE_TRANSPORT` | unset (default) — the secure listener takes `NEX_TRANSPORT` | every title but one | — |
+| | `udp` alongside `NEX_TRANSPORT=websocket` | Monster Hunter Generations Ultimate: a Switch port of a 3DS game, whose auth stage the console reaches over TLS by SNI while its secure-connect code opens a UDP socket | **Fully silent, and it was wrong for months.** A UDP auth listener behind a TCP SNI route never receives a packet, and nothing logs a connection that was refused by the kernel |
 
 On the source key specifically: the servers that use 32 tend to carry a comment claiming it
 *must* be 32, "the Switch kerberos key size". **That generalisation is wrong** — the 16-byte

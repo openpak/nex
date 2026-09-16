@@ -325,11 +325,60 @@ func TestWebSocketTLS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := host.transportName(); !strings.Contains(got, "wss") {
+	if got := host.transportName(host.Config.Transport); !strings.Contains(got, "wss") {
 		t.Errorf("startup line hides that TLS is on: %q", got)
 	}
-	if got := New2(t, proxyTerminated).transportName(); !strings.Contains(got, "ws (") {
+	proxyHost := New2(t, proxyTerminated)
+	if got := proxyHost.transportName(proxyHost.Config.Transport); !strings.Contains(got, "ws (") {
 		t.Errorf("startup line hides that TLS is at the proxy: %q", got)
+	}
+}
+
+// TestSplitTransport: MHGU is the one title whose two listeners differ -- wss auth behind
+// Traefik's SNI passthrough, raw PRUDP over UDP for the secure stage. The mixed pair has to
+// be expressible, the TLS pair has to survive it, and a nonsense value has to be refused.
+func TestSplitTransport(t *testing.T) {
+	mixed := testConfig()
+	mixed.Transport, mixed.SecureTransport = "websocket", "udp"
+	mixed.TLSCert, mixed.TLSKey = "cert.pem", "key.pem"
+	if err := mixed.validate(); err != nil {
+		t.Fatalf("wss auth + udp secure must be allowed: %v", err)
+	}
+	if got := mixed.SecureTransportOr(); got != "udp" {
+		t.Errorf("secure listener transport = %q, want udp", got)
+	}
+
+	inherited := testConfig()
+	inherited.Transport = "udp"
+	if got := inherited.SecureTransportOr(); got != "udp" {
+		t.Errorf("unset NEX_SECURE_TRANSPORT must inherit NEX_TRANSPORT, got %q", got)
+	}
+
+	bad := testConfig()
+	bad.SecureTransport = "quic"
+	if err := bad.validate(); err == nil {
+		t.Error("NEX_SECURE_TRANSPORT=quic was accepted")
+	}
+
+	// One listener carrying both streams has only one transport to pick.
+	single := testConfig()
+	single.SecureStreamID = single.StreamID + 1
+	single.SecureTransport = "udp"
+	if err := single.validate(); err == nil {
+		t.Error("NEX_SECURE_TRANSPORT alongside a single listener was accepted")
+	}
+
+	// Both listeners on UDP still has no TLS layer to terminate.
+	bothUDP := testConfig()
+	bothUDP.Transport, bothUDP.SecureTransport = "udp", "udp"
+	bothUDP.TLSCert, bothUDP.TLSKey = "cert.pem", "key.pem"
+	if err := bothUDP.validate(); err == nil {
+		t.Error("NEX_TLS_CERT with both listeners on udp was accepted")
+	}
+
+	host := New2(t, mixed)
+	if got := host.transportName(host.Config.SecureTransportOr()); got != "udp" {
+		t.Errorf("secure startup line = %q, want udp", got)
 	}
 }
 
