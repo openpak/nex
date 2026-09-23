@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 )
 
 func StartAuthenticationServer() {

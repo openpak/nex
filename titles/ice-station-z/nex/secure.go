@@ -2,12 +2,13 @@ package nex
 
 import (
 	"fmt"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
-	"github.com/openpak/nex/titles/ice-station-z/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	"github.com/openpak/nex/titles/ice-station-z/globals"
 )
 
 func StartSecureServer() {
@@ -15,6 +16,7 @@ func StartSecureServer() {
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = true
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("ice-station-z", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID

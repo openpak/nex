@@ -11,4 +11,3 @@ var AuthenticationServer *nex.PRUDPServer
 var AuthenticationEndpoint *nex.PRUDPEndPoint
 var SecureServer *nex.PRUDPServer
 var SecureEndpoint *nex.PRUDPEndPoint
-

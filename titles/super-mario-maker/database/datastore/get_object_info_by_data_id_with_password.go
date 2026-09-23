@@ -7,9 +7,9 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
+	"github.com/lib/pq"
 	"github.com/openpak/nex/titles/super-mario-maker/database"
 	"github.com/openpak/nex/titles/super-mario-maker/globals"
-	"github.com/lib/pq"
 )
 
 func GetObjectInfoByDataIDWithPassword(dataID, password types.UInt64) (datastore_types.DataStoreMetaInfo, *nex.Error) {

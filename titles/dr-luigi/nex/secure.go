@@ -3,6 +3,7 @@ package nex
 import (
 	"fmt"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -14,13 +15,14 @@ func StartSecureServer() {
 	globals.SecureServer = nex.NewPRUDPServer()
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("dr-luigi", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID
 	globals.SecureEndpoint.AccountDetailsByUsername = globals.AccountDetailsByUsername
 	globals.SecureServer.BindPRUDPEndPoint(globals.SecureEndpoint)
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = true
-	
+
 	globals.SecureServer.LibraryVersions.SetDefault(nex.NewLibraryVersion(3, 5, 2))
 	globals.SecureServer.AccessKey = "2a724fa4"
 

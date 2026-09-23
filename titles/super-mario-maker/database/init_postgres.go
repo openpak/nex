@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	"github.com/lib/pq"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 func initPostgres() {

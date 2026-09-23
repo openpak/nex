@@ -2,12 +2,13 @@ package nex
 
 import (
 	"fmt"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
-	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 )
 
 func StartSecureServer() {
@@ -16,6 +17,7 @@ func StartSecureServer() {
 	globals.SecureServer.ByteStreamSettings.PIDSize = 8
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("monster-hunter-xx", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID

@@ -1,8 +1,8 @@
 package database
 
 import (
-	"time"
 	"github.com/openpak/nex/titles/dr-luigi/globals"
+	"time"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )

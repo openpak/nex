@@ -1,10 +1,10 @@
 package nex
 
 import (
-	"github.com/openpak/nex/titles/mario-kart-7/globals"
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	storage_manager "github.com/PretendoNetwork/nex-protocols-go/v2/storage-manager"
+	"github.com/openpak/nex/titles/mario-kart-7/globals"
 
 	nex_storage_manager "github.com/openpak/nex/titles/mario-kart-7/nex/storage-manager"
 )

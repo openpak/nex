@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/nex-protocols-go/v2/globals"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -19,7 +20,7 @@ func PasswordFromPID(pid types.PID) (string, uint32) {
 	response, err := GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
 		Logger.Error(err.Error())
-		return "", nex.ResultCodes.RendezVous.InvalidUsername
+		return "", nexhost.NEXPasswordResult(err)
 	}
 
 	return response.Password, 0

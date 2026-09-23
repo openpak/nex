@@ -1,10 +1,10 @@
 package local_matchmake_extension
 
 import (
-	"github.com/openpak/nex/titles/yo-kai-watch-2/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
+	"github.com/openpak/nex/titles/yo-kai-watch-2/globals"
 )
 
 func GetMyBlockList(err error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage, *nex.Error) {

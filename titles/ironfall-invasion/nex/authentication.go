@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/openpak/nex/titles/ironfall-invasion/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
+	"github.com/openpak/nex/titles/ironfall-invasion/globals"
 )
 
 var serverBuildString string

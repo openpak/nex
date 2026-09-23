@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

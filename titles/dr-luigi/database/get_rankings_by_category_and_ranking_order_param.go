@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 
-	"github.com/openpak/nex/titles/dr-luigi/globals"
 	ranking_types "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )

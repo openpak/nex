@@ -2,6 +2,7 @@ package nex
 
 import (
 	"fmt"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -15,6 +16,7 @@ func StartSecureServer() {
 	globals.SecureServer = nex.NewPRUDPServer()
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("resident-evil-the-mercenaries-3d", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID

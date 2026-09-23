@@ -6,9 +6,9 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_smm_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker/types"
+	"github.com/lib/pq"
 	"github.com/openpak/nex/titles/super-mario-maker/database"
 	"github.com/openpak/nex/titles/super-mario-maker/globals"
-	"github.com/lib/pq"
 )
 
 func InitializeObjectByAttachFileParam(ownerPID types.PID, param datastore_smm_types.DataStoreAttachFileParam) (types.UInt64, *nex.Error) {

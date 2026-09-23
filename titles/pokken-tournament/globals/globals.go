@@ -6,11 +6,11 @@ import (
 	pb_account "github.com/PretendoNetwork/grpc/go/account"
 	pb_friends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
+	datastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/minio/minio-go/v7"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	datastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 )
 
 var Logger *plogger.Logger

@@ -11,10 +11,10 @@ import (
 
 	pb "github.com/PretendoNetwork/grpc/go/account"
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
-	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

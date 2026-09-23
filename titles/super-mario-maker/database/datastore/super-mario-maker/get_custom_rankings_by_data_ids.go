@@ -5,10 +5,10 @@ import (
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_mario_maker_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker/types"
+	"github.com/lib/pq"
 	"github.com/openpak/nex/titles/super-mario-maker/database"
 	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
 	"github.com/openpak/nex/titles/super-mario-maker/globals"
-	"github.com/lib/pq"
 )
 
 func GetCustomRankingsByDataIDs(applicationID types.UInt32, dataIDs types.List[types.UInt64]) types.List[datastore_super_mario_maker_types.DataStoreCustomRankingResult] {

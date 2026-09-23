@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 )
 
 func StartAuthenticationServer() {

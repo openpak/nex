@@ -6,6 +6,25 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## Unreleased
+
+- Bans (website/docs/ban-lookup.md): an account banned in the OpenPak admin is refused by
+  every title with `RendezVous::AccountDisabled` (0x00030067), the NEX result for a disabled
+  account, and its live connections are dropped within a minute.
+  - Switch titles (the host): nx-baas answers `/internal/switch/identity` with 403
+    `account_banned`/`account_deleted` for a locked-out account; login and every PID lookup
+    now return AccountDisabled for it instead of a generic failure (never TokenExpired, which
+    would send the console round for a new token).
+  - Wii U and 3DS titles: nn-account's `GetNEXPassword` already refused a banned owner;
+    `PasswordFromPID` in every title now answers `nexhost.NEXPasswordResult(err)`, which is
+    AccountDisabled for that refusal and InvalidUsername otherwise, as before.
+  - `nexhost.WatchBans`: every 30 s the secure endpoint re-asks its own
+    `AccountDetailsByPID` about each connected PID and cleans up connections answered
+    AccountDisabled. The host starts it; every Run-shaped title starts it on its secure
+    endpoint. nx-baas and nn-account cache an active answer for at most 30 s, so a ban
+    lands within 60 s. A lookup outage keeps the session.
+  - No new environment variables.
+
 ## v1.1.0 — 2026-09-16
 
 - host: `NEX_SECURE_TRANSPORT` splits the secure listener's transport from the auth

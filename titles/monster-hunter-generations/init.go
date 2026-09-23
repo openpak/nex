@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/openpak/nex/titles/monster-hunter-generations/database"
-	"github.com/openpak/nex/titles/monster-hunter-generations/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/monster-hunter-generations/database"
+	"github.com/openpak/nex/titles/monster-hunter-generations/globals"
 )
 
 func initialize() {

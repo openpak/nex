@@ -1,8 +1,6 @@
 package nex
 
 import (
-	"github.com/openpak/nex/titles/dr-luigi/database"
-	"github.com/openpak/nex/titles/dr-luigi/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	common_matchmake_extension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
@@ -17,6 +15,8 @@ import (
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
+	"github.com/openpak/nex/titles/dr-luigi/database"
+	"github.com/openpak/nex/titles/dr-luigi/globals"
 
 	nex_matchmake_extension_common "github.com/openpak/nex/titles/dr-luigi/nex/matchmake-extension/common"
 )

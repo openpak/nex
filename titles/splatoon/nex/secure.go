@@ -3,6 +3,7 @@ package nex
 import (
 	"fmt"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -15,6 +16,7 @@ func StartSecureServer() {
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = true
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("splatoon", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID

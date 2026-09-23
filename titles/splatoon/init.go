@@ -13,8 +13,8 @@ import (
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 
 	"github.com/PretendoNetwork/plogger-go"
-	"github.com/openpak/nex/titles/splatoon/globals"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/splatoon/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

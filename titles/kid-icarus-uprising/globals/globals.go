@@ -1,12 +1,12 @@
 package globals
 
 import (
+	pbaccount "github.com/PretendoNetwork/grpc/go/account"
+	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/plogger-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	pbaccount "github.com/PretendoNetwork/grpc/go/account"
-	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 )
 
 var Logger *plogger.Logger

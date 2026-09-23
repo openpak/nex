@@ -18,6 +18,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -127,6 +128,11 @@ func (h *Host) identity(query map[string]any) (*Player, error) {
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, fmt.Errorf("nx-baas: %s: %w", resp.Status, errTokenRejected)
 	}
+	if resp.StatusCode == http.StatusForbidden {
+		// nx-baas proved the console but the account is banned or being deleted
+		// (403 {"error":"account_banned"|"account_deleted"}).
+		return nil, fmt.Errorf("nx-baas: %s: %w", resp.Status, errAccountBanned)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("nx-baas identity: %s", resp.Status)
 	}
@@ -149,6 +155,9 @@ func (h *Host) accountByPID(pid types.PID) (*nex.Account, *nex.Error) {
 		return account, nil
 	}
 	player, err := h.PlayerByPID(uint64(pid))
+	if errors.Is(err, errAccountBanned) {
+		return nil, bannedResult()
+	}
 	if err != nil {
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, fmt.Sprintf("pid %d: %v", pid, err))
 	}

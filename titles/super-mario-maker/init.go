@@ -9,9 +9,9 @@ import (
 
 	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/plogger-go"
+	"github.com/joho/godotenv"
 	"github.com/openpak/nex/titles/super-mario-maker/database"
 	"github.com/openpak/nex/titles/super-mario-maker/globals"
-	"github.com/joho/godotenv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 

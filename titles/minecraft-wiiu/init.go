@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

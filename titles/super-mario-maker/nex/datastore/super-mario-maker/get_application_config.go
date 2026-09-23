@@ -83,7 +83,7 @@ func getApplicationConfig_GameplayConfig() []int32 {
 		3,
 		3,
 		constants.COURSE_DOWNLOAD_WIIU, // * Maybe?
-		6, // * Might be related with the extraData?
+		6,                              // * Might be related with the extraData?
 		1,
 		constants.COURSE_WORLD_SUPER_EXPERT_FAILURE_RATE_MIN,
 		5,
@@ -134,7 +134,7 @@ func getApplicationConfig_GameplayConfig3DS() []int32 {
 		constants.COURSE_WORLD_EXPERT_FAILURE_RATE_MIN,
 		constants.COURSE_WORLD_SUPER_EXPERT_FAILURE_RATE_MIN,
 		constants.COURSE_DOWNLOAD_3DS, // * Probably
-		5,  // * Unknown. Might be the resultOption value?
-		6,  // * Unknown. Might be related with the extraData?
+		5,                             // * Unknown. Might be the resultOption value?
+		6,                             // * Unknown. Might be related with the extraData?
 	}
 }

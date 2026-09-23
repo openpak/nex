@@ -66,6 +66,15 @@ the `PN_*` environment upstream reads, then calls upstream's former `init()` and
 `OPENPAK.md` beside each upstream README lists the mapping and the pass-through variables.
 Consoles find these servers through nn-account's `servers` table, not Traefik.
 
+## Bans
+
+An account banned in the OpenPak admin is locked out of every title here
+([`website/docs/ban-lookup.md`](../../website/docs/ban-lookup.md)). Login is refused with
+`RendezVous::AccountDisabled` (0x00030067) and live connections are dropped within a minute
+by `nexhost.WatchBans`. Switch titles learn the ban from nx-baas (`/internal/switch/identity`
+answers 403 `account_banned`); Wii U and 3DS titles from nn-account (`GetNEXPassword` refuses a
+banned owner). Nothing to configure.
+
 ## Deployed shape
 
 Production runs the passthrough form: Traefik routes each title's `g<id>-lp1.s.n.srv.nintendo.net`

@@ -2,6 +2,7 @@ package nex
 
 import (
 	"fmt"
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -12,6 +13,7 @@ import (
 func StartSecureServer() {
 	globals.SecureServer = nex.NewPRUDPServer()
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("tri-force-heroes", globals.SecureEndpoint)
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = true
 
 	globals.SecureEndpoint.IsSecureEndPoint = true

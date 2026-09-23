@@ -3,23 +3,23 @@ package nex
 import (
 	"fmt"
 
-	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 
+	commondatastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	commonmatchmakeextension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	commonutility "github.com/PretendoNetwork/nex-protocols-common-go/v2/utility"
-	commondatastore "github.com/PretendoNetwork/nex-protocols-common-go/v2/datastore"
+	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
-	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 
 	"strconv"
 	"strings"
@@ -160,7 +160,7 @@ func registerCommonSecureServerProtocols() {
 	commonutility.NewCommonProtocol(utilityProtocol)
 
 	utilityProtocol.GetIntegerSettings = local_utility.GetIntegerSettings
-	
+
 	matchmakeExtensionProtocol := matchmakeextension.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)

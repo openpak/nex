@@ -1,13 +1,13 @@
-package utility 
+package utility
 
-import(
-	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
+import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	nex_types "github.com/PretendoNetwork/nex-go/v2/types"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
+	"github.com/openpak/nex/titles/animal-crossing-new-leaf/globals"
 )
 
-func GetIntegerSettings(err error, packet nex.PacketInterface, callID uint32, integerStringIndex nex_types.UInt32) (*nex.RMCMessage, *nex.Error){
+func GetIntegerSettings(err error, packet nex.PacketInterface, callID uint32, integerStringIndex nex_types.UInt32) (*nex.RMCMessage, *nex.Error) {
 	l := nex_types.NewMap[nex_types.UInt16, nex_types.Int32]()
 	l[nex_types.NewUInt16(0)] = nex_types.NewInt32(1)
 	l[nex_types.NewUInt16(1)] = nex_types.NewInt32(2)
@@ -26,4 +26,3 @@ func GetIntegerSettings(err error, packet nex.PacketInterface, callID uint32, in
 
 	return rmcResponse, nil
 }
-

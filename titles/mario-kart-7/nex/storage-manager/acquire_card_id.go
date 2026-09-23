@@ -3,10 +3,10 @@ package nex_storage_manager
 import (
 	"math/rand"
 
-	"github.com/openpak/nex/titles/mario-kart-7/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	storage_manager "github.com/PretendoNetwork/nex-protocols-go/v2/storage-manager"
+	"github.com/openpak/nex/titles/mario-kart-7/globals"
 )
 
 func AcquireCardID(err error, packet nex.PacketInterface, callID uint32) (*nex.RMCMessage, *nex.Error) {

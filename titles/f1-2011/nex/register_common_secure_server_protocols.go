@@ -1,8 +1,6 @@
 package nex
 
 import (
-	"github.com/openpak/nex/titles/f1-2011/database"
-	"github.com/openpak/nex/titles/f1-2011/globals"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	common_match_making_ext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
@@ -14,6 +12,8 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/f1-2011/database"
+	"github.com/openpak/nex/titles/f1-2011/globals"
 )
 
 func registerCommonSecureServerProtocols() {

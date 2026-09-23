@@ -120,6 +120,9 @@ func (h *Host) authorize(endpoint *nex.PRUDPEndPoint, username string, extraData
 	player, err := h.PlayerByToken(token)
 	if err != nil {
 		log.Printf("[%s] login refused: %v", h.Config.Title, err)
+		if errors.Is(err, errAccountBanned) {
+			return 0, nil, nil, bannedResult()
+		}
 		if errors.Is(err, errTokenRejected) {
 			// The console reacts to TokenExpired by fetching a fresh token, which is the
 			// right move for a token we would not prove.

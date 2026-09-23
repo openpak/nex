@@ -529,6 +529,7 @@ func (h *Host) Run() error {
 	// A title may have overwritten SecureStationURL since New; the Wii U-era handlers hold
 	// their own copy, so hand them the final one now rather than the one built at New.
 	h.commonTicketGranting.SecureStationURL = h.SecureStationURL
+	go WatchBans(h.Config.Title, h.Secure)
 
 	if h.Config.SingleListener() {
 		log.Printf("[%s] %s :%d (auth stream %d, secure stream %d) healthz %s nex %s",

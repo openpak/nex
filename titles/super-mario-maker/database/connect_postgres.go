@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/openpak/nex/titles/super-mario-maker/globals"
 	_ "github.com/lib/pq"
+	"github.com/openpak/nex/titles/super-mario-maker/globals"
 )
 
 var Postgres *sql.DB

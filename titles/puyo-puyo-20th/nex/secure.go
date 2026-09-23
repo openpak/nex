@@ -1,6 +1,7 @@
 package nex
 
 import (
+	nexhost "github.com/openpak/nex"
 	"os"
 	"strconv"
 
@@ -15,6 +16,7 @@ func StartSecureServer() {
 	globals.SecureServer.ByteStreamSettings.UseStructureHeader = false
 
 	globals.SecureEndpoint = nex.NewPRUDPEndPoint(1)
+	go nexhost.WatchBans("puyo-puyo-20th", globals.SecureEndpoint)
 	globals.SecureEndpoint.IsSecureEndPoint = true
 	globals.SecureEndpoint.ServerAccount = globals.SecureServerAccount
 	globals.SecureEndpoint.AccountDetailsByPID = globals.AccountDetailsByPID
@@ -35,7 +37,6 @@ func StartSecureServer() {
 
 	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, globals.Postgres)
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
-
 
 	registerCommonSecureServerProtocols()
 

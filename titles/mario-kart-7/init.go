@@ -1,15 +1,15 @@
 package mk7
 
 import (
-	"fmt"
 	"crypto/rand"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
+	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
-	pb "github.com/PretendoNetwork/grpc/go/account"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"

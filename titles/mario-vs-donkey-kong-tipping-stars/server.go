@@ -146,6 +146,9 @@ func (s *Server) newPRUDPServer(secure bool) (*nex.PRUDPServer, *nex.PRUDPEndPoi
 	endpoint.AccountDetailsByUsername = s.accountByUsername
 	endpoint.OnError(func(err *nex.Error) { log.Printf("[mvdk] %v", err) })
 	server.BindPRUDPEndPoint(endpoint)
+	if secure {
+		go nexhost.WatchBans("mario-vs-donkey-kong-tipping-stars", endpoint)
+	}
 	return server, endpoint
 }
 
@@ -207,7 +210,7 @@ func (s *Server) accountByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	resp, err := common_globals.GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
 		log.Printf("[mvdk] nex password for %d: %v", uint64(pid), err)
-		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidUsername, "no such PID")
+		return nil, nex.NewError(nexhost.NEXPasswordResult(err), "no such PID")
 	}
 	return nex.NewAccount(pid, strconv.FormatUint(uint64(pid), 10), resp.Password, false), nil
 }

@@ -3,9 +3,6 @@ package nex
 import (
 	"context"
 
-	"github.com/openpak/nex/titles/kid-icarus-uprising/database"
-	"github.com/openpak/nex/titles/kid-icarus-uprising/globals"
-	local_globals "github.com/openpak/nex/titles/kid-icarus-uprising/globals"
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
@@ -20,6 +17,9 @@ import (
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/kid-icarus-uprising/database"
+	"github.com/openpak/nex/titles/kid-icarus-uprising/globals"
+	local_globals "github.com/openpak/nex/titles/kid-icarus-uprising/globals"
 )
 
 func registerCommonSecureServerProtocols() {

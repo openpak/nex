@@ -20,7 +20,7 @@ func StartAuthenticationServer() {
 	globals.AuthenticationEndpoint.AccountDetailsByUsername = globals.AccountDetailsByUsername
 	globals.AuthenticationServer.BindPRUDPEndPoint(globals.AuthenticationEndpoint)
 	globals.AuthenticationServer.ByteStreamSettings.UseStructureHeader = true
-	
+
 	globals.AuthenticationServer.LibraryVersions.SetDefault(nex.NewLibraryVersion(3, 5, 2))
 	globals.AuthenticationServer.AccessKey = "2a724fa4"
 

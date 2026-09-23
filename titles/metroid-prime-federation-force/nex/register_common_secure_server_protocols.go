@@ -1,8 +1,6 @@
 package nex
 
 import (
-	"github.com/openpak/nex/titles/metroid-prime-federation-force/database"
-	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	common_match_making "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
@@ -11,11 +9,13 @@ import (
 	common_nat_traversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	common_secure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
-	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
+	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/database"
+	"github.com/openpak/nex/titles/metroid-prime-federation-force/globals"
 )
 
 func registerCommonSecureServerProtocols() {

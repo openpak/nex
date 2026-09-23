@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
-	"github.com/openpak/nex/titles/ice-station-z/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/joho/godotenv"
+	"github.com/openpak/nex/titles/ice-station-z/globals"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

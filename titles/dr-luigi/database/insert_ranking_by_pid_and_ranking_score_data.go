@@ -6,13 +6,13 @@ import (
 	ranking_types "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
 
 	"github.com/openpak/nex/titles/dr-luigi/globals"
-	
+
 	"github.com/PretendoNetwork/nex-go/v2/types"
 )
 
 func InsertRankingByPIDAndRankingScoreData(pid types.PID, rankingScoreData ranking_types.RankingScoreData, uniqueID types.UInt64) error {
 	now := time.Now().UnixNano()
-	if(rankingScoreData.Score == 0){
+	if rankingScoreData.Score == 0 {
 		return nil
 	}
 
@@ -37,7 +37,7 @@ func InsertRankingByPIDAndRankingScoreData(pid types.PID, rankingScoreData ranki
 		rankingScoreData.OrderBy,
 		rankingScoreData.UpdateMode,
 		rankingScoreData.Groups,
-		rankingScoreData.Param & 0x7FFFFFFFFFFFFFFF,
+		rankingScoreData.Param&0x7FFFFFFFFFFFFFFF,
 		uniqueID,
 		now,
 	)

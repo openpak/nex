@@ -1,11 +1,11 @@
 package nex
 
 import (
-	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticketgranting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
+	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"os"
 	"strconv"
 )
