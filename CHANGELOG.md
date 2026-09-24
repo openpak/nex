@@ -6,8 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
-## Unreleased
+## v1.2.1 — 2026-09-24
 
+- deps: grpc 1.83.2 (Dependabot)
 - ci: builds only on `v*.*.*` tags; build scratch in the runner temp, cleared after.
 
 ## v1.2.0 — 2026-09-23
