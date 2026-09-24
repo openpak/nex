@@ -15,7 +15,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
-	google.golang.org/grpc v1.83.1
+	google.golang.org/grpc v1.84.0
 )
 
 require (
