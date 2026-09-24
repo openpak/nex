@@ -8,6 +8,10 @@ OpenPak work starts at the port/fork commit.
 
 ## Unreleased
 
+- ci: builds only on `v*.*.*` tags; build scratch in the runner temp, cleared after.
+
+## v1.2.0 — 2026-09-23
+
 - Bans (website/docs/ban-lookup.md): an account banned in the OpenPak admin is refused by
   every title with `RendezVous::AccountDisabled` (0x00030067), the NEX result for a disabled
   account, and its live connections are dropped within a minute.
