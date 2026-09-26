@@ -1,7 +1,7 @@
 # super-mario-3d-world-bowsers-fury
 
 Super Mario 3D World + Bowser's Fury (`010028600EBDA000`) on the shared NEX host. **Scaffold.** Port block `22370`
-([ports.md](../../../../ports.md)): auth `22370`, secure `22371`, `/healthz` `22372`.
+([ports.md](https://github.com/openpak/docs/blob/main/ports.md)): auth `22370`, secure `22371`, `/healthz` `22372`.
 
 ## What has to be found out before a console can use it
 

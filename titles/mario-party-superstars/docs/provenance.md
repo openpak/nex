@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact this server is built on, and where it came from. Required by
-[`docs/clean-room-policy.md`](../../../docs/clean-room-policy.md): OpenPak reads the
+[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): OpenPak reads the
 earlier network servers for facts and writes its own code, so the facts have to be
 checkable separately from the code.
 

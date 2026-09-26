@@ -1,6 +1,6 @@
 # Provenance
 
-Required by [`docs/clean-room-policy.md`](../../../docs/clean-room-policy.md). Every
+Required by [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md). Every
 non-obvious fact this server is built on, and where it came from.
 
 Three kinds of source appear below:
@@ -125,7 +125,7 @@ request and the response, from a console using the feature.
 
 | Fact | Value | Source |
 | --- | --- | --- |
-| Port block | 22150 (auth 22150, secure 22151, `/healthz` 22152) | [`ports.md`](../../../../../ports.md), claimed in this change |
+| Port block | 22150 (auth 22150, secure 22151, `/healthz` 22152) | [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md), claimed in this change |
 | Identity | `POST /internal/switch/identity` on nx-baas, guarded by `X-Internal-Key` | `servers/nex/docs/design.md`, `nx-baas` |
 | Friend graph | the `friends` array of that reply, via `Host.FriendPIDs` | `servers/nex/account.go` |
 | Postgres | the matchmaking, utility and ranking schemas are created on first run | Pretendo's common protocols do this themselves; `ranking.go` here does the same for its two tables |

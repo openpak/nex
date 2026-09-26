@@ -59,7 +59,7 @@ list. These are the values that are **specific to this title** and wrong by defa
 
 | Env | Value here | Why |
 | --- | --- | --- |
-| `NEX_PORT_BASE` | `22160` | this title's block from [`ports.md`](../../../../ports.md). Both endpoints share the listener on `+0`, `+1` is reserved and unused, `/healthz` is on `+2` |
+| `NEX_PORT_BASE` | `22160` | this title's block from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md). Both endpoints share the listener on `+0`, `+1` is reserved and unused, `/healthz` is on `+2` |
 | `NEX_ACCESS_KEY` | **required** | the title's NEX access key: public, per title, and configuration rather than a literal in source |
 | `NEX_VERSION` | `40600` | NEX 4.6.0 |
 | `NEX_SECURE_STREAM_ID` | `2` | the secure endpoint is on virtual port 2, which puts both endpoints on one listener. **Specific to this title** — most Switch titles in the fleet use two listeners |
@@ -98,12 +98,12 @@ that fail closed.
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs. Every protocol fact in
   [`docs/provenance.md`](docs/provenance.md) cites its source.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../../../ports.md).
+- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Super Mario Bros. 35's
 publisher, or any original service provider. It contains no proprietary game code, assets,

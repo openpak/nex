@@ -39,7 +39,7 @@ cp example.env .env   # then edit
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22120` — this title's block from [ports.md](../../../../ports.md). Authentication 22120/**tcp** (Traefik SNI passthrough), secure 22121/**udp**, `/healthz` 22122 |
+| `NEX_PORT_BASE` | **required.** `22120` — this title's block from [ports.md](https://github.com/openpak/docs/blob/main/ports.md). Authentication 22120/**tcp** (Traefik SNI passthrough), secure 22121/**udp**, `/healthz` 22122 |
 | `NEX_ACCESS_KEY` | **required.** `4152f312`, the title's NEX access key ([docs/provenance.md](docs/provenance.md)) |
 | `NEX_VERSION` | `40400` — MHGU links NEX 4.4.0 |
 | `NEX_TRANSPORT` | `websocket`. The auth stage is the Switch one: the console opens TLS on 443 to `g2896bd04-lp1.s.n.srv.nintendo.net` and Traefik passes the SNI through |
@@ -92,10 +92,10 @@ runtime error.
 
 ## Ground rules
 
-- Clean room. [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md); every protocol
+- Clean room. [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md); every protocol
   fact cites its source in [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../../../ports.md).
+- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, Monster Hunter Generations
 Ultimate's publisher, or any original service provider. It contains no proprietary game code,

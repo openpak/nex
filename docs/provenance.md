@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact in this repository and where it came from, per
-[`docs/clean-room-policy.md`](../../../docs/clean-room-policy.md). Facts were read, written
+[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md). Facts were read, written
 down here, and then OpenPak's own version was written from these notes. No earlier code,
 comment, doc text, structure or naming was copied.
 

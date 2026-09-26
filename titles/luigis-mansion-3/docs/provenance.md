@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact this server is built on, and where it came from. Required by
-[`docs/clean-room-policy.md`](../../../docs/clean-room-policy.md): facts about a console and a
+[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): facts about a console and a
 protocol are not authorship, but which fact came from where has to stay checkable.
 
 Nothing here was copied. Each row is a value or a behaviour that was read, written down, and

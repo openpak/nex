@@ -39,7 +39,7 @@ env $(grep -v '^#' .env | xargs) ./armsd
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22140` — this title's block from [ports.md](../../../../ports.md). Two listeners: authentication `22140`, secure `22141` |
+| `NEX_PORT_BASE` | **required.** `22140` — this title's block from [ports.md](https://github.com/openpak/docs/blob/main/ports.md). Two listeners: authentication `22140`, secure `22141` |
 | `NEX_ACCESS_KEY` | **required.** ARMS's NEX access key. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
 | `NEX_VERSION` | NEX library ARMS links: `4.3.5`, what the update links. The base game links `4.0.3` |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
@@ -86,11 +86,11 @@ Those tests skip when the variable is unset, so the default run needs no databas
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](../../../../docs/clean-room-policy.md) before
+- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs; `docs/provenance.md` records which was which.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](../../../../ports.md).
+- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
 
 This project is not affiliated with or endorsed by Nintendo, ARMS's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,
