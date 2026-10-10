@@ -85,7 +85,7 @@ func (s *HPPServer) handleRequest(w http.ResponseWriter, req *http.Request) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", req.RemoteAddr)
 	if err != nil {
 		// * Should never happen?
-		logger.Error(err.Error())
+		logger.Error(logErr(err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -120,7 +120,7 @@ func (s *HPPServer) handleRequest(w http.ResponseWriter, req *http.Request) {
 
 		_, err = w.Write(errorResponse.Bytes())
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error(logErr(err))
 		}
 
 		return
@@ -135,7 +135,7 @@ func (s *HPPServer) handleRequest(w http.ResponseWriter, req *http.Request) {
 	if len(hppPacket.payload) > 0 {
 		_, err = w.Write(hppPacket.payload)
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error(logErr(err))
 		}
 	}
 }

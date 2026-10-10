@@ -6,6 +6,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/PretendoNetwork/nex-protocols-go/v2/globals"
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/redact"
 	"os"
 	"strconv"
 
@@ -55,7 +56,7 @@ func PasswordFromPIDLocal(pid types.PID) (string, uint32) {
 
 	for _, account := range data.Accounts {
 		if account.Username == strconv.FormatUint(uint64(pid), 10) {
-			globals.Logger.Infof("Using local account details for %v", account.Username)
+			globals.Logger.Infof("Using local account details for %s", redact.Tag(account.Username))
 			return account.Password, 0
 		}
 	}

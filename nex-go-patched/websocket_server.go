@@ -51,7 +51,7 @@ func (wseh *wsEventHandler) OnMessage(socket *gws.Conn, message *gws.Message) {
 	packetData := append([]byte(nil), message.Bytes()...)
 	err := wseh.prudpServer.handleSocketMessage(packetData, socket.RemoteAddr(), socket)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(logErr(err))
 	}
 }
 

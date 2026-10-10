@@ -2,6 +2,7 @@ package datastore_db
 
 import (
 	"database/sql"
+	"github.com/openpak/nex/redact"
 	"time"
 
 	"github.com/PretendoNetwork/nex-go/v2"
@@ -86,7 +87,7 @@ func GetObjectInfoByPersistenceTargetWithPassword(persistenceTarget datastore_ty
 
 	ratings, nexError := GetObjectRatingsWithSlotByDataIDWithPassword(metaInfo.DataID, password)
 	if nexError != nil {
-		globals.Logger.Errorf("Failed to get ratings for object %d with password %d", metaInfo.DataID, password)
+		globals.Logger.Errorf("Failed to get ratings for object %d with password %s", metaInfo.DataID, redact.Tag(password))
 		return datastore_types.NewDataStoreMetaInfo(), nexError
 	}
 

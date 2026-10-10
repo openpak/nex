@@ -2,6 +2,7 @@ package nex_match_making_ext
 
 import (
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -10,7 +11,7 @@ import (
 )
 
 func EndParticipation(err error, packet nex.PacketInterface, callID uint32, idGathering types.UInt32, strMessage types.String) (*nex.RMCMessage, *nex.Error) {
-	globals.Logger.Info(fmt.Sprintf("ENDING PARTICIPATION: GID: %d, MESSAGE: %s", idGathering, strMessage))
+	globals.Logger.Info(fmt.Sprintf("ENDING PARTICIPATION: GID: %s, MESSAGE: %dB", redact.Tag(uint64(idGathering)), len(strMessage)))
 
 	rmcResponseStream := nex.NewByteStreamOut(globals.SecureServer.LibraryVersions, globals.SecureServer.ByteStreamSettings)
 

@@ -2,6 +2,7 @@ package nex
 
 import (
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
@@ -78,7 +79,9 @@ func cleanupSearchMatchmakeSessionHandler(matchmakeSession *matchmakingtypes.Mat
 	matchmakeSession.MatchmakeParam = matchmakingtypes.NewMatchmakeParam()
 	matchmakeSession.ApplicationBuffer = types.NewBuffer(make([]byte, 0))
 	matchmakeSession.GameMode = types.NewUInt32(33)
-	globals.Logger.Info(matchmakeSession.String())
+	if redact.TraceBodies {
+		globals.Logger.Info(matchmakeSession.String())
+	}
 }
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
@@ -146,7 +149,9 @@ func registerCommonSecureServerProtocols() {
 	globals.SecureEndpoint.RegisterServiceProtocol(messagedeliveryProtocol)
 	messagedeliveryProtocol.DeliverMessage = func(err error, packet nex.PacketInterface, callID uint32, oUserMessage types.DataHolder) (*nex.RMCMessage, *nex.Error) {
 		fmt.Println(err)
-		fmt.Printf("MESSAGE DATA: %x\n", packet.RMCMessage().Parameters)
+		if redact.TraceBodies {
+			fmt.Printf("MESSAGE DATA: %x\n", packet.RMCMessage().Parameters)
+		}
 		rmcResponse := nex.NewRMCSuccess(globals.SecureEndpoint, nil)
 		rmcResponse.ProtocolID = messagedelivery.ProtocolID
 		rmcResponse.MethodID = messagedelivery.MethodDeliverMessage

@@ -2,6 +2,7 @@ package nex_matchmake_extension_super_smash_bros_4
 
 import (
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	matchmake_extension_super_smash_bros_4 "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension/super-smash-bros-4"
@@ -19,7 +20,9 @@ func SearchCommunityCompetition(err error, packet nex.PacketInterface, callID ui
 	param := matchmake_extension_super_smash_bros_4_types.NewSearchCommunityCompetitionParam()
 	param.ExtractFrom(parametersStream)
 
-	fmt.Println(param.FormatToString(0))
+	if redact.TraceBodies {
+		fmt.Println(param.FormatToString(0))
+	}
 
 	communityCompetitions := matchmake_extension_super_smash_bros_4_database.FindCommunityCompetitionsBySearchParam(param)
 

@@ -20,6 +20,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"log"
 	"strconv"
 	"time"
@@ -116,13 +117,13 @@ func (s *Server) sendEagleHandoff(packet nex.PacketInterface) {
 
 	gid, ok := s.gatheringOf(connection.PID())
 	if !ok {
-		log.Printf("[smb35] no gathering for pid %d after a join: no Eagle handoff sent", pid)
+		log.Printf("[smb35] no gathering for pid %s after a join: no Eagle handoff sent", redact.Tag(pid))
 		return
 	}
 
 	token, err := buildEagleToken(s.cfg.EagleKey, pid, gid, time.Now().Add(eagleTokenLifetime))
 	if err != nil {
-		log.Printf("[smb35] eagle token for pid %d: %v", pid, err)
+		log.Printf("[smb35] eagle token for pid %s: %v", redact.Tag(pid), err)
 		return
 	}
 
@@ -137,7 +138,7 @@ func (s *Server) sendEagleHandoff(packet nex.PacketInterface) {
 	}
 
 	common_globals.SendNotificationEvent(s.host.Secure, event, []uint64{pid})
-	log.Printf("[smb35] eagle handoff pid=%d gid=%d", pid, gid)
+	log.Printf("[smb35] eagle handoff pid=%s gid=%d", redact.Tag(pid), gid)
 }
 
 // gatheringOf answers which gathering a player is currently in. The matchmaking tables are

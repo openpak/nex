@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"log"
 	"os"
 
@@ -79,7 +80,7 @@ func Register(host *nexhost.Host) error {
 	friendPIDs := func(pid uint32) []uint32 {
 		player, err := host.PlayerByPID(uint64(pid))
 		if err != nil {
-			log.Printf("friends of %d: %v", pid, err)
+			log.Printf("friends of %s: %s", redact.Tag(uint64(pid)), redact.Err(err))
 			return nil
 		}
 		pids := make([]uint32, 0, len(player.Friends))

@@ -25,6 +25,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"github.com/openpak/nex/redact"
 	"log"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
@@ -119,7 +120,7 @@ func (h *Host) authorize(endpoint *nex.PRUDPEndPoint, username string, extraData
 
 	player, err := h.PlayerByToken(token)
 	if err != nil {
-		log.Printf("[%s] login refused: %v", h.Config.Title, err)
+		log.Printf("[%s] login refused: %s", h.Config.Title, redact.Err(err))
 		if errors.Is(err, errAccountBanned) {
 			return 0, nil, nil, bannedResult()
 		}
@@ -147,7 +148,7 @@ func (h *Host) authorize(endpoint *nex.PRUDPEndPoint, username string, extraData
 		return 0, nil, nil, nex.NewError(nex.ResultCodes.Authentication.Unknown, ticketErr.Error())
 	}
 
-	log.Printf("[%s] login pid=%d nickname=%q friends=%d", h.Config.Title, player.PID, player.Nickname, len(player.Friends))
+	log.Printf("[%s] login pid=%s friends=%d", h.Config.Title, redact.Tag(player.PID), len(player.Friends))
 	return player.PID, sourceKey, ticket, nil
 }
 

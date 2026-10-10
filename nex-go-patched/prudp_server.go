@@ -249,28 +249,28 @@ func (ps *PRUDPServer) handleSocketMessage(packetData []byte, address net.Addr, 
 
 func (ps *PRUDPServer) processPacket(packet PRUDPPacketInterface, address net.Addr, webSocketConnection *gws.Conn) {
 	if !ps.Endpoints.Has(packet.DestinationVirtualPortStreamID()) {
-		logger.Warningf("Client %s trying to connect to unbound PRUDPEndPoint %d", address.String(), packet.DestinationVirtualPortStreamID())
+		logger.Warningf("Client %s trying to connect to unbound PRUDPEndPoint %d", logTag(address.String()), packet.DestinationVirtualPortStreamID())
 		return
 	}
 
 	endpoint, ok := ps.Endpoints.Get(packet.DestinationVirtualPortStreamID())
 	if !ok {
-		logger.Warningf("Client %s trying to connect to unbound PRUDPEndPoint %d", address.String(), packet.DestinationVirtualPortStreamID())
+		logger.Warningf("Client %s trying to connect to unbound PRUDPEndPoint %d", logTag(address.String()), packet.DestinationVirtualPortStreamID())
 		return
 	}
 
 	if packet.DestinationVirtualPortStreamType() != packet.SourceVirtualPortStreamType() {
-		logger.Warningf("Client %s trying to use non matching destination and source stream types %d and %d", address.String(), packet.DestinationVirtualPortStreamType(), packet.SourceVirtualPortStreamType())
+		logger.Warningf("Client %s trying to use non matching destination and source stream types %d and %d", logTag(address.String()), packet.DestinationVirtualPortStreamType(), packet.SourceVirtualPortStreamType())
 		return
 	}
 
 	if packet.DestinationVirtualPortStreamType() > constants.StreamTypeRelay {
-		logger.Warningf("Client %s trying to use invalid to destination stream type %d", address.String(), packet.DestinationVirtualPortStreamType())
+		logger.Warningf("Client %s trying to use invalid to destination stream type %d", logTag(address.String()), packet.DestinationVirtualPortStreamType())
 		return
 	}
 
 	if packet.SourceVirtualPortStreamType() > constants.StreamTypeRelay {
-		logger.Warningf("Client %s trying to use invalid to source stream type %d", address.String(), packet.DestinationVirtualPortStreamType())
+		logger.Warningf("Client %s trying to use invalid to source stream type %d", logTag(address.String()), packet.DestinationVirtualPortStreamType())
 		return
 	}
 
@@ -288,7 +288,7 @@ func (ps *PRUDPServer) processPacket(packet PRUDPPacketInterface, address net.Ad
 	}
 
 	if invalidSourcePort {
-		logger.Warningf("Client %s trying to use invalid to source port number %d. Port number too large", address.String(), sourcePortNumber)
+		logger.Warningf("Client %s trying to use invalid to source port number %d. Port number too large", logTag(address.String()), sourcePortNumber)
 		return
 	}
 
@@ -416,7 +416,7 @@ func (ps *PRUDPServer) SendRaw(socket *SocketConnection, data []byte) {
 	}
 
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(logErr(err))
 	}
 }
 

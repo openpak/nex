@@ -3,6 +3,7 @@ package nex_matchmake_extension_super_smash_bros_4
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"os"
 	"strconv"
 	"strings"
@@ -21,7 +22,9 @@ import (
 func GetTournamentCompetitions(err error, packet nex.PacketInterface, callID uint32, packetPayload []byte) (*nex.RMCMessage, *nex.Error) {
 	rmcResponseStream := nex.NewByteStreamOut(globals.SecureServer.LibraryVersions, globals.SecureServer.ByteStreamSettings)
 
-	fmt.Println(hex.EncodeToString(packet.RMCMessage().Parameters))
+	if redact.TraceBodies {
+		fmt.Println(hex.EncodeToString(packet.RMCMessage().Parameters))
+	}
 
 	f, _ := os.ReadFile("parameters.txt")
 	file := strings.Split(string(f), "\r\n")

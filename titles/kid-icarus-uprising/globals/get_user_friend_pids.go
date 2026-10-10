@@ -3,6 +3,7 @@ package globals
 import (
 	"context"
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	pbfriends "github.com/PretendoNetwork/grpc/go/friends"
 	"github.com/PretendoNetwork/nex-protocols-go/v2/globals"
@@ -17,6 +18,8 @@ func GetUserFriendPIDs(pid uint32) []uint32 {
 		globals.Logger.Error(err.Error())
 		return make([]uint32, 0)
 	}
-	fmt.Println(response.Pids)
+	if redact.TraceBodies {
+		fmt.Println(response.Pids)
+	}
 	return response.Pids
 }

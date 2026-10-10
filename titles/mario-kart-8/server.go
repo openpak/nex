@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"log"
 	"strconv"
 	"strings"
@@ -255,7 +256,7 @@ func (s *Server) friendPIDs(pid uint32) []uint32 {
 	ctx := metadata.NewOutgoingContext(context.Background(), s.friendsMD)
 	resp, err := s.friendsClient.GetUserFriendPIDs(ctx, &pbfriends.GetUserFriendPIDsRequest{Pid: pid})
 	if err != nil {
-		log.Printf("[mario-kart-8] friends of %d: %v", pid, err)
+		log.Printf("[mario-kart-8] friends of %s: %v", redact.Tag(uint64(pid)), err)
 		return nil
 	}
 	return resp.Pids
@@ -298,7 +299,7 @@ func (s *Server) nexPassword(pid types.PID) (string, *nex.Error) {
 	ctx := metadata.NewOutgoingContext(context.Background(), common_globals.GRPCAccountCommonMetadata)
 	resp, err := common_globals.GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
-		log.Printf("[mario-kart-8] nex password for %d: %v", uint64(pid), err)
+		log.Printf("[mario-kart-8] nex password for %s: %v", redact.Tag(uint64(pid)), err)
 		return "", nex.NewError(nexhost.NEXPasswordResult(err), "no such PID")
 	}
 	return resp.Password, nil

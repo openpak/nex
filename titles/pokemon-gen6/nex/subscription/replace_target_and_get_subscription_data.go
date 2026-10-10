@@ -5,6 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
 	subscription_types "github.com/PretendoNetwork/nex-protocols-go/v2/subscription/types"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
@@ -20,7 +21,9 @@ func ReplaceTargetAndGetSubscriptionData(err error, packet nex.PacketInterface, 
 
 	rmcResponseStream := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
 
-	globals.Logger.Infof("ReplaceTargetAndGetSubscriptionData | newTargets: %s", newTargets.String())
+	if redact.TraceBodies {
+		globals.Logger.Infof("ReplaceTargetAndGetSubscriptionData | newTargets: %s", newTargets.String())
+	}
 	targetSubscriptionList := types.NewList[subscription_types.SubscriptionData]()
 
 	globals.SubscriptionTargets.ReplaceTargets(client.PID(), newTargets)

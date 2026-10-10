@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"log"
 	"math"
 	"net/http"
@@ -159,7 +160,7 @@ func (h *Host) accountByPID(pid types.PID) (*nex.Account, *nex.Error) {
 		return nil, bannedResult()
 	}
 	if err != nil {
-		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, fmt.Sprintf("pid %d: %v", pid, err))
+		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidPID, fmt.Sprintf("pid %s: %s", redact.Tag(uint64(pid)), redact.Err(err)))
 	}
 	return userAccount(player), nil
 }
@@ -177,7 +178,7 @@ func (h *Host) accountByUsername(username string) (*nex.Account, *nex.Error) {
 	pid, err := strconv.ParseUint(username, 10, 64)
 	if err != nil {
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidUsername,
-			fmt.Sprintf("username %q is neither a known login name nor a PID", username))
+			fmt.Sprintf("username %s is neither a known login name nor a PID", redact.Tag(username)))
 	}
 	return h.accountByPID(types.NewPID(pid))
 }
@@ -244,7 +245,7 @@ func PIDForLoginName(name string) (uint64, bool) {
 func (h *Host) FriendPIDs(pid uint32) []uint32 {
 	player, err := h.PlayerByPID(uint64(pid))
 	if err != nil {
-		log.Printf("[%s] friend list for pid %d unavailable, treating as no friends: %v", h.Config.Title, pid, err)
+		log.Printf("[%s] friend list for pid %s unavailable, treating as no friends: %s", h.Config.Title, redact.Tag(uint64(pid)), redact.Err(err))
 		return nil
 	}
 	pids := make([]uint32, 0, len(player.Friends))
@@ -255,7 +256,7 @@ func (h *Host) FriendPIDs(pid uint32) []uint32 {
 		// this today, so the log line is the interesting part: it means PIDs have outgrown
 		// the callbacks and every friends-only check is quietly losing people.
 		if friend.PID == 0 || friend.PID > math.MaxUint32 {
-			log.Printf("[%s] friend pid %d is not usable in the 32-bit friend callback, skipped", h.Config.Title, friend.PID)
+			log.Printf("[%s] friend pid %s is not usable in the 32-bit friend callback, skipped", h.Config.Title, redact.Tag(friend.PID))
 			continue
 		}
 		pids = append(pids, uint32(friend.PID))

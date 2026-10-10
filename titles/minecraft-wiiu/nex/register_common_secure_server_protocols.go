@@ -9,6 +9,7 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 	"os"
 	"slices"
@@ -28,7 +29,9 @@ func cleanupSearchMatchmakeSessionHandler(matchmakeSession *matchmakingtypes.Mat
 	//_ = matchmakeSession.Attributes.SetIndex(2, types.NewPrimitiveU32(0))
 	matchmakeSession.MatchmakeParam = matchmakingtypes.NewMatchmakeParam()
 	matchmakeSession.ApplicationBuffer = types.NewBuffer(make([]byte, 0))
-	globals.Logger.Info(matchmakeSession.String())
+	if redact.TraceBodies {
+		globals.Logger.Info(matchmakeSession.String())
+	}
 }
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {

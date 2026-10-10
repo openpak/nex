@@ -3,6 +3,7 @@ package globals
 import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
+	"github.com/openpak/nex/redact"
 	"strconv"
 )
 
@@ -45,7 +46,7 @@ func AccountDetailsByUsername(username string) (*nex.Account, *nex.Error) {
 
 	pidInt, err := strconv.Atoi(username)
 	if err != nil {
-		Logger.Error(err.Error())
+		Logger.Errorf("Login name %s is not a PID", redact.Tag(username))
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidUsername, "Invalid username")
 	}
 

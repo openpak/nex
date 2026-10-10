@@ -118,7 +118,7 @@ func (pep *PRUDPEndPoint) CleanupConnection(connection *PRUDPConnection) {
 
 	// * Probably this connection is on a different PRUDPEndPoint
 	if !found {
-		logger.Warningf("Tried to delete connection %v (ID %v) but it doesn't exist!", discriminator, connection.ID)
+		logger.Warningf("Tried to delete connection %v (ID %v) but it doesn't exist!", logTag(discriminator), connection.ID)
 	}
 
 	// * We can't do this during RunAndDelete, since we hold the Connections mutex then

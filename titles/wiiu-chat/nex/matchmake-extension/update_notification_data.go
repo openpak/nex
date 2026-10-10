@@ -4,6 +4,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	notification_constants "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/constants"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/wiiu-chat/database"
 	"github.com/openpak/nex/titles/wiiu-chat/globals"
 	"github.com/openpak/nex/titles/wiiu-chat/grpc"
@@ -13,7 +14,7 @@ import (
 )
 
 func UpdateNotificationData(err error, packet nex.PacketInterface, callID uint32, uiType notification_constants.NotificationCategory, uiParam1 types.UInt64, uiParam2 types.UInt64, strParam types.String) (*nex.RMCMessage, *nex.Error) {
-	globals.Logger.Infof("uiType: %d, uiParam1: %d, uiParam2: %d, strParam: %s\r\n", uiType, uiParam1, uiParam2, strParam)
+	globals.Logger.Infof("uiType: %d, uiParam1: %s, uiParam2: %s, strParam: %dB\r\n", uiType, redact.Tag(uint64(uiParam1)), redact.Tag(uint64(uiParam2)), len(strParam))
 	recipientClient := globals.SecureEndpoint.FindConnectionByPID(uint64(uiParam2))
 
 	if uint32(uiType) == requestJoinGatheringCategory {

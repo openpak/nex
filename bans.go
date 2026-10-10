@@ -17,6 +17,7 @@ package nexhost
 
 import (
 	"errors"
+	"github.com/openpak/nex/redact"
 	"log"
 	"strings"
 	"time"
@@ -98,7 +99,7 @@ func sweepBans(title string, ep *nex.PRUDPEndPoint) {
 			checked[pid] = banned
 		}
 		if banned {
-			log.Printf("[%s] pid %d is banned, dropping its connection", title, pid)
+			log.Printf("[%s] pid %s is banned, dropping its connection", title, redact.Tag(pid))
 			ep.CleanupConnection(c)
 		}
 	}

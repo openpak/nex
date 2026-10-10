@@ -2,6 +2,7 @@ package nex_datastore_super_smash_bros_4
 
 import (
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -11,7 +12,9 @@ import (
 )
 
 func CheckPostReplay(err error, packet nex.PacketInterface, callID uint32, param datastore_super_smash_bros_4_protocol_types.DataStorePreparePostReplayParam) (*nex.RMCMessage, *nex.Error) {
-	fmt.Printf("Post Param: %s\n", param.String())
+	if redact.TraceBodies {
+		fmt.Printf("Post Param: %s\n", param.String())
+	}
 
 	pIsRequired := types.NewBool(true)
 	pIsRare := types.NewBool(false) /// no idea what this is lmao

@@ -5,6 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
 	subscription_types "github.com/PretendoNetwork/nex-protocols-go/v2/subscription/types"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
@@ -23,7 +24,7 @@ func GetSubscriptionData(err error, packet nex.PacketInterface, callID uint32, p
 	subscriptionDataList := types.NewList[subscription_types.SubscriptionData]()
 
 	for _, pid := range pids {
-		globals.Logger.Infof("GetSubscriptionData pid: %d", pid)
+		globals.Logger.Infof("GetSubscriptionData pid: %s", redact.Tag(uint64(pid)))
 
 		subscriptionData := subscription_types.NewSubscriptionData()
 

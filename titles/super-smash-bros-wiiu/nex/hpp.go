@@ -3,6 +3,7 @@ package nex
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"os"
 	"strconv"
 
@@ -16,8 +17,12 @@ import (
 func GetNotificationURL(err error, packet nex.PacketInterface, callID uint32, param datastore_types.DataStoreGetNotificationURLParam) (*nex.RMCMessage, *nex.Error) {
 	rmcResponseStream := nex.NewByteStreamOut(globals.SecureServer.LibraryVersions, globals.HPPServer.ByteStreamSettings())
 
-	globals.Logger.Info(hex.EncodeToString(packet.RMCMessage().Parameters))
-	globals.Logger.Info(param.PreviousURL.String())
+	if redact.TraceBodies {
+		globals.Logger.Info(hex.EncodeToString(packet.RMCMessage().Parameters))
+	}
+	if redact.TraceBodies {
+		globals.Logger.Info(param.PreviousURL.String())
+	}
 
 	urlInfo := datastore_types.NewDataStoreReqGetNotificationURLInfo()
 

@@ -5,6 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	subscription "github.com/PretendoNetwork/nex-protocols-go/v2/subscription"
 	subscription_types "github.com/PretendoNetwork/nex-protocols-go/v2/subscription/types"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/pokemon-gen6/globals"
 )
 
@@ -18,7 +19,9 @@ func CreateMySubscriptionData(err error, packet nex.PacketInterface, callID uint
 
 	endpoint := client.Endpoint().(*nex.PRUDPEndPoint)
 
-	globals.Logger.Infof("CreateMySubscriptionData | unk: %d | unk2: %s", unk, unk2.String())
+	if redact.TraceBodies {
+		globals.Logger.Infof("CreateMySubscriptionData | unk: %d | unk2: %s", unk, unk2.String())
+	}
 
 	param.PrincipalID = client.PID()
 	globals.SubscriptionTimeline.CreateData(client.PID(), param, globals.SubscriptionTargets)

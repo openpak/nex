@@ -17,6 +17,7 @@ import (
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/puyo-puyo-tetris/globals"
 	megaranking "github.com/openpak/nex/titles/puyo-puyo-tetris/ranking"
 
@@ -174,7 +175,9 @@ func registerCommonSecureServerProtocols() {
 	commonMatchmakeExtensionProtocol.OnAfterAutoMatchmakeWithSearchCriteriaPostpone = func(packet nex.PacketInterface, lstSearchCriteria types.List[matchmakingtypes.MatchmakeSessionSearchCriteria], anyGathering matchmakingtypes.GatheringHolder, strMessage types.String) {
 		globals.Logger.Info("Matchmake search criteria:")
 		for _, criteria := range lstSearchCriteria {
-			globals.Logger.Info(criteria.FormatToString(1))
+			if redact.TraceBodies {
+				globals.Logger.Info(criteria.FormatToString(1))
+			}
 		}
 	}
 }

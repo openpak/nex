@@ -3,6 +3,7 @@ package nex_matchmake_extension_super_smash_bros_4
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/openpak/nex/redact"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -16,7 +17,9 @@ import (
 func RegisterCommunityCompetition(err error, packet nex.PacketInterface, callID uint32, packetPayload []byte) (*nex.RMCMessage, *nex.Error) {
 	rmcResponseStream := nex.NewByteStreamOut(globals.SecureServer.LibraryVersions, globals.SecureServer.ByteStreamSettings)
 
-	fmt.Println(hex.EncodeToString(packet.RMCMessage().Parameters))
+	if redact.TraceBodies {
+		fmt.Println(hex.EncodeToString(packet.RMCMessage().Parameters))
+	}
 
 	connection := packet.Sender().(*nex.PRUDPConnection)
 	endpoint := packet.Sender().Endpoint()
@@ -24,7 +27,9 @@ func RegisterCommunityCompetition(err error, packet nex.PacketInterface, callID 
 
 	communityCompetition := matchmake_extension_super_smash_bros_4_types.NewCommunityCompetition()
 	communityCompetition.ExtractFrom(parametersStream)
-	fmt.Println(communityCompetition.FormatToString(0))
+	if redact.TraceBodies {
+		fmt.Println(communityCompetition.FormatToString(0))
+	}
 
 	globals.MatchmakingManager.Mutex.Lock()
 

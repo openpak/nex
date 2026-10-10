@@ -4,12 +4,13 @@ import (
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	matchmake_extension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
+	"github.com/openpak/nex/redact"
 	"github.com/openpak/nex/titles/wiiu-chat/database"
 	"github.com/openpak/nex/titles/wiiu-chat/globals"
 )
 
 func JoinMatchmakeSessionEx(err error, packet nex.PacketInterface, callID uint32, gid types.UInt32, strMessage types.String, dontCareMyBlockList types.Bool, participationCount types.UInt16) (*nex.RMCMessage, *nex.Error) {
-	globals.Logger.Infof("gid: %d, strMessage: %s, dontCareMyBlockList: %t, participationCount: %d\r\n", gid, strMessage, dontCareMyBlockList, participationCount)
+	globals.Logger.Infof("gid: %s, strMessage: %dB, dontCareMyBlockList: %t, participationCount: %d\r\n", redact.Tag(uint64(gid)), len(strMessage), dontCareMyBlockList, participationCount)
 
 	caller := types.NewPID(uint64(gid)) // Gathering ID and caller are the same here
 

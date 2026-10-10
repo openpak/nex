@@ -10,6 +10,7 @@ package smb35
 
 import (
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"sync"
 	"time"
 
@@ -65,7 +66,7 @@ func (s *Server) getCommonData(err error, packet nex.PacketInterface, callID uin
 	if !ok {
 		// The reference answers InvalidArgument for common data that was never put, and the
 		// game treats it as "this player has nothing yet" rather than as a failure.
-		return nil, nex.NewError(nex.ResultCodes.Ranking2.InvalidArgument, fmt.Sprintf("no common data for pid %d", principalID))
+		return nil, nex.NewError(nex.ResultCodes.Ranking2.InvalidArgument, fmt.Sprintf("no common data for pid %s", redact.Tag(uint64(principalID))))
 	}
 	return ranking2Response(packet, callID, ranking2.MethodGetCommonData, data), nil
 }

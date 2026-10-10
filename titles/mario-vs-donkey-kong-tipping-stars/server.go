@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/openpak/nex/redact"
 	"log"
 	"strconv"
 	"strings"
@@ -209,7 +210,7 @@ func (s *Server) accountByPID(pid types.PID) (*nex.Account, *nex.Error) {
 	ctx := metadata.NewOutgoingContext(context.Background(), common_globals.GRPCAccountCommonMetadata)
 	resp, err := common_globals.GRPCAccountClient.GetNEXPassword(ctx, &pb.GetNEXPasswordRequest{Pid: uint32(pid)})
 	if err != nil {
-		log.Printf("[mvdk] nex password for %d: %v", uint64(pid), err)
+		log.Printf("[mvdk] nex password for %s: %v", redact.Tag(uint64(pid)), err)
 		return nil, nex.NewError(nexhost.NEXPasswordResult(err), "no such PID")
 	}
 	return nex.NewAccount(pid, strconv.FormatUint(uint64(pid), 10), resp.Password, false), nil

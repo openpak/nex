@@ -3,6 +3,7 @@ package nex
 import (
 	"fmt"
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/redact"
 	"os"
 	"strconv"
 
@@ -43,7 +44,7 @@ func StartSecureServer() {
 		// }
 
 		fmt.Println("== Monster Hunter XX - Secure ==")
-		fmt.Printf("User: %d\n", packet.Sender().PID())
+		fmt.Printf("User: %s\n", redact.Tag(uint64(packet.Sender().PID())))
 		fmt.Printf("Protocol: %d (%s)\n", request.ProtocolID, protocol.Protocol())
 		fmt.Printf("Method: %d (%s)\n", request.MethodID, protocol.GetMethodByID(request.MethodID))
 		fmt.Println("===============")

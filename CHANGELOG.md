@@ -6,6 +6,19 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.2.2 — 2026-10-10
+
+- logs: the login, ban, friend-list and endpoint lines no longer carry pids, account ids,
+  login names, nicknames, tokens or client addresses. Where two lines have to be matched they
+  carry a short per-process tag (`redact.Tag`: keyed HMAC prefix, key random per start).
+- Net and URL errors are logged without their addresses (`redact.Err`).
+- Dumps of request bodies, matchmake sessions and RMC parameters are behind
+  `NEX_TRACE_BODIES=1`, for a local debug run only.
+- `TestLoginLogsCarryNoPersonalData` drives a successful and a refused login and fails if a
+  known id, name or token reaches the log.
+- Still open: title servers that log a database or gRPC error by its text (`err.Error()`) can
+  still show an id that the error itself contains.
+
 ## v1.2.1 — 2026-09-24
 
 - deps: grpc 1.83.2 (Dependabot)
