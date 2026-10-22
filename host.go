@@ -86,8 +86,8 @@ type Config struct {
 	// the number itself. This is therefore not a protocol constant.
 	//
 	// It is a knob rather than a constant because two titles have direct evidence for two
-	// different values *for themselves*: a public reference server known to work against a
-	// retail Super Mario Bros. 35 sends 16, and a live Mario Kart 8 Deluxe server sends 32.
+	// different values *for themselves*: earlier research against a
+	// retail Super Mario Bros. 35 found 16, and a live Mario Kart 8 Deluxe server sends 32.
 	// Neither generalises. The failure mode is a login that fails with nothing logged on
 	// either side, so this is the first thing to flip when a console refuses a ticket.
 	SourceKeyBytes int
@@ -101,8 +101,8 @@ type Config struct {
 	Transport string
 	// SecureTransport overrides Transport for the secure listener alone; empty means "same
 	// as Transport", which is every title but one. MHGU needs them to differ: its auth stage
-	// is wss behind Traefik's SNI passthrough (the measured server has no UDP auth listener
-	// at all, and the live dynamic.yml routes g2896bd04's SNI to the auth port over TCP),
+	// is wss behind Traefik's SNI passthrough (no UDP auth listener is needed,
+	// and the live dynamic.yml routes g2896bd04's SNI to the auth port over TCP),
 	// while its secure stage is the 3DS-era raw PRUDP over UDP.
 	SecureTransport string
 	// TLSCert and TLSKey terminate TLS on the websocket listener. A console reaches a NEX

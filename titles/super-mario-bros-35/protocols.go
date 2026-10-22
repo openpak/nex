@@ -64,7 +64,7 @@ func (s *Server) getCommonData(err error, packet nex.PacketInterface, callID uin
 	}
 	data, ok := s.common.get(uint64(principalID), uint64(nexUniqueID))
 	if !ok {
-		// The reference answers InvalidArgument for common data that was never put, and the
+		// The game's original server answers InvalidArgument for common data that was never put, and the
 		// game treats it as "this player has nothing yet" rather than as a failure.
 		return nil, nex.NewError(nex.ResultCodes.Ranking2.InvalidArgument, fmt.Sprintf("no common data for pid %s", redact.Tag(uint64(principalID))))
 	}
@@ -80,7 +80,7 @@ func (s *Server) putCommonData(err error, packet nex.PacketInterface, callID uin
 }
 
 // getRanking answers an empty board. Super Mario Bros. 35 has no server-side leaderboard:
-// the measured server returned nothing here too, and no capture or document describes what
+// earlier research notes record nothing here either, and no capture or document describes what
 // a populated board would have contained. An empty board is a fact about the game, not a
 // gap in this server.
 func (s *Server) getRanking(err error, packet nex.PacketInterface, callID uint32, _ ranking2_types.Ranking2GetParam) (*nex.RMCMessage, *nex.Error) {
@@ -94,8 +94,8 @@ func (s *Server) getRanking(err error, packet nex.PacketInterface, callID uint32
 	return ranking2Response(packet, callID, ranking2.MethodGetRanking, info), nil
 }
 
-// getCategorySetting answers the same setting for every category, which is what the
-// reference did; the game asks before it shows a ranking screen and only needs the shape.
+// getCategorySetting answers the same setting for every category, which matches
+// earlier research notes; the game asks before it shows a ranking screen and only needs the shape.
 func (s *Server) getCategorySetting(err error, packet nex.PacketInterface, callID uint32, _ types.UInt32) (*nex.RMCMessage, *nex.Error) {
 	if err != nil {
 		return nil, nex.NewError(nex.ResultCodes.Ranking2.InvalidArgument, err.Error())

@@ -9,7 +9,7 @@ package mps
 // a list length and replies with a body the client cannot parse. nex-protocols-common-go
 // reads it correctly; all that is left for us is what the map should contain.
 //
-// We do not know. No capture of this title's settings exists and no public reference server
+// We do not know. No capture of this title's settings exists and no public server
 // implements it, so the default is a correctly shaped empty map for every index — right on
 // the wire, possibly incomplete in content. MPS_INTEGER_SETTINGS fills it in from a capture
 // without a rebuild, because a wrong guess should cost a restart, not a release.

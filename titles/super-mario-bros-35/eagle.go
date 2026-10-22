@@ -37,8 +37,8 @@ const (
 	// eagleNotification is the notification type the game's relay client watches for.
 	eagleNotification notifications_constants.NotificationEvents = 200000
 
-	// eagleTokenLifetime is how long a handoff token stays valid. Three hours is what the
-	// reference server used: long enough that a whole session of back-to-back matches never
+	// eagleTokenLifetime is how long a handoff token stays valid. Three hours is what earlier
+	// research notes record: long enough that a whole session of back-to-back matches never
 	// runs out, short enough that a leaked token is not permanent.
 	eagleTokenLifetime = 3 * time.Hour
 

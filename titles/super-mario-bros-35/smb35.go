@@ -199,8 +199,8 @@ func (s *Server) registerMatchmakeReferee() {
 
 // integerSettings is Utility::GetIntegerSettings. The game reads round and battle tuning
 // out of index 0; index 10 is a second table nobody has identified a single value of, and
-// answering it empty is what the measured server does. Any other index is an error, which
-// is also what the reference does: an unknown index is a client bug, not a missing feature.
+// answering it empty is what earlier research notes record. Any other index is an error, which
+// is also recorded there: an unknown index is a client bug, not a missing feature.
 func integerSettings(_ *common_globals.UtilityManager, _ types.PID, index types.UInt32) (types.Map[types.UInt16, types.UInt32], *nex.Error) {
 	switch index {
 	case 0:
@@ -215,7 +215,7 @@ func integerSettings(_ *common_globals.UtilityManager, _ types.PID, index types.
 // integerSettings0 is the table the game asks for at index 0.
 //
 // The indices have no names on the wire and nobody has recovered what any one of them
-// means, so these are carried across exactly as the measured server had them rather than
+// means, so these are carried across exactly as earlier research notes had them rather than
 // reasoned about. Changing a value is guesswork until someone can watch a match react.
 func integerSettings0() types.Map[types.UInt16, types.UInt32] {
 	return types.Map[types.UInt16, types.UInt32]{
