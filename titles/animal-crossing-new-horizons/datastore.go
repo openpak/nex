@@ -2,10 +2,9 @@ package acnh
 
 // DataStore (0x73) for Animal Crossing: New Horizons, for real.
 //
-// earlier-nex has no DataStore at all, so the ExternalReference ACNH server ran 0x73 in a
-// "discovery" mode: it logged every call and answered empty-success, because ACNH's actual
-// DataStore usage was never mapped. That keeps the game moving but stores nothing. This is a
-// real implementation instead: nex-protocols-common-go ships the handlers and leaves exactly
+// ACNH's actual DataStore usage is not yet mapped, so answering every call with empty-success
+// would keep the game moving but store nothing. This is a real implementation instead:
+// nex-protocols-common-go ships the handlers and leaves exactly
 // two things to the operator — where object metadata lives, and where object bodies live.
 // Here that is Postgres and an S3 bucket the console uploads to and downloads from directly
 // with a presigned URL, so no object body ever passes through this process.

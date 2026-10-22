@@ -1,7 +1,7 @@
 # mario-kart-8-deluxe
 
 NEX game server for **Mario Kart 8 Deluxe** on Nintendo Switch, built on the shared OpenPak
-NEX host in [`servers/nex`](../../README.md) and Pretendo's AGPL-3.0
+NEX host in [`platforms/wiiu-3ds/games/nex`](../../README.md) and Pretendo's AGPL-3.0
 [`nex-protocols-common-go`](https://github.com/PretendoNetwork/nex-protocols-common-go).
 
 **Status (2026-09-09): builds, starts, listens, never tested against a console.** The server
@@ -11,13 +11,13 @@ Switch or an emulator. [`docs/design.md`](docs/design.md) lists what is missing 
 evidence would settle it; [`docs/provenance.md`](docs/provenance.md) says where every fact
 came from.
 
-One blocking issue is outside this repository: `servers/nex` mints a 16-byte kerberos source
+One blocking issue is outside this repository: `platforms/wiiu-3ds/games/nex` mints a 16-byte kerberos source
 key, and the Switch key size is 32. Until that changes, expect the console to reject the
 ticket. See [`docs/design.md`](docs/design.md#blocking-issue-in-serversnex).
 
 ## What it does
 
-- **Login** — through `servers/nex`: ticket-granting method 2
+- **Login** — through `platforms/wiiu-3ds/games/nex`: ticket-granting method 2
   (`ValidateAndRequestTicketWithCustomData`, the shape a NEX 4.0.0 title uses), with the
   console's BAAS id token proven by nx-baas and the OpenPak account behind it.
 - **Matchmaking** — Match Making, Matchmake Extension and Match Making Ext, all from

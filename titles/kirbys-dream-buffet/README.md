@@ -12,9 +12,6 @@ Kirby's Dream Buffet (`0100A8E016236000`) on the shared NEX host. **Scaffold.** 
 | NEX library version | unknown, default `4.4.0` | `apiVersionGeneral` in the first packets |
 | Protocol set actually called | unknown | `Core::NotImplemented` lines once a console talks to it |
 
-the earlier server's repository for this title (checked 2026-09-11) is a licence-only placeholder, so
-there is no public server to learn from either.
-
 ## Run
 
 ```sh

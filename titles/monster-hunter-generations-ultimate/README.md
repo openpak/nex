@@ -1,7 +1,7 @@
 # monster-hunter-generations-ultimate
 
 The OpenPak NEX server for **Monster Hunter Generations Ultimate** (Nintendo Switch). It is
-[`servers/nex`](../../README.md) plus this title's protocol registrations plus a real DataStore.
+[`platforms/wiiu-3ds/games/nex`](../../README.md) plus this title's protocol registrations plus a real DataStore.
 
 **Status (2026-09-16):** builds, starts, serves `/healthz`, listens on its NEX block, creates
 its schema and round-trips DataStore against Postgres. **Never run against the game.** Two
@@ -43,7 +43,7 @@ cp example.env .env   # then edit
 | `NEX_ACCESS_KEY` | **required.** `4152f312`, the title's NEX access key ([docs/provenance.md](docs/provenance.md)) |
 | `NEX_VERSION` | `40400` — MHGU links NEX 4.4.0 |
 | `NEX_TRANSPORT` | `websocket`. The auth stage is the Switch one: the console opens TLS on 443 to `g2896bd04-lp1.s.n.srv.nintendo.net` and Traefik passes the SNI through |
-| `NEX_SECURE_TRANSPORT` | `udp`. The secure stage is the 3DS one its NEX code came from: raw PRUDP over UDP. This variable exists in `servers/nex` for this title and no other |
+| `NEX_SECURE_TRANSPORT` | `udp`. The secure stage is the 3DS one its NEX code came from: raw PRUDP over UDP. This variable exists in `platforms/wiiu-3ds/games/nex` for this title and no other |
 | `NEX_TLS_CERT`, `NEX_TLS_KEY` | terminate TLS on the auth listener, because Traefik passes the SNI through rather than terminating. Both or neither |
 | `NEX_SECURE_PID` | `2`, the 3DS/Wii U "Quazal Rendez-Vous" account |
 | `NEX_SECURE_HOST` | address the console is told to dial for the secure server |
@@ -51,7 +51,7 @@ cp example.env .env   # then edit
 | `DATABASE_URL` | **required.** Postgres for matchmaking, unique IDs and DataStore metadata |
 | `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_USE_TLS` | object storage for DataStore bodies. Leave `S3_ENDPOINT` empty and the metadata half still works; object transfer answers `NotImplemented` |
 
-Every other `NEX_*` variable is `servers/nex`'s and documented there. Startup fails loudly on
+Every other `NEX_*` variable is `platforms/wiiu-3ds/games/nex`'s and documented there. Startup fails loudly on
 a missing access key, internal key, port block or database.
 
 Firewall: 22121/**udp** needs an explicit `ufw allow` rule (ports.md rule 4). 22120 is now

@@ -12,9 +12,8 @@
 //	Utility (0x6E)
 //	  NEX unique IDs.
 //	DataStore (0x73)
-//	  real, backed by Postgres + presigned S3 — see datastore.go. earlier-nex has no
-//	  DataStore, so the ExternalReference ACNH server ran 0x73 in "discovery" mode (log every
-//	  call, answer empty-success); which methods ACNH actually uses is unmapped. See design.md.
+//	  real, backed by Postgres + presigned S3 — see datastore.go. Which methods ACNH
+//	  actually uses is unmapped. See design.md.
 //
 // SecureConnection (0x0B) and TicketGranting (0x0A) are registered by openpak/nex.
 //

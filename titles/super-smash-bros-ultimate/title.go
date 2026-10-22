@@ -9,12 +9,11 @@
 //	NATTraversal (0x03)
 //	  two consoles telling each other how to be reached; play is peer to peer once matched.
 //	Utility (0x6E)
-//	  NEX unique IDs. SSBU calls these during online bring-up; the ExternalReference server
-//	  answered them with an empty list, so they were never real there. Real here.
+//	  NEX unique IDs. SSBU calls these during online bring-up; answering them with an
+//	  empty list is not enough. Real here.
 //	DataStore (0x73)
-//	  SSBU's online init reads DataStore. The ExternalReference server had no DataStore at all
-//	  (earlier-nex never implemented it) and answered an empty list, with GetMeta forced to
-//	  NotFound. Real here — see datastore.go.
+//	  SSBU's online init reads DataStore; an empty list with GetMeta forced to NotFound
+//	  is not enough. Real here — see datastore.go.
 //
 // SecureConnection (0x0B) and TicketGranting (0x0A) are registered by openpak/nex. Ranking
 // (0x70) is deliberately not registered; see docs/provenance.md.

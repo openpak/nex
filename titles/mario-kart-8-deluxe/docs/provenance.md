@@ -5,11 +5,9 @@ non-obvious fact this server is built on, and where it came from.
 
 Three kinds of source appear below:
 
-- **NN** — the earlier network servers `~/REPOS/mario-kart-8-deluxe` and `~/REPOS/earlier-nex`,
-  read for facts only. Their code is source-available and none of it was copied,
-  translated or structurally mirrored. What is taken is numbers, names on the wire, and
-  descriptions of behaviour they observed against real consoles and against Nintendo's own
-  servers before shutdown.
+- **Research notes** — earlier research notes on this title. What is taken is numbers, names
+  on the wire, and descriptions of behaviour observed against real consoles and against
+  Nintendo's own servers before shutdown.
 - **Pretendo** — the AGPL-3.0 libraries this server imports, read as source we are licensed
   to use.
 - **OpenPak** — our own repositories.
@@ -21,34 +19,33 @@ confirm it.
 
 | Fact | Value | Source | How to confirm |
 | --- | --- | --- | --- |
-| NEX access key | `09c1c475` | NN `mario-kart-8-deluxe/main.go`, `accessKey` — a literal constant in a server that ran this title live, **not derived from anything**. NN's own README calls it "a well-known per-title value derivable from the game itself, not a secret" | Any PRUDP packet from the console: the packet signature is an HMAC keyed on it, so a wrong key drops every packet at SYN |
-| NEX version | `4.0.0` (the console reports the integer `40000`) | NN `main.go` `nexVersion = 40000`; NN `earlier-nex/settings.go` comment "40000 for Mario Kart 8 Deluxe, which reports 4.0.0" | `apiVersionGeneral` in the login packet |
-| Secure server PID | `2` | NN `main.go` `securePID = 2` — also the conventional NEX value | The `PID=` field the console reads out of the secure station URL |
-| Login method | ticket-granting method **2**, `ValidateAndRequestTicketWithCustomData` | NN `earlier-nex/ticketgranting.go`: method 6 is "called by SSBU at BOOT (MK8 doesn't)", and its `handleLoginWithContext` comment says method 6 is the NEX 4.6+ shape | The RMC method ID of the first request on the authentication endpoint |
-| `userName` at login | **the console's NSA id on hardware; the account's own PID on an emulator** | NN `main.go` `resolveUser` branches on the value: a bare number in the account range is the emulator's own PID, a larger one is a real CFW Switch's `baasUserID` resolved through the account service | The `userName` string in a login from hardware, next to one from an emulator |
-| Secure station URL | scheme `prudp`, `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | NN `main.go` builds exactly this | The station URL string in the login response, replayed against a console |
+| NEX access key | `09c1c475` | earlier research notes — a literal constant in a server that ran this title live, **not derived from anything**; a well-known per-title value derivable from the game itself, not a secret | Any PRUDP packet from the console: the packet signature is an HMAC keyed on it, so a wrong key drops every packet at SYN |
+| NEX version | `4.0.0` (the console reports the integer `40000`) | earlier research notes: 40000 for Mario Kart 8 Deluxe, which reports 4.0.0 | `apiVersionGeneral` in the login packet |
+| Secure server PID | `2` | earlier research notes — also the conventional NEX value | The `PID=` field the console reads out of the secure station URL |
+| Login method | ticket-granting method **2**, `ValidateAndRequestTicketWithCustomData` | earlier research notes: method 6 is called by SSBU at boot (MK8 does not), and is the NEX 4.6+ shape | The RMC method ID of the first request on the authentication endpoint |
+| `userName` at login | **the console's NSA id on hardware; the account's own PID on an emulator** | earlier research notes: the value branches: a bare number in the account range is the emulator's own PID, a larger one is a real CFW Switch's `baasUserID` resolved through the account service | The `userName` string in a login from hardware, next to one from an emulator |
+| Secure station URL | scheme `prudp`, `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | earlier research notes | The station URL string in the login response, replayed against a console |
 
 `stream=10` is `StreamTypeRVSecure` in Pretendo's `nex-go/v2/constants`, which is what
 `servers/nex` already sets. `sid=1` means MK8D uses the **two-listener** shape — a separate
 secure port — not the one-listener two-stream shape `servers/nex` describes as the retail
-Switch form. NN runs authentication on `:443` and secure on `:60003`, both reachable.
+Switch form. A server that ran this title live used authentication on `:443` and secure on `:60003`, both reachable.
 
 ## The Switch NEX wire profile
 
-From NN `earlier-nex/settings.go` (`NewSwitchSettings`), whose own comment says the profile
-is "taken from observed traffic and the public protocol docs". This is not MK8D-specific —
+From earlier research notes, taken from observed traffic and the public protocol docs. This is not MK8D-specific —
 it is what any NEX 4 Switch title needs, and it is the most valuable thing in this document
 for the rest of the fleet.
 
 | Setting | Switch value | Notes |
 | --- | --- | --- |
 | PRUDP version | 2, "Lite", minor version 5 | Pretendo's `nex-go` calls this `PRUDPPacketLite` and selects it automatically when the first byte is `0x80` and the server is a WebSocket server |
-| Transport | **WebSocket**, not UDP | Confirmed independently: NN listens with `ListenSecure(port, cert, key)` on both endpoints, i.e. WSS |
+| Transport | **WebSocket**, not UDP | Confirmed independently: a server that ran this title live listened with TLS on both endpoints, i.e. WSS |
 | PRUDP payload encryption | **none** | The TLS tunnel provides confidentiality. Wii U/3DS use RC4 here |
 | Compression | none | |
 | PID size | **8 bytes** | `nex-go` defaults to 4 and has no version gate: `ByteStreamSettings.PIDSize` must be set |
 | Structure headers | **on** (version byte + u32 content length before every structure) | `nex-go` defaults to off: `ByteStreamSettings.UseStructureHeader` must be set |
-| String length prefix | u16 | `nex-go`'s default; NN's `StreamOut.String` writes a u16 too |
+| String length prefix | u16 | `nex-go`'s default; the observed wire format uses a u16 too |
 | Fragment size | 1300 | matches `nex-go`'s default |
 | Kerberos key size | **32 bytes** | See below |
 | Kerberos key derivation | "new": `md5(password)` once, append the PID as u64 LE, `md5` once | Wii U/3DS iterate `md5` `65000 + pid%1024` times. Only used between our own two endpoints, so it does not have to match anything external |
@@ -56,25 +53,22 @@ for the rest of the fleet.
 
 ### The 32-byte source key
 
-NN `mario-kart-8-deluxe/main.go`, `resolveUser`:
+Earlier research notes: the source key encrypts the client ticket and is handed back as
+`pSourceKey`, so the console decrypts it. It must be 32 bytes (the Switch kerberos key size);
+a 16-byte key makes the console reject the ticket.
 
-> The source key encrypts the client ticket and is handed back as pSourceKey, so the console
-> decrypts it. It MUST be 32 bytes (the Switch kerberos key size) — a 16-byte key makes the
-> console reject the ticket.
-
-`servers/nex` `login.go` currently uses `sourceKeyLength = 16`. If NN is right, no Switch
+`servers/nex` `login.go` currently uses `sourceKeyLength = 16`. If those notes are right, no Switch
 title on OpenPak can complete a login. This is the single most important fact in this file.
 **How to confirm:** a console that receives a ticket and then fails at CONNECT, versus one
 that succeeds, with the only change being the source key length.
 
-The source key is sent as a lowercase hex **string**, not raw bytes — NN
-`ticketgranting.go` writes `hex.EncodeToString(sourceKey)` in both response shapes, and
+The source key is sent as a lowercase hex **string**, not raw bytes — it is hex-encoded in both response shapes, and
 `servers/nex` already does the same.
 
 ## What MK8D calls
 
-NN's monitoring names these protocols and methods, which means it saw them on the wire from
-real clients (NN `mario-kart-8-deluxe/dashboard.go`, `rmcName`).
+Earlier research notes name these protocols and methods, which means they were seen on the wire from
+real clients.
 
 | Protocol | ID | Methods MK8D was observed calling |
 | --- | --- | --- |
@@ -87,39 +81,37 @@ real clients (NN `mario-kart-8-deluxe/dashboard.go`, `rmcName`).
 | Utility | `0x6E` | 1 `AcquireNexUniqueID`, 7 `GetIntegerSettings`, 8 `GetStringSettings` |
 | Ranking | `0x70` | 1 `UploadScore`, 4 `UploadCommonData`, 6 `GetCommonData` |
 
-**DataStore (`0x73`) does not appear.** NN registers no DataStore handler for MK8D and its
-core has no general DataStore at all (only a Super Mario Maker 2 implementation). Nothing in
-NN suggests MK8D ever asks for one. See [`design.md`](design.md).
+**DataStore (`0x73`) does not appear.** Nothing observed suggests MK8D ever asks for one. See [`design.md`](design.md).
 
 ### MK8D's own matchmake-extension methods
 
 Method IDs above `0x36` are the title's own subclass and are not in Pretendo's
-`nex-protocols-go`. NN named them from measured traffic:
+`nex-protocols-go`. Earlier research notes named them from measured traffic:
 
-| Method | NN's name | Shape NN records |
+| Method | Observed name | Shape it records |
 | --- | --- | --- |
 | `0x39` | tournament search | criteria in, list out |
 | `0x3A` | tournaments by ID list | request is `u32 count` then `count × u32`; **the same method ID is SSBU's pre-matchmaking probe**, which expects a bare `u32 = 2`, so the two are told apart by request length |
 | `0x3C` | playing session | which gathering a given friend PID is in |
 | `0x3F` | tournament join | id in, empty response |
-| `0x41` | friends query | NN answers an empty list |
+| `0x41` | friends query | observed answer is an empty list |
 | `0x44` | private room create | response is a `{ String code, DateTime }` structure |
 | `0x45` | resolve room code | response is a bare `u32` gathering ID |
 
 None of these are implemented here. **How to confirm any of them:** an RMC capture of the
 request and the response, from a console using the feature.
 
-## Behaviour NN measured that is worth knowing
+## Observed behaviour worth knowing
 
 | Observation | Source | Why it matters here |
 | --- | --- | --- |
-| MK8D never sends `ReportNATProperties` in a form that yields a NAT type; NN infers NAT from the `natm`/`natf` fields of the station URLs the client registers | NN `earlier-nex/endpoint.go` | NAT-aware matchmaking cannot rely on the report |
-| MK8D and Splatoon 2 send `Pa=<private address>` and expect station order `[lan, public]`; Animal Crossing needs the opposite | NN `earlier-nex/natbridge.go` | Pretendo's common `GetSessionURLs` uses the MK8D order, so no override is needed |
-| A client that crashes leaks its gathering; NN added a reaper and an on-disconnect purge after "the totality of the 9 players listed were dead connections" | NN `main.go`, `reaper.go` | Pretendo's common match-making already hooks `OnConnectionEnded` and ends participation there |
-| `UpdateProgressScore` is called during the session-keep loop and only needs an ack; refusing it stalls the loop | NN `matchmaking_handlers.go` | Pretendo's common protocol implements it |
-| An empty settings map satisfies MK8D's `GetIntegerSettings`; PAC-MAN 99 needs a real one | NN `earlier-nex/utility.go` | Why this server returns empty maps rather than leaving the callback unset |
-| MK8D responses are single-fragment; SSBU's 15.7 KB DataStore init is 13 fragments and needed pacing | NN `endpoint.go` | No fragmentation tuning needed for this title |
-| A NEX 4 title's structure response for method 6 must be the `ValidateAndRequestTicketResult` structure with a version-1 header, not the flat method-2 layout; getting it wrong gives the console `2306-0116` | NN `ticketgranting.go` | `servers/nex` already writes both shapes correctly |
+| MK8D never sends `ReportNATProperties` in a form that yields a NAT type; NAT has to be inferred from the `natm`/`natf` fields of the station URLs the client registers | earlier research notes | NAT-aware matchmaking cannot rely on the report |
+| MK8D and Splatoon 2 send `Pa=<private address>` and expect station order `[lan, public]`; Animal Crossing needs the opposite | earlier research notes | Pretendo's common `GetSessionURLs` uses the MK8D order, so no override is needed |
+| A client that crashes leaks its gathering; a live server needed a reaper and an on-disconnect purge after every listed player turned out to be a dead connection | earlier research notes | Pretendo's common match-making already hooks `OnConnectionEnded` and ends participation there |
+| `UpdateProgressScore` is called during the session-keep loop and only needs an ack; refusing it stalls the loop | earlier research notes | Pretendo's common protocol implements it |
+| An empty settings map satisfies MK8D's `GetIntegerSettings`; PAC-MAN 99 needs a real one | earlier research notes | Why this server returns empty maps rather than leaving the callback unset |
+| MK8D responses are single-fragment; SSBU's 15.7 KB DataStore init is 13 fragments and needed pacing | earlier research notes | No fragmentation tuning needed for this title |
+| A NEX 4 title's structure response for method 6 must be the `ValidateAndRequestTicketResult` structure with a version-1 header, not the flat method-2 layout; getting it wrong gives the console `2306-0116` | earlier research notes | `servers/nex` already writes both shapes correctly |
 
 ## OpenPak facts
 

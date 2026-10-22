@@ -19,8 +19,7 @@ is in, and it changes three things worth stating plainly:
    demands it.
 3. **The game will never be patched again.** Every wire format here is final. A structure
    that decodes today decodes forever, and a fact recovered once does not need rechecking
-   against a future version. That is worth more than it sounds: it means "we matched the
-   reference exactly" is a durable claim rather than a snapshot.
+    against a future version. That is worth more than it sounds: it means "we matched the wire format exactly" is a durable claim rather than a snapshot.
 
 The practical consequence is that the bar is *playability*, not parity with a live service.
 Nothing here is a downgrade from something a player could otherwise have.
@@ -74,8 +73,7 @@ wire types and method dispatch, so what this repository writes is only behaviour
 - **Ranking2** stores each player's common data (their name and Mii, which every client
   uploads on connect and reads back for the other 34 faces in the lobby). Rankings are
   empty, category settings are one fixed answer, and score-rank estimates are zeroes. That
-  is not a stub — Super Mario Bros. 35 has no server-side leaderboard, and the reference
-  server returned nothing here either.
+   is not a stub — Super Mario Bros. 35 has no server-side leaderboard, so there is nothing to return.
 - **Matchmake Referee** opens and closes rounds, and refuses a round whose named players are
   not actually in the gathering they are claimed to be in. Without that check, any client
   could push a round-start notification at any other player on the server.
@@ -107,15 +105,14 @@ The token contract is fixed and documented, so the relay can be written against
 
 ### DataStore
 
-**Super Mario Bros. 35 does not use DataStore at all.** The measured server registers no
-DataStore service, and the earlier server registers no DataStore protocol either.
+**Super Mario Bros. 35 does not use DataStore at all.** The public reference implementation (kinnay/SMB35) registers no
+DataStore service.
 
-This is worth being explicit about, because OpenPak has a real DataStore where earlier has
-only a Super Mario Maker 2-specific one, and "implement DataStore properly where they
-stubbed it" is a genuine advantage on other titles in the fleet. It buys nothing here: there
+This is worth being explicit about, because OpenPak has a real DataStore, which is a genuine
+advantage on other titles in the fleet. It buys nothing here: there
 is no stub to replace. The right DataStore implementation for this title is none.
 
-### Things the reference does not implement either
+### Things not implemented
 
 Ranking2 `PutScore`, `DeleteCommonData`, `GetRankingByPrincipalID` and the ranking charts;
 Matchmake Referee's stats methods. The game does not call them. They answer
@@ -126,7 +123,7 @@ no code.
 
 `EndRound` carries each player's result, and this server reads past them. They are in the
 Eagle variant's layout (see below), nothing in the game reads them back — no leaderboard, no
-rating, no stats call the client makes — and the reference discards them too. The round ID
+   rating, no stats call the client makes — so they are discarded. The round ID
 decodes before the results, so closing a round is reliable regardless.
 
 ## The Eagle-variant structures
@@ -176,36 +173,36 @@ With those, the retail station URL falls out of the host with no override:
 
 The source key length is the other per-title value. `servers/nex` defaults to 32, which has
 same-title evidence behind it on Mario Kart 8 Deluxe; this title has same-title evidence for
-16, from the measured server that worked against a retail client. A wrong length is a login
+16, from a server that worked against a retail client. A wrong length is a login
 that fails with nothing logged on either side, which is why it is set explicitly here rather
 than left to a default. `servers/nex` v0.2.0 made it configurable after this came up.
 
 The single-listener shape is **specific to this title**, not the fleet default — other Switch
-titles in OpenPak use two listeners. It is set here because this is what the measured server
+titles in OpenPak use two listeners. It is set here because this is what a server
 that worked against a retail client did.
 
 ## Open questions — what the next round needs
 
 Everything below needs a real client and a capture. None of it is guessed at in code.
 
-1. **Does the handoff notification actually reach the game?** Reference recorded observing
-   their Eagle handoff being sent to a real PAC-MAN 99 client and never honoured, and could
+1. **Does the handoff notification actually reach the game?** Earlier research notes record an Eagle handoff
+   being sent to a real PAC-MAN 99 client and never honoured, and could
    not tell whether the console processes pushed notifications at all. If the notification
    channel is dead on this title too, every lobby hangs and nothing in the NEX server can
    tell. **Evidence needed:** a client that visibly reacts to *any* server-pushed
    notification. Type 109000 (gathering destroyed) is the good probe: the game must leave
    the lobby, so no reaction means no listening.
 2. **Is the revision 1 notification accepted?** The map of parameters only exists in
-   revision 1, and the earlier server's notes record a title that refused the map-carrying variant.
+   revision 1, and earlier research notes record a title that refused the map-carrying variant.
    **Evidence needed:** the game opening an Eagle socket after a handoff.
 3. **Does the game reach us over WebSocket on our block?** The host can now serve the shape
    above, but nothing has been in front of it. **Evidence needed:** a CONNECT on the auth
    stream and its virtual port, which also settles whether stream 2 is right for secure. If
    nex-go logs "trying to connect to unbound PRUDPEndPoint", the stream IDs are wrong.
-4. **Do the integer settings at index 0 mean what the reference thought?** They are carried
+4. **Do the integer settings at index 0 mean what the public reference implementation (kinnay/SMB35) recorded?** They are carried
    across unchanged and nobody knows what any index controls. **Evidence needed:** a match
    that runs, and then one changed value at a time.
-5. **Is index 10 really empty?** The reference left it empty with an open question in its own
+5. **Is index 10 really empty?** The public reference implementation (kinnay/SMB35) left it empty with an open question in its own
    source. **Evidence needed:** whether the game misbehaves when it gets nothing back.
 6. **What does the relay have to do?** Out of scope here, but the blocker on playability.
    **Evidence needed:** the Eagle framing, beyond the wiki's summary of the transport and the

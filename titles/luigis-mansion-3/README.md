@@ -1,7 +1,7 @@
 # luigis-mansion-3
 
 NEX game server for **Luigi's Mansion 3** on Nintendo Switch, built on Pretendo's AGPL `nex-go`
-through [`servers/nex`](../../README.md).
+through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** It starts, pings a real Postgres, serves
 `/healthz` on 22192, listens in WebSocket mode on 22190 (auth) and 22191 (secure), and registers
@@ -16,7 +16,7 @@ Registers the protocol set Luigi's Mansion 3 speaks and supplies the two things 
 library leaves to the operator:
 
 - **Friend-only lobbies.** The matchmaking manager's friend lookup goes to
-  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so this title keeps no friend graph of its own
+  [`nx-baas`](../../../../../switch/infra/nx-baas) through `platforms/wiiu-3ds/games/nex`, so this title keeps no friend graph of its own
   and a player is the same person here as in any other OpenPak title.
 - **Utility settings.** The game reads integer settings the moment it connects; a reply it cannot
   parse drops the connection, so these are answered in the right shape (empty for now — no capture
@@ -29,7 +29,7 @@ methods the game calls so the connection stays alive, but the populated station/
 are deferred until OpenPak has its own capture and the shared host exposes station lookup. See
 [`docs/design.md`](docs/design.md).
 
-Login, kerberos, PRUDP, SecureConnection and account identity are all `servers/nex`'s. This
+Login, kerberos, PRUDP, SecureConnection and account identity are all `platforms/wiiu-3ds/games/nex`'s. This
 repository does not reimplement any of them.
 
 ## Run

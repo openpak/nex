@@ -2,8 +2,7 @@ package arms
 
 // DataStore (0x73) for ARMS, for real.
 //
-// earlier-nex has no DataStore at all, so the ExternalReference ARMS server answers every
-// 0x73 call with an empty list and 0x73.8 with DataStore::NotFound. nex-protocols-common-go
+// nex-protocols-common-go
 // ships the actual handlers and leaves exactly two things to the operator: where object
 // metadata lives, and where object bodies live. Here that is Postgres and an S3 bucket the
 // console uploads to and downloads from directly with a presigned URL, so no object body

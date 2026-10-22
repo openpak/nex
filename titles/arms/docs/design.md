@@ -48,21 +48,21 @@ because neither is right for *every* Switch title, and an earlier fleet-wide ins
 
 **Transport is `websocket`**, now the default. Switch NEX titles speak PRUDP over WebSocket
 rather than UDP, and
-`provenance.md` records the evidence for ARMS specifically: the working earlier network server
+`provenance.md` records the evidence for ARMS specifically: it
 listens WSS on both endpoints and opens no UDP socket at all. `servers/nex` defaults to `udp`,
 so this is the one setting where the default is wrong for this title — and it is a silent
 wrong, since nothing arrives on a socket the console never dials.
 
 **The secure stream ID stays `1`**, the two-listener shape: authentication on `22140`, secure
-on its own dialable `22141`. Two facts from ARMS itself say so — its working earlier server
-runs two separate WSS listeners (`:443` auth, `:60006` secure), and the secure station URL it
+on its own dialable `22141`. Two facts from ARMS itself say so — it
+runs two separate WSS listeners (auth and secure), and the secure station URL it
 hands the console carries `sid=1`. The single-listener form, `NEX_SECURE_STREAM_ID=2` with a
 placeholder station URL, is used by Super Mario Bros. 35 and would break ARMS. If the stream ID
 is ever wrong the host logs `trying to connect to unbound PRUDPEndPoint`, so this is checkable
 rather than silent.
 
 Everything else in the handshake is already right by default: `provenance.md` shows the secure
-station URL `servers/nex` builds matches the working earlier one field for field.
+station URL `servers/nex` builds matches what the title expects, field for field.
 
 ## State
 
@@ -75,12 +75,10 @@ one connection string would be more code, not less. The libraries create their o
 is not a degraded ARMS server, it is a lobby the game cannot enter, so failing loudly beats
 starting.
 
-## DataStore — the thing Reference could not do
+## DataStore
 
-`earlier-nex` has no DataStore implementation at all, so the earlier network ARMS server
-answers every `0x73` call with an empty list and `0x73.8` with `DataStore::NotFound`. Its own
-comment calls the stub "a GUESS at adequacy" that "will not support Party Crash / FestaRanking
-data".
+A stub that answers every `0x73` call with an empty list and `0x73.8` with `DataStore::NotFound`
+would not support Party Crash / FestaRanking data.
 
 `nex-protocols-common-go` ships the real handlers. They need two things we supply: object
 metadata storage, and an S3 client for object bodies. So the following are implemented here
@@ -177,7 +175,7 @@ nothing to translate today. `Host.PIDForLoginName` is the hook if a capture show
 - **A Pia type-8 keepalive handler.** `provenance.md` explains: it mattered for Super Smash
   Bros. Ultimate, and whether ARMS's older Pia sends one at all is unknown. Adding a handler
   for a packet the title may never send is a thing to maintain in exchange for nothing.
-- **A monitoring dashboard and a presence reporter.** The earlier server has both. OpenPak
+- **A monitoring dashboard and a presence reporter.** OpenPak
   answers "is it up" with `/healthz` and "who is online" belongs to the account side.
 - **A Dockerfile and a release workflow.** Not written until the server has been run against
   something. `servers/nex`'s are the shape to copy.

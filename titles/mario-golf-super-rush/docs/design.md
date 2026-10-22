@@ -32,10 +32,10 @@ inside each `SetManager`), so there is no migration step and no schema in this r
 Match Making is registered first because it is the one that creates the `matchmaking` schema
 that Matchmake Extension then adds tables to.
 
-Two things this gains over the earlier server for the same title:
+Two properties of this design:
 
-- **Lobbies survive a restart.** Its matchmaking is in-process and dies with the process,
-  taking every open round with it. Ours is in Postgres.
+- **Lobbies survive a restart.** Matchmaking state is in Postgres, not in the process, so a
+  restart does not take every open round with it.
 - **Friend-only matchmaking needs no friend table.** `MatchmakingManager.GetUserFriendPIDs`
   is `Host.FriendPIDs` — the shared host's nx-baas identity call, the same door the NPLN
   titles use — so a player's friends are the same people to every OpenPak service. Upstream
@@ -43,12 +43,9 @@ Two things this gains over the earlier server for the same title:
 
 ## What is not implemented, and why
 
-**DataStore (`0x73`) — not registered.** OpenPak can serve DataStore properly, which
-Reference cannot: `earlier-nex` has no implementation, so every DataStore call in that fleet
-is a per-title stub. That capability is real and it matters — for a title that calls
-DataStore. Golf is not known to be one. The earlier server for Golf never registers
-DataStore at all and says outright that whether Golf needs it is unknown until a real
-client's calls show it. So there is no stub here to replace, and nothing to implement
+**DataStore (`0x73`) — not registered.** OpenPak can serve DataStore properly. That capability is real and it matters — for a title that calls
+DataStore. Golf is not known to be one: whether Golf needs it is unknown until a real
+client's calls show it. So there is nothing to implement
 against: no observed data type, no observed field, no observed permission. Building an
 S3-backed object store on that basis would be guessing at a wire format nobody has seen.
 
@@ -62,10 +59,7 @@ need it (`arms`, `mario-party-superstars`, `super-mario-maker-2`) will each want
 one.
 
 **Ranking (`0x70`) — not registered.** Two independent reasons, either one sufficient.
-Nobody has observed Golf calling it: the earlier server registers a generic handler that is
-in fact Mario Kart 8 Deluxe-shaped — an in-memory profile and tournament store — and answers
-`Core::NotImplemented` to everything else, so registering it there was a starting point, not
-a measurement. And `nex-protocols-go` v2.3.5, the version `servers/nex` pins, cannot wire
+Nobody has observed Golf calling it: nothing in the title's known behaviour points at a leaderboard. And `nex-protocols-go` v2.3.5, the version `servers/nex` pins, cannot wire
 the protocol at all: `ranking.Protocol.SetHandlerGetStats` takes `constants.StatsFlag` while
 `ranking.Interface` declares `types.UInt32`, so `common_ranking.NewCommonProtocol` does not
 compile. v2.3.7 fixes that; the bump belongs to `servers/nex`.
@@ -97,9 +91,9 @@ plain `ws`; setting exactly one of the pair is refused at startup, and the start
 names which of the three shapes is running, because a console failing a TLS handshake
 against a plain `ws` listener looks like silence rather than an error.
 
-One thing this transport gives us for free. The earlier stack had to force the secure
-endpoint's PRUDP minor version to 0, because its library defaulted to 5 and a console that
-is answered 5 sends CONNECT with an empty payload and never hands over its kerberos ticket.
+One thing this transport gives us for free. A console that is answered PRUDP minor version 5 on the secure endpoint
+sends CONNECT with an empty payload and never hands over its kerberos ticket, so the secure
+endpoint must answer 0.
 `nex-go` sets a minor version on the ack only in its PRUDPv1 branch, so a Lite ack already
 carries 0. No knob, no configuration, nothing to get wrong.
 
@@ -116,8 +110,8 @@ Everything below wants one capture from a real console or an emulator running th
 title. Nothing here is guessed at in the code; where a fact is missing, startup fails or the
 protocol is left unregistered.
 
-1. **`NEX_VERSION`.** 4.6.5 is an era guess inherited from the earlier server, which is
-   explicit that it never measured it. Evidence needed: `apiVersionGeneral` from the first
+1. **`NEX_VERSION`.** 4.6.5 is an era guess from earlier research, which is
+   explicit that it was never measured. Evidence needed: `apiVersionGeneral` from the first
    login packet.
 2. ~~**Which login method.**~~ Settled fleet-wide since: method 6 is the live login path on
    Switch, and its response needs a structure header at version 1 — handed the flat method-2
@@ -128,7 +122,7 @@ protocol is left unregistered.
    token, so a genuine console login is refused today with "id token not proven" in the log.
    Someone else is on it; a clean refusal, not a hang, so it is distinguishable from wiring
    trouble here.
-4. **`prudps` or `prudp`.** Golf's is the Reference default, never measured for this title.
+4. **`prudps` or `prudp`.** Golf's `prudps` is the default, never measured for this title.
    The failure is not clean: with the wrong one the menus work and the title dies later.
    Evidence needed: whether CONNECT to the secure endpoint carries a payload.
 5. **Does Golf call Ranking or DataStore at all?** The RMC log answers this on the first

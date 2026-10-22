@@ -17,8 +17,8 @@
 //
 // SecureConnection (0x0B) and TicketGranting (0x0A) are registered by openpak/nex.
 //
-// Not registered: DataStore (0x73) — Minecraft's working ExternalReference server never links
-// it — and Ranking (0x70). See docs/design.md and docs/provenance.md for the Ranking call.
+// Not registered: DataStore (0x73) — no DataStore client has been observed in
+// Minecraft — and Ranking (0x70). See docs/design.md and docs/provenance.md for the Ranking call.
 package minecraft
 
 import (

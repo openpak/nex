@@ -18,7 +18,7 @@ package is under 400 lines across two title-specific files.
 
 ## What this title needs
 
-The set of protocols comes from what the earlier network server for this title registers
+The set of protocols comes from what earlier research notes observed
 (recorded, with sources, in [`provenance.md`](provenance.md)): Secure Connection, Match
 Making, Matchmake Extension, Match Making Ext, NAT Traversal, Utility, DataStore, Ranking.
 
@@ -35,7 +35,7 @@ nothing, for the reason in section 3.
 - The joiner asks **`FindMatchmakeSessionByParticipant`** which gathering the host is in.
   Answered empty — which is what an unimplemented method amounts to — the game gives up on
   the friend and runs a public auto-matchmake instead, ending up in a session of its own.
-  This is the "my friend could not see my lobby" failure the earlier network server traced.
+  This is the "my friend could not see my lobby" failure seen in earlier research.
 - The Join Room screen then polls **`FindMatchmakeSessionByGatheringIDDetail`** roughly once
   a second against that gathering ID, and expects `RendezVous::SessionVoid` once the room is
   gone.
@@ -52,13 +52,12 @@ over.
 ### 2. Utility integer settings
 
 `utility.go`. The game calls `GetIntegerSettings` immediately after
-`SecureConnection::Register`, and on the earlier network stack the connection died about a
-second later, every time, because the reply was malformed — that server's generic handler
-read the single index parameter as a list length. Pretendo's implementation parses it
-correctly, so the parsing half of that bug does not exist here.
+`SecureConnection::Register`, and a malformed reply made the connection die about a
+second later, every time (a handler that read the single index parameter as a list length).
+Pretendo's implementation parses it correctly, so that bug does not exist here.
 
 What is left is content, and nobody knows it. There is no capture of this title's settings
-and no public reference server. The choice made here is to answer a correctly shaped **empty**
+and no public implementation. The choice made here is to answer a correctly shaped **empty**
 map rather than borrow another title's numbers, and to make the real values loadable from
 `MPS_INTEGER_SETTINGS` — a wrong guess should cost a restart, not a release. Everything else
 Utility does (NEX unique IDs) is the common protocol, backed by the same Postgres.
@@ -69,12 +68,11 @@ The DataStore protocol (`0x73`) is not registered. That is a decision, not an om
 it reverses one made earlier in this repository.
 
 The first version of this server carried a full Postgres-and-S3 DataStore implementation,
-because the earlier network server stubs DataStore and OpenPak can do better. Two things
+because a full implementation seemed better than a stub. Two things
 changed that:
 
-1. **Nothing has ever observed this title call DataStore.** Their stub was added by analogy
-   with Super Smash Bros. Ultimate, before any MPS DataStore call was seen — their connection
-   never survived long enough to make one. An object store built to the protocol rather than
+1. **Nothing has ever observed this title call DataStore.** Earlier notes assumed it by analogy
+   with Super Smash Bros. Ultimate, before any MPS DataStore call was seen. An object store built to the protocol rather than
    to an observed wire format is speculation with a schema.
 2. **The object store is a fleet component.** Three titles need one, and the decision is that
    it lives in `servers/nex` so they do not each carry a divergent copy. A title-specific
@@ -85,34 +83,29 @@ The implementation is not lost — it is in this repository's history at commit 
 uploads and downloads, and every callback the common protocol asks for, with four tests
 against a real database). It was offered to the shared backend as a starting point.
 
-One thing worth carrying forward: the reason the earlier network server needs a stub does not
-exist on this stack. `earlier-nex` **silently drops** calls to an unregistered protocol,
-which is what soft-locked SSBU. `nex-go` answers `Core::NotImplemented`, which is exactly what
+One thing worth carrying forward: a stub is not needed on this stack. A server that
+**silently drops** calls to an unregistered protocol can soft-lock a title (SSBU did).
+`nex-go` answers `Core::NotImplemented`, which is exactly what
 a stub says. Registering an empty DataStore here would change nothing.
 
 ## What is not implemented
 
-- **Ranking (`0x70`).** the earlier network server registers a generic acknowledgement here
-  and its own README says it is unknown whether this title needs real leaderboard data. A
+- **Ranking (`0x70`).** It is unknown whether this title needs real leaderboard data. A
   generic acknowledgement is not better than `Core::NotImplemented` — both tell the game
   "no data" — and a real implementation needs a category and score-format schema that no
   capture has provided. Left out until something shows the game calling it.
-- **Messaging, notifications, subscriber.** the earlier network server registers none of
-  these either, though its logs show the client *linking* a Subscriber protocol and possibly
-  a NAT-traversal-internal one. That is an observation about the game binary, not about what
-  it calls. Their fallback logger exists to find out; ours is `nex-go`'s own
-  `Core::NotImplemented`, which is the same information in a different place.
+- **Messaging, notifications, subscriber.** Earlier notes show the client *linking* a
+  Subscriber protocol and possibly a NAT-traversal-internal one. That is an observation about
+  the game binary, not about what it calls. `nex-go`'s own `Core::NotImplemented` shows what
+  it actually calls.
 - **DataStore.** See above.
-- **A Pia keepalive handler.** `earlier-nex`'s PRUDP switch only knows packet types 0–4, so
-  it drops Pia's periodic type-8 keepalive and the console gives up on the connection. That
-  is a gap in their transport, not a property of the game, and `nex-go` is a different
-  transport. Whether it has the same gap is an open question, not something to pre-emptively
-  patch around.
-- **A presence reporter.** Their server reports active PIDs to their account service every
-  30 seconds so the console's friend list shows players as online. OpenPak's equivalent
+- **A Pia keepalive handler.** A PRUDP implementation that only knows packet types 0–4
+  drops Pia's periodic type-8 keepalive and the console gives up on the connection. Whether
+  `nex-go` has the same gap is an open question, not something to pre-emptively patch around.
+- **A presence reporter.** Reporting active PIDs to the account service periodically makes
+  the console's friend list show players as online. OpenPak's equivalent
   belongs in nx-baas, which already owns presence for NPLN titles, rather than in each of
   forty title servers. Worth raising as a fleet-wide question.
-- **A dashboard.** `/healthz` plus the Gatus status page is OpenPak's answer to "is it up".
 
 ## Deploy
 

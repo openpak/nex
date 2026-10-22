@@ -69,7 +69,7 @@ Mario Party Superstars has one if a capture ever needs it here).
 ## The `0x79` station / presence protocol — a stub, honestly
 
 This is the one piece of Luigi's Mansion 3 that is genuinely its own and has no common
-implementation. `earlier/lm3` handles four methods on `0x79`:
+implementation. The retail server handles four methods on `0x79`:
 
 - **5 UpdateApplicationBuffer** and **13 UpdateState** are publish-only; the retail server
   answers them empty.
@@ -90,16 +90,15 @@ protocol.
 **Why the real implementation is deferred, not just skipped.** Two things block it, and both are
 next-round work:
 
-1. **A clean-room capture.** `earlier/lm3` reverse-engineered the populated record layout from a
-   single retail capture — its comments quote the exact observed bytes. Reproducing that layout
-   from *their* transcription would be structural copying, which the clean-room policy forbids.
+1. **A clean-room capture.** The populated record layout is known only from a
+   single earlier retail capture. Reproducing that layout
+   from someone else's transcription would be structural copying, which the clean-room policy forbids.
    OpenPak needs to take its own capture of a Luigi's Mansion 3 session reaching the "with
    friends" screen and record the `0x79` wire shapes in this repo's own provenance before
    implementing them.
 2. **Host surface.** Building the records means enumerating live connections and reading each
-   one's registered Pia station URLs (and mapping a friend PID to its connection). `earlier/lm3`
-   does this against its own core's `FindConnectionByPID` / `Stations()` / connection-ID
-   accessors. `github.com/openpak/nex` (v0.2.1) exposes `Host.Secure` (a `*nex.PRUDPEndPoint`)
+   one's registered Pia station URLs (and mapping a friend PID to its connection).
+   `github.com/openpak/nex` (v0.2.1) exposes `Host.Secure` (a `*nex.PRUDPEndPoint`)
    but no convenience for "the station URLs this PID registered". nex-go's `PRUDPEndPoint` has the
    underlying connection registry, so this is reachable, but a first-class helper on the shared
    host — "give me the Pia stations for this PID" — is the clean place for it and would serve any
@@ -121,15 +120,13 @@ this title keeps no friend table of its own.
 ## What is not here, and why
 
 - **DataStore (`0x73`).** No DataStore call is observed. A matchmaking-only title.
-- **Ranking (`0x70`).** No client is observed linking it. Registered defensively by
-  `earlier/lm3`; three lines plus a database here when a capture says otherwise.
+- **Ranking (`0x70`).** No client is observed linking it. Three lines plus a database here when a capture says otherwise.
 - **The populated `0x79` records.** Deferred; see above. This is the real remaining work.
-- **A NAT-check / STUN responder and a PRUDP station relay.** `earlier/lm3` carries a large one
-  for punching two firewalled NATs together with no port forwarding. On OpenPak, NAT traversal is
+- **A NAT-check / STUN responder and a PRUDP station relay.** On OpenPak, NAT traversal is
   `common_nat_traversal`, and a relay for the no-port-forwarding case is a deployment concern, not
   something baked into one title's game server.
 - **A monitoring dashboard, presence reporter, ZNC handler, and the signed-token identity gate.**
-  `earlier/lm3` has all of them. OpenPak answers "is it up" with `/healthz`, proves identity in
+  OpenPak answers "is it up" with `/healthz`, proves identity in
   `servers/nex`, and "who is online" belongs to the account side.
 
 ## Open questions — what the next round needs
@@ -140,15 +137,14 @@ In the order a first live run would answer them:
    packet arriving at the auth port.
 2. **Method 2 or method 6, and which `apiVersionGeneral`?** `NEX_VERSION` is `4.0.0`. **Evidence
    needed:** the RMC method ID of the first login.
-3. **`SecureConnection::Register` (`0x0B.1`) or `RegisterEx` (`0x0B.4`)?** `earlier/lm3` handles
-   both, and this title's Pia is 5.17 (just below the 5.19 that reshaped this area), so plain
+3. **`SecureConnection::Register` (`0x0B.1`) or `RegisterEx` (`0x0B.4`)?** This title's Pia is 5.17 (just below the 5.19 that reshaped this area), so plain
    `Register` is plausible. `nex-protocols-common-go` refuses plain `Register` unless
    `EnableInsecureRegister()` is called and `servers/nex` does not expose that toggle. **If the
    first `0x0B` call is method 1, `servers/nex` must expose `EnableInsecureRegister()`.**
 4. **What does `0x79` actually carry?** The method IDs are known (5/13/14/15); the populated
    record layout is not, in the clean room. **Evidence needed:** an OpenPak capture of a session
    reaching the "with friends" screen — the request and response bytes of methods 13, 14 and 15.
-5. **Does MatchMaking `0x15` methods 1 / 3 need special handling?** `earlier/lm3` intercepts them
+5. **Does MatchMaking `0x15` methods 1 / 3 need special handling?** An earlier implementation intercepted them
    with empty success; this server lets the common handler answer. **Evidence needed:** whether
    matchmaking works on the OpenPak stack without the interception.
 

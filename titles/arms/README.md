@@ -1,7 +1,7 @@
 # arms
 
 NEX game server for **ARMS** on Nintendo Switch, built on Pretendo's AGPL `nex-go` through
-[`servers/nex`](../../README.md).
+[`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** Verified locally against a real Postgres:
 it starts, creates its schemas, serves `/healthz` on 22142, listens in WebSocket mode on
@@ -17,16 +17,15 @@ Registers the protocol set ARMS speaks and supplies the two things
 `nex-protocols-common-go` leaves to the operator:
 
 - **Friend-list lobbies.** The matchmaking manager's friend lookup goes to
-  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so ARMS keeps no friend graph of its own
+  [`nx-baas`](../../../../../switch/infra/nx-baas) through `platforms/wiiu-3ds/games/nex`, so ARMS keeps no friend graph of its own
   and a player is the same person here as in an NPLN title.
 - **A real DataStore.** ARMS's update links a DataStore client (the base game does not).
-  `earlier-nex` has none, so the earlier network ARMS server answers
-  every `0x73` call with an empty list. Here `GetMeta`, `GetMetas`, `SearchObject`,
+  Stubbing `0x73` with empty lists would leave it dead. Here `GetMeta`, `GetMetas`, `SearchObject`,
   `PreparePostObject`, `PrepareGetObject`, `CompletePostObject`, `PostMetaBinary`,
   `ChangeMeta`, `RateObject` and `DeleteObject` are implemented against Postgres, with object
   bodies presigned straight to S3 so none of them passes through this process.
 
-Login, kerberos, PRUDP, SecureConnection and account identity are all `servers/nex`'s. This
+Login, kerberos, PRUDP, SecureConnection and account identity are all `platforms/wiiu-3ds/games/nex`'s. This
 repository does not reimplement any of them.
 
 ## Run
@@ -43,7 +42,7 @@ env $(grep -v '^#' .env | xargs) ./armsd
 | `NEX_ACCESS_KEY` | **required.** ARMS's NEX access key. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
 | `NEX_VERSION` | NEX library ARMS links: `4.3.5`, what the update links. The base game links `4.0.3` |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
-| `NEX_TRANSPORT` | leave unset. ARMS is `websocket`, which is now the `servers/nex` default |
+| `NEX_TRANSPORT` | leave unset. ARMS is `websocket`, which is now the `platforms/wiiu-3ds/games/nex` default |
 | `NEX_SECURE_STREAM_ID` | leave unset. ARMS uses the two-listener shape, stream `1`, which is the default. Setting `2` is the single-listener shape and would break it |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:22142` |
 | `NX_INTERNAL_URL` | nx-baas game API, default `http://127.0.0.1:20070` |

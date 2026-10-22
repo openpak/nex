@@ -44,9 +44,9 @@ why each is deferred rather than stubbed.
 ## Transport and handshake
 
 Nothing to set: every `servers/nex` default is right for Strikers, and `provenance.md` shows the
-secure station URL matches the working earlier one field for field. Transport is `websocket`
+secure station URL matches the observed one field for field. Transport is `websocket`
 (the default now). The secure stream ID stays `1`, the two-listener shape — authentication on
-`22300`, secure on its own dialable `22301` — which `earlier/strikers`'s `sid=1` confirms. If
+`22300`, secure on its own dialable `22301` — which the observed `sid=1` confirms. If
 the stream ID is ever wrong the host logs `trying to connect to unbound PRUDPEndPoint`, so it is
 checkable rather than silent.
 
@@ -69,8 +69,8 @@ starting.
 
 This is the one deliberate judgement call in the port, so it is written down in full.
 
-`earlier-nex` has no DataStore implementation, so the earlier network Strikers server answers
-every `0x73` call with an empty list and `0x73.8` with `DataStore::NotFound`. It is a probe stub.
+Earlier notes answered every `0x73` call with an empty list and `0x73.8` with
+`DataStore::NotFound`, a probe stub.
 Strikers' real online data — clubs and rosters — travels over **MatchmakeExtension** (`0x6D`
 game-specific methods) and an in-memory club store, **not** DataStore. So Strikers genuinely does
 not use DataStore for storage.
@@ -79,7 +79,7 @@ We register the common DataStore anyway, over an **empty** Postgres store (the e
 schema renamed to `strikers`):
 
 - The game issues `0x73` init calls. Leaving `0x73` unregistered answers `Core::NotImplemented`,
-  and the earlier server registered a stub specifically to avoid that — evidence NotImplemented
+  and earlier notes registered a stub specifically to avoid that — evidence NotImplemented
   on init is bad in this engine.
 - The common DataStore over an empty store returns exactly the empty list / `NotFound` the stub
   returned, but through real, reviewed handlers.
@@ -88,7 +88,7 @@ schema renamed to `strikers`):
   Strikers and ARMS byte-identical here, which is what makes the eventual lift a rename.
 
 The alternative — a bare "register none" — was rejected because of the observed NotImplemented
-risk. The other alternative — reproducing the earlier server's per-method zero-struct/empty-list probe — was
+risk. The other alternative — reproducing a per-method zero-struct/empty-list probe — was
 rejected because that classification is unconfirmed and answering a struct method with an empty
 list overflows the client (`Core::BufferOverflow`). The empty common store is the choice that is
 both correct and lowest-effort-to-lift.
@@ -129,13 +129,13 @@ graph.
   leaderboard backend and Strikers' category/score shapes are unobserved. A real backend when a
   capture shows them.
 - **The club methods, MatchmakeReferee (`0x78`), Subscriber (`0x79`), Ranking2 (`0x7A`).** No
-  common implementation; the Reference stubs are unconfirmed reverse-engineering. Deferred to a
+   common implementation; the earlier stubs are unconfirmed reverse-engineering. Deferred to a
   capture round — see `provenance.md`.
 - **A Pia type-8 keepalive handler.** Moot on nex-go; `RegisterCustomPacketHandler` is the hook
   if a capture shows a type-8 packet arriving.
-- **A monitoring dashboard, a presence reporter, a proxy-protocol mode.** The earlier server has
-  all three. OpenPak answers "is it up" with `/healthz`, "who is online" belongs to the account
-  side, and TLS/PROXY termination is the front proxy's.
+- **A monitoring dashboard, a presence reporter, a proxy-protocol mode.** OpenPak answers
+  "is it up" with `/healthz`, "who is online" belongs to the account side, and TLS/PROXY
+  termination is the front proxy's.
 
 ## Open questions — what the next round needs
 

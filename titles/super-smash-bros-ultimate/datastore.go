@@ -2,8 +2,7 @@ package ssbu
 
 // DataStore (0x73) for Super Smash Bros. Ultimate, for real.
 //
-// earlier-nex has no DataStore at all, so the ExternalReference SSBU server answers every 0x73
-// call with an empty list and 0x73.8 (GetMeta) with DataStore::NotFound. That is enough for
+// A menu-only stub (every 0x73 call an empty list, 0x73.8 GetMeta NotFound) is enough for
 // the online menu to appear and not enough for online play to be complete — the game reads
 // object metadata during its OnlineCore bring-up. nex-protocols-common-go ships the actual
 // handlers and leaves exactly two things to the operator: where object metadata lives, and

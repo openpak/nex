@@ -24,8 +24,8 @@ a genuine console's login is still refused. See the end of [`docs/design.md`](do
   `ValidateAndRequestTicketWithCustomData` (method 2) — the Switch login methods, which
   `nex-protocols-common-go` leaves unset, so a NEX 4 title otherwise answers
   `Core::NotImplemented` to every login.
-- Resolves a console to an OpenPak account through [`nx-baas`](../../nx-baas)'s internal game
-  API, the same door [`servers/stardew-valley`](../stardew-valley) uses for NPLN, and hands
+- Resolves a console to an OpenPak account through [`nx-baas`](../../../switch/infra/nx-baas)'s internal game
+  API, the same door [`platforms/switch/games/npln/titles/stardew-valley`](../../../switch/games/npln/titles/stardew-valley) uses for NPLN, and hands
   the title the player's friend graph with it. It also records the name the console logged in
   under — its NSA id, which is not its NEX PID — because titles go on to ask for players by
   that name and nothing else can translate it (`Host.PIDForLoginName`).
@@ -69,7 +69,7 @@ Consoles find these servers through nn-account's `servers` table, not Traefik.
 ## Bans
 
 An account banned in the OpenPak admin is locked out of every title here
-([`website/docs/ban-lookup.md`](../../website/docs/ban-lookup.md)). Login is refused with
+([`website/docs/ban-lookup.md`](../../../../openpak/website/docs/ban-lookup.md)). Login is refused with
 `RendezVous::AccountDisabled` (0x00030067) and live connections are dropped within a minute
 by `nexhost.WatchBans`. Switch titles learn the ban from nx-baas (`/internal/switch/identity`
 answers 403 `account_banned`); Wii U and 3DS titles from nn-account (`GetNEXPassword` refuses a
@@ -125,7 +125,7 @@ failure mode, not just their value.
 | `NEX_STATION_SCHEME` | `prudps` (default) | ARMS, Mario Party Superstars, Splatoon 2, SSBU | **Late.** Under `prudp` the handshake completes but CONNECT carries an empty payload, so the title works through menus and dies the moment it first needs the session |
 | | `prudp` | Mario Kart 8 Deluxe | As above, mirrored |
 | `NEX_SOURCE_KEY_BYTES` | `32` (default) | Mario Kart 8 Deluxe, Mario Party Superstars — both derive it with SHA-256 and return all 32 | **Fully silent.** The login fails with nothing logged on either side |
-| | `16` | a public reference server working against a retail Super Mario Bros. 35 | As above |
+| | `16` | observed working against a retail Super Mario Bros. 35 | As above |
 | `NEX_SECURE_TRANSPORT` | unset (default) — the secure listener takes `NEX_TRANSPORT` | every title but one | — |
 | | `udp` alongside `NEX_TRANSPORT=websocket` | Monster Hunter Generations Ultimate: a Switch port of a 3DS game, whose auth stage the console reaches over TLS by SNI while its secure-connect code opens a UDP socket | **Fully silent, and it was wrong for months.** A UDP auth listener behind a TCP SNI route never receives a packet, and nothing logs a connection that was refused by the kernel |
 

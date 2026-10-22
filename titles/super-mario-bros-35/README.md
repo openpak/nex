@@ -1,7 +1,7 @@
 # super-mario-bros-35
 
 NEX game server for **Super Mario Bros. 35** on Nintendo Switch, built on
-[`servers/nex`](../../README.md) — OpenPak's shared NEX host, which wraps Pretendo's AGPL `nex-go`.
+[`platforms/wiiu-3ds/games/nex`](../../README.md) — OpenPak's shared NEX host, which wraps Pretendo's AGPL `nex-go`.
 
 Nintendo delisted this game on 30 March 2021 and switched its service off the next day. It
 was a time-limited release, and it has no live service to compete with: **nobody can play it
@@ -10,7 +10,7 @@ target, and it is the reason there is no identity wall here — there is no vend
 validate a token.
 
 **Status:** builds, starts, serves `/healthz`, and registers every NEX protocol the game
-calls, with the wire types and values taken from a reference server that is publicly
+calls, with the wire types and values taken from a reference implementation that is publicly
 documented to have worked against a retail client. **Nothing has been run against the game.**
 The one thing missing before a match can actually be played is the Eagle relay, which is not
 in this repository and does not exist in OpenPak yet — see [`docs/design.md`](docs/design.md).
@@ -54,7 +54,7 @@ NEX_PORT_BASE=22160 NEX_ACCESS_KEY=… SMB35_DATABASE_URL=… ./smb35d
 
 ### Environment
 
-The shared host reads the `NEX_*` and `NX_*` half; see [`servers/nex`](../../README.md) for the full
+The shared host reads the `NEX_*` and `NX_*` half; see [`platforms/wiiu-3ds/games/nex`](../../README.md) for the full
 list. These are the values that are **specific to this title** and wrong by default:
 
 | Env | Value here | Why |

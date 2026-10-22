@@ -94,13 +94,8 @@ setting times.
 
 **MK8D does not use it, so it is not registered.**
 
-This is worth saying explicitly, because the general instruction for this port was to
-implement DataStore properly wherever the earlier server stubbed it. For MK8D there is
-nothing to fix: earlier network registers no DataStore handler for this title, its NEX core
-has no general DataStore implementation at all (only a Super Mario Maker 2 one), and its live
-monitoring — which names every protocol it has seen from a real client — has no DataStore
-entry. Registering Pretendo's DataStore here would mean standing up an S3 bucket and fifteen
-database callbacks for a protocol this title never speaks.
+No DataStore traffic has been observed from a real MK8D client. Registering Pretendo's DataStore here would mean standing up an S3 bucket and
+fifteen database callbacks for a protocol this title never speaks.
 
 The capability is real and it is worth using where it applies: Super Mario Maker 2, Splatoon
 2's SplatNet data and Super Smash Bros. Ultimate all put user-generated content in DataStore,
@@ -117,7 +112,7 @@ private rooms with a shareable code (`0x44`, `0x45`). Pretendo's `nex-protocols-
 `0x36`, so all of them currently answer `Core::NotImplemented`.
 
 They are not implemented because the response layouts are not something we can guess and we
-have no capture of our own. `provenance.md` records the shapes earlier network measured for
+have no capture of our own. `provenance.md` records the shapes earlier research notes recorded for
 each one, which is enough to start from but not enough to ship blind.
 
 The upgrade path is already in the library and costs nothing to take when the evidence
@@ -138,11 +133,11 @@ implementation.
 
 No console, no emulator, no capture. The server builds, starts, serves `/healthz`, listens
 on its block, creates its schemas and answers RMC. Every protocol claim above rests on
-earlier network's observations or on Pretendo's library, not on OpenPak seeing a packet.
+earlier research notes or on Pretendo's library, not on OpenPak seeing a packet.
 
 ## Blocking issue in `servers/nex`
 
-`login.go` mints a **16-byte** source key. earlier network records, from a live MK8D server,
+`login.go` mints a **16-byte** source key. Earlier research notes record, from a live MK8D server,
 that the Switch kerberos key size is 32 bytes and that a 16-byte source key makes the console
 reject the ticket. If that holds, no Switch title on OpenPak can complete a login until
 `sourceKeyLength` becomes 32. Nothing in this repository can work around it — the constant is

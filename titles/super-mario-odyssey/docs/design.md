@@ -32,16 +32,16 @@ register has to carry the whole title rather than a single event-data sideline.
 | Utility | `0x6E` | NEX unique IDs — the console acquires one to name a new balloon before posting it |
 | DataStore | `0x73` | Balloon World: place, find, rate, delete |
 
-Ranking (`0x70`) is **not** registered; `provenance.md` records why (speculative in the
-earlier server, no client observed linking it, three lines to add on evidence).
+Ranking (`0x70`) is **not** registered; `provenance.md` records why (speculative, no
+client observed linking it, three lines to add on evidence).
 
 ## Transport
 
 Nothing to set: every `servers/nex` default is already right for Odyssey, and `provenance.md`
-records the evidence for each. `NEX_TRANSPORT=websocket` (the earlier server serves both
+records the evidence for each. `NEX_TRANSPORT=websocket` (the retail server serves both
 endpoints over WSS and opens no UDP socket), `NEX_SECURE_STREAM_ID=1` (the two-listener shape:
-its auth `:8453` and secure `:60013` are separate servers, and the secure station URL carries
-`sid=1`), `NEX_SOURCE_KEY_BYTES=32` (its source key is a 32-byte SHA-256), `prudps`, secure
+auth and secure are separate servers, and the secure station URL carries
+`sid=1`), `NEX_SOURCE_KEY_BYTES=32` (the source key is a 32-byte SHA-256), `prudps`, secure
 PID 2. The one value that is *not* confirmed is `NEX_VERSION`, a `4.0.0` guess — the first
 thing to change if login never completes.
 
@@ -49,8 +49,8 @@ thing to change if login never completes.
 
 DataStore metadata (the balloons) and the Utility NEX-unique-ID counter both live in Postgres,
 because `nex-protocols-common-go` keeps them there and writing an in-memory store to avoid one
-connection string would be more code, not less — and the earlier server's in-memory-map-to-
-JSON-file is exactly the durability the OpenPak version is meant to replace. The Utility
+connection string would be more code, not less, and an in-memory map is not the durability a
+title that lives on DataStore needs. The Utility
 library creates its own `utility` schema; `datastore.go` creates `odyssey`. `SMO_DATABASE_URL`
 is required and startup pings it: a title whose entire online feature is DataStore is not a
 degraded server without a database, it is a dead one, so failing loudly beats starting.
@@ -83,7 +83,7 @@ screenshot; a half-configured store (endpoint set, credentials missing) is a sta
 rather than a surprise at the first upload.
 
 The DataStore backing is our own code, carried across from `servers/arms` and
-`servers/mario-tennis-aces` (OpenPak repositories), not from earlier. It is a **lift
+`servers/mario-tennis-aces` (OpenPak repositories). It is a **lift
 candidate**: `servers/nex` has agreed to move the object store into a shared subpackage,
 `github.com/openpak/nex/datastore`, behind a one-call `store.Wire(common, host)`. Nothing in
 `datastore.go`/`search.go` is Odyssey-shaped — the only title-specific values are the schema
@@ -100,7 +100,7 @@ objects from another.
 filters, the friend-owned and public-access search types, data type (both the single-value and
 the NEX-4 list form), tags, refer-data-ID and the four created/updated bounds; it orders by a
 column from a fixed whitelist map and pages with the client's `ResultRange`. This is where
-OpenPak's DataStore is materially more real than the Reference one, which decoded only
+the search honours every filter the title sends, not only
 `dataType`.
 
 Everything a console sends is a bound parameter. The only text a console influences is the
@@ -120,7 +120,7 @@ Two deliberate limits, both marked in the code:
 
 ## DataStore — the Balloon extension, and why it is not here
 
-Odyssey does not only speak the base DataStore protocol. The earlier server implements a
+Odyssey does not only speak the base DataStore protocol. It also uses a
 **title-specific extension on `0x73`, methods 47-53** — `AddToBufferQueue(s)`,
 `GetBufferQueue(s)`, `ClearBufferQueues` (the pose-screenshot buffers), `SearchBalloon` (the
 search the Balloon World UI actually uses, as distinct from generic `SearchObject`), and
@@ -133,18 +133,17 @@ serve them.
 
 This is the honest limit of what this repository delivers, and `provenance.md` records the
 sharp edge: `FetchMyInfos` (53) is the **first** DataStore call Odyssey makes — confirmed live
-in the Reference notes — so Balloon World does not actually get off the ground on a base-only
+in earlier research notes — so Balloon World does not actually get off the ground on a base-only
 server. It is not served here for two reasons that both point the same way:
 
 1. **It is not in any library we build on.** Serving it means a new title-specific protocol —
    a Go definition of the seven methods and their `[Structure]`-wrapped parameter/result types
    — registered alongside the common base protocol on `0x73`. That is real protocol work, not
    a callback.
-2. **Its wire shape is unconfirmed.** The earlier server's own README says none of
+2. **Its wire shape is unconfirmed.** None of
    `SearchBalloon`'s per-kingdom/rank result bucketing or `AddToBufferQueue`'s slot field width
-   is cross-checked against a real capture. Reproducing those guesses would be building on an
-   unconfirmed layout, and doing it by reading their handlers would mirror their shape — both
-   things the clean-room policy and plain caution say to avoid.
+   is cross-checked against a real capture. Building on guesses at those layouts is
+   something the clean-room policy and plain caution say to avoid.
 
 So the extension is left for the round that has a capture. The right home for it, once the wire
 shape is known, is a title module (mirroring how Pretendo structures `datastore/super-mario-
@@ -173,8 +172,7 @@ that do not need the graph.
   the likeliest place Balloon World's weekly standings turn out to live, if they are not in
   `SearchBalloon`.
 - **Matchmaking / lobby / NAT traversal.** Odyssey has no live session at all.
-- **A local blob host.** The earlier server stands one up in place of S3; OpenPak uses a real
-  bucket through the library's presigner.
+- **A local blob host.** OpenPak uses a real bucket through the library's presigner.
 - **A monitoring dashboard and a presence reporter.** `/healthz` answers "is it up"; "who is
   online" belongs to the account side.
 
@@ -184,7 +182,7 @@ that do not need the graph.
 `0x0B.1` vs `0x0B.4` register call, the Pia type-8 keepalive). These are Odyssey's own, in the
 order a first live run would answer them:
 
-1. **Does Odyssey reach us, and is `NEX_VERSION` right?** The access key is reference-verified
+1. **Does Odyssey reach us, and is `NEX_VERSION` right?** The access key comes from earlier research notes
    only and the NEX version is a `4.0.0` guess. A wrong access key fails silently; a wrong
    version fails at `LoginEx`. **Evidence needed:** any packet at `22340`, then the RMC method
    ID and `apiVersionGeneral` of the first login.

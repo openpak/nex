@@ -1,7 +1,7 @@
 # super-smash-bros-ultimate
 
 NEX game server for **Super Smash Bros. Ultimate** on Nintendo Switch, built on Pretendo's AGPL
-`nex-go` through [`servers/nex`](../../README.md).
+`nex-go` through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** Verified locally: it builds, vets, passes
 its tests, and its DataStore queries run against a real Postgres. It starts, creates its schema,
@@ -12,22 +12,22 @@ the two things a first live run would settle, the Pia type-8 keepalive foremost.
 
 ## What it does
 
-Registers the protocol set SSBU speaks and makes real the two protocols the earlier network
-server left as stubs:
+Registers the protocol set SSBU speaks and makes real the two protocols a menu-only stub
+would leave empty:
 
-- **A real DataStore.** `earlier-nex` has no DataStore, so the earlier network SSBU server
-  answers every `0x73` call with an empty list and `GetMeta` with `NotFound`. Here `GetMeta`,
+- **A real DataStore.** A stub answers every `0x73` call with an empty list and `GetMeta` with
+  `NotFound`. Here `GetMeta`,
   `GetMetas`, `SearchObject`, `PreparePostObject`, `PrepareGetObject`, `CompletePostObject`,
   `PostMetaBinary`, `ChangeMeta`, `RateObject` and `DeleteObject` are implemented against
   Postgres, with object bodies presigned straight to S3 so none passes through this process.
-- **A real Utility.** SSBU calls the NEX-unique-ID getters during online bring-up; the
-  earlier network server answered them with an empty list. Here they return real, persistent
+- **A real Utility.** SSBU calls the NEX-unique-ID getters during online bring-up; a stub
+  answers them with an empty list. Here they return real, persistent
   IDs from `nex-protocols-common-go`'s Utility manager.
 - **Friend-list lobbies and friends-only DataStore searches.** The friend lookup goes to
-  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so SSBU keeps no friend graph of its own and
+  [`nx-baas`](../../../../../switch/infra/nx-baas) through `platforms/wiiu-3ds/games/nex`, so SSBU keeps no friend graph of its own and
   a player is the same person here as in any other OpenPak title.
 
-Login, kerberos, PRUDP, SecureConnection and account identity are all `servers/nex`'s. This
+Login, kerberos, PRUDP, SecureConnection and account identity are all `platforms/wiiu-3ds/games/nex`'s. This
 repository does not reimplement any of them. Ranking (`0x70`) and the Pia type-8 keepalive are
 deliberately not built — see [`docs/design.md`](docs/design.md).
 
@@ -43,11 +43,11 @@ env $(grep -v '^#' .env | xargs) ./super-smash-bros-ultimate
 | --- | --- |
 | `NEX_PORT_BASE` | **required.** `22350` — this title's block from [ports.md](https://github.com/openpak/docs/blob/main/ports.md). Two listeners: authentication `22350`, secure `22351` |
 | `NEX_ACCESS_KEY` | **required.** SSBU's NEX access key, `9587602b`. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
-| `NEX_VERSION` | **unverified.** `4.0.0` inherited from a Reference file that is a copied MK8 template; a capture reporting `apiVersionGeneral` settles it |
+| `NEX_VERSION` | **unverified.** `4.0.0` inherited from earlier research notes where it was a copied MK8 template value; a capture reporting `apiVersionGeneral` settles it |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
-| `NEX_TRANSPORT` | leave unset. SSBU is `websocket`, the `servers/nex` default |
+| `NEX_TRANSPORT` | leave unset. SSBU is `websocket`, the `platforms/wiiu-3ds/games/nex` default |
 | `NEX_SECURE_STREAM_ID` | leave unset. SSBU uses the two-listener shape, stream `1`, the default. Setting `2` is the single-listener shape and would break it |
-| `NEX_SOURCE_KEY_BYTES` | leave unset. SSBU's own server records the key MUST be 32 bytes; 32 is the default |
+| `NEX_SOURCE_KEY_BYTES` | leave unset. The key MUST be 32 bytes or the console rejects the ticket; 32 is the default |
 | `NEX_HTTP_ADDR` | `/healthz` listener, default `:22352` |
 | `NX_INTERNAL_URL` | nx-baas game API, default `http://127.0.0.1:20070` |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's internal key. Without it every login is refused |

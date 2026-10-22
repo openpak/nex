@@ -11,8 +11,7 @@ then implemented in OpenPak's own shape.
 
 | Tag | What |
 | --- | --- |
-| `earlier/minecraft` | `~/REPOS/minecraft`, the earlier network Minecraft (Switch) server (Shield-licensed). Read for facts only. |
-| `earlier/nex` | `~/REPOS/earlier-nex`, their shared NEX core (Shield-licensed). Read for facts only. |
+| `notes` | Earlier research notes on this title. Facts only. |
 | `kinnay` | [Kinnay's NintendoClients wiki](https://github.com/kinnay/NintendoClients/wiki) |
 | `pretendo-src` | Pretendo's AGPL-3.0 `nex-go/v2`, `nex-protocols-go/v2`, `nex-protocols-common-go/v2`, read as source we are licensed to use |
 | `openpak` | Our own `servers/nex`, `nx-baas`, `ports.md` |
@@ -21,36 +20,35 @@ then implemented in OpenPak's own shape.
 
 | Fact | Value | Source |
 | --- | --- | --- |
-| NEX access key | `f4983d87` | `earlier/minecraft` `main.go` records reading it out of the game binary at `0xddd877` **and verifying it cryptographically** against a real measured CONNECT signature — `LitePacketSignature(md5(key), md5(key)‖srvConnSig)` matches the wire byte for byte. Configuration here, never a literal in source. |
-| NEX library version | `40000` (4.0.0) is the value `earlier/minecraft` `main.go` passes to `NewSwitchSettings`. Its own comment beside that constant instead calls the title "NEX 4.3.1". **Unresolved contradiction — see below.** | `earlier/minecraft` `main.go` |
-| Secure PID | `2` (their `securePID`) | `earlier/minecraft` `main.go` |
-| Source key length | 32 bytes (`sessionKeyLen`, and `earlier/nex` `NewSwitchSettings` sets `KerberosKeySize: 32`) | `earlier/minecraft` `main.go`, `earlier/nex` `settings.go` |
+| NEX access key | `f4983d87` | `notes` record reading it out of the game binary at `0xddd877` **and verifying it cryptographically** against a real measured CONNECT signature — `LitePacketSignature(md5(key), md5(key)‖srvConnSig)` matches the wire byte for byte. Configuration here, never a literal in source. |
+| NEX library version | `40000` (4.0.0) is the value the notes ran with. A note beside it instead calls the title "NEX 4.3.1". **Unresolved contradiction — see below.** | `notes` |
+| Secure PID | `2` | `notes` |
+| Source key length | 32 bytes (Kerberos key size 32 in the Switch profile) | `notes` |
 
 ### The version contradiction
 
-`earlier/minecraft` `main.go` sets `nexVersion = 40000` and passes it to `NewSwitchSettings`,
-and `earlier/nex` uses that field directly (`if s.NexVersion >= 40000` gates the Switch
-byte-stream profile). So the working server *runs* at 4.0.0. The comment two lines up says
+The notes set the NEX version to 40000, and that value gates the Switch
+byte-stream profile (`>= 40000`). So earlier research *ran* at 4.0.0. A comment beside it says
 "MC is NEX 4.3.1". Both cannot be the wire truth and this is recorded, not resolved.
 
 It does not change what this server does. `openpak/nex` needs the version for two things: the
 `>= 4.0.0` byte-stream profile (8-byte PIDs + structure header) and `nex-protocols-go`'s
 routing to the Switch method names — both trigger at `>= 4.0.0`, which 40000 and 40301 (4.3.1)
-both satisfy. `NEX_VERSION=40000` reproduces the value the working server actually ran. A
+both satisfy. `NEX_VERSION=40000` reproduces the value earlier research actually ran. A
 login capture's `apiVersionGeneral` is what would settle the prose-vs-code disagreement.
 
 ### Login method 2 vs 6
 
 `openpak/nex` registers **both** `ValidateAndRequestTicketWithCustomData` (method 2, the pre-4.4
 LoginEx shape) and `ValidateAndRequestTicketWithParam` (method 6), so it answers whichever the
-console sends; this server needs no version branch. `earlier/nex` `ticketgranting.go` records
+console sends; this server needs no version branch. The notes record
 method 6 as the NEX 4.6+ shape (SSBU), which puts a 4.0.x/4.3.x title like Minecraft on method
 2 — but since both are handled, a capture only confirms rather than decides anything here.
 
 ## Protocols Minecraft speaks
 
 Protocol IDs from `pretendo-src`; which of them Minecraft actually registers is from
-`earlier/minecraft` `main.go`, whose secure endpoint registers exactly these.
+the notes, which register exactly these on the secure endpoint.
 
 | Protocol | ID | Status here |
 | --- | --- | --- |
@@ -62,7 +60,7 @@ Protocol IDs from `pretendo-src`; which of them Minecraft actually registers is 
 | MatchmakeExtension | `0x6D` | registered |
 | Utility | `0x6E` | registered |
 | Ranking | `0x70` | **not** registered — see below |
-| DataStore | `0x73` | **not** registered — Minecraft's server never links it |
+| DataStore | `0x73` | **not** registered — no DataStore client is linked |
 
 Minecraft is a session-join title: matchmaking (including friends-list narrowing), NAT
 traversal so two consoles reach each other, and utility for NEX unique IDs. That is the whole
@@ -70,10 +68,9 @@ protocol set here.
 
 ### Ranking (0x70) — registered by Minecraft, not registered here
 
-`earlier/minecraft` `main.go` *does* register a Ranking handler, unlike ARMS (whose port
-left it off because no Ranking client is linked). But the handler it registers,
-`earlier/nex` `ranking.go`, is **explicitly measured against Mario Kart 8 Deluxe** — its own
-header comment says "Sur Mario Kart 8 Deluxe", and every fact in it (the 132-byte Mii profile
+The notes *do* register a Ranking handler, unlike ARMS (whose port
+left it off because no Ranking client is linked). But that handler
+is **explicitly measured against Mario Kart 8 Deluxe**, and every fact in it (the 132-byte Mii profile
 block starting `52 46 00 00`, `CommonDataByPIDs` 0x16, `SubmitScore` 0x11, `SubmitTime` 0x13,
 tournament listings) is MK8D's ranking-as-profile-store behaviour, captured from MK8D traffic.
 There is **no Minecraft-specific ranking fact** anywhere: no Minecraft payload shape, no
@@ -98,17 +95,17 @@ Until one does, there is nothing here to implement that would not be a guess.
 
 | Fact | Value for Minecraft | Source | What we do |
 | --- | --- | --- | --- |
-| Secure station URL scheme | **`prudp`** | `earlier/minecraft` `main.go`: `nex.NewStationURL("prudp")` | `NEX_STATION_SCHEME=prudp`. **Differs from most fleet titles** (ARMS uses `prudps`). See below. |
-| Listener shape | two listeners, secure stream 1 | `earlier/minecraft` `main.go` runs `:443` auth + `:60006` secure and the secure station URL carries `sid=1` | `NEX_SECURE_STREAM_ID=1` (the `servers/nex` default) |
-| Transport | WebSocket (WSS) | `earlier/minecraft` `main.go` serves both endpoints with `ListenSecure` and opens no UDP socket; `earlier/nex` `NewSwitchSettings` sets `Transport: TransportWebSocket` | `NEX_TRANSPORT=websocket` (the default) |
-| Secure station URL fields | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | `earlier/minecraft` `main.go` | `servers/nex` builds exactly these by default (`stream=10` = `StreamTypeRVSecure`, the tenth nex-go enum member); nothing to override |
+| Secure station URL scheme | **`prudp`** | `notes`: the secure station URL uses `prudp` | `NEX_STATION_SCHEME=prudp`. **Differs from most fleet titles** (ARMS uses `prudps`). See below. |
+| Listener shape | two listeners, secure stream 1 | `notes`: `:443` auth + `:60006` secure, and the secure station URL carries `sid=1` | `NEX_SECURE_STREAM_ID=1` (the `servers/nex` default) |
+| Transport | WebSocket (WSS) | `notes`: both endpoints are served as TLS WebSocket and no UDP socket is opened | `NEX_TRANSPORT=websocket` (the default) |
+| Secure station URL fields | `CID=1`, `PID=2`, `sid=1`, `stream=10`, `type=2` | `notes` | `servers/nex` builds exactly these by default (`stream=10` = `StreamTypeRVSecure`, the tenth nex-go enum member); nothing to override |
 
 ### The station scheme is the top thing to verify on hardware
 
-ARMS's port recorded, from ARMS's own working server, that `prudps` is what makes a console
+ARMS's port recorded, from earlier ARMS research, that `prudps` is what makes a console
 treat the secure server as authenticated and send its kerberos ticket in CONNECT, and that
 `prudp` there made CONNECT carry an empty payload and the title die when Pia needed the
-session. **Minecraft's working server uses `prudp`** and is a live, operational server. These
+session. **Earlier Minecraft research used `prudp`** against a live, operational server. These
 two facts contradict each other across titles — which the clean-room policy calls a finding,
 not a problem to resolve before writing. This server matches Minecraft's observed value
 (`prudp`) because that is the one attested to work *for Minecraft*, but the scheme is the
@@ -121,9 +118,8 @@ session), so a hardware run is what confirms it. `NEX_STATION_SCHEME` flips it i
 and hands back the player's friend graph. `host.FriendPIDs` is assigned to the matchmaking
 manager's `GetUserFriendPIDs`, which is the friends-list lobby path: a friends-only search is
 the ordinary matchmaking search narrowed to gatherings owned by PIDs the player knows. None of
-`earlier/minecraft`'s own identity code (its `nx2.` HMAC tokens, bare-PID branch, NSA lookup,
-FNV anonymous fallback in `main.go`/`gates.go`) is reproduced — that is the earlier server's account
-integration, and OpenPak's is nx-baas.
+the notes' own identity code (HMAC tokens, bare-PID branch, NSA lookup, anonymous fallback)
+is reproduced; OpenPak's is nx-baas.
 
 A Switch logs in under its **NSA id**, not its PID (`servers/nex` `login.go` records this).
 None of the matchmaking callbacks here is given a login name — every one takes a PID — so there
@@ -133,14 +129,5 @@ Minecraft matchmaking call naming a player by login name instead.
 ## Ports
 
 `22310` (auth `22310`, secure `22311`, `/healthz` `22312`), the reserved NEX block from
-`openpak` `ports.md`. the earlier server's `:443` auth and `:60006` secure are theirs and do not carry
+`openpak` `ports.md`. The earlier `:443` auth and `:60006` secure do not carry
 over; the fact that both are TLS WebSocket does, and is why the transport is websocket.
-
-## Facts we did not need
-
-Recorded so nobody looks for them twice: `earlier/minecraft` also carries a monitoring
-dashboard (`dashboard.go`), a dead-connection reaper, a presence reporter, PROXY-protocol
-support, and the online gates in `gates.go` (verified-email, one-place-at-a-time, account
-required). The first four are their operational shape rather than protocol facts —
-OpenPak answers "is it up" with `/healthz` and "may this account go online" belongs to the
-account/nx-baas side. The gates are the earlier server's account policy, not Minecraft's protocol.

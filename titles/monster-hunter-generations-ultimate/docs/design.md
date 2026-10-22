@@ -23,10 +23,9 @@ fleet needs, and the record here was wrong until 2026-09-16.
 The *secure* stage is 3DS: its secure-connect code opens a UDP socket, and Pretendo's MHXX
 server listens raw PRUDP for the same engine. The *authentication* stage is not. The console
 resolves `g2896bd04-lp1.s.n.srv.nintendo.net` and opens TLS on 443, which Traefik passes
-through by SNI — a TCP connection. The other stack's MHGU server has no UDP auth listener at
-all, only a wss one, and OpenPak's own production Traefik has been routing that SNI to this
-title's auth port over TCP the whole time. A UDP-only server was never going to hear from a
-console, whichever lineage owned it.
+through by SNI — a TCP connection. OpenPak's own production Traefik has been routing that SNI
+to this title's auth port over TCP the whole time. A UDP-only server was never going to hear from a
+console.
 
 So: `NEX_TRANSPORT=websocket` with `NEX_TLS_CERT`/`NEX_TLS_KEY` for the auth listener, and
 `NEX_SECURE_TRANSPORT=udp` for the secure one. `NEX_SECURE_TRANSPORT` exists in
@@ -37,7 +36,7 @@ and both listeners take it.
 the encrypted body, 124 bytes instead of 148. `servers/nex` hardcodes version 1, which is
 right for every native Switch title, so `main.go` sets 0 on both endpoints after `New`.
 
-That second one is not a preference. On the other stack this title never got a packet to the
+That second one is not a preference. In earlier testing this title never got a packet to the
 secure port: the client raises `2306-0116` (Core::BufferOverflow, "buffer too large to
 send") during its secure CONNECT, before transmitting, and the kerberos ticket it echoes back
 is the thing in the packet whose size we control. Ticket version 0 is the only lever anyone
@@ -61,11 +60,11 @@ Registered on the secure endpoint, all of them Pretendo's common implementations
 
 ### DataStore, which is the point
 
-The other stack has no DataStore. Its core's only `0x73` code is Super Mario Maker 2's, and
-its MHGU server answers every DataStore call with an empty list — `GetMeta` (`0x73.8`) with
-DataStore::NotFound — precisely so the game keeps walking and shows what it asks for next.
+Without a DataStore the game soft-locks on `Core::NotImplemented`, so a stub that answers every
+call with an empty list (`GetMeta` `0x73.8` with DataStore::NotFound) would at least keep it walking.
+This server goes further.
 
-Here the common protocol's callbacks are implemented against Postgres (`datastore.objects`,
+The common protocol's callbacks are implemented against Postgres (`datastore.objects`,
 `datastore.ratings`) and an S3-compatible store, so these answer for real:
 
 - `GetMeta` `0x8`, `GetMetas` `0x9`, `GetMetasMultipleParam` `0x24` — metadata by data ID, by
@@ -102,11 +101,11 @@ Each of those is one `// ponytail:` comment in the code where it bites.
 
 ## Assumptions a capture would settle
 
-1. **Does ticket version 0 clear `2306-0116`?** The whole title is blocked behind this on the
-   other stack. **Evidence:** a run against this server; either the secure endpoint sees a
+1. **Does ticket version 0 clear `2306-0116`?** The whole title is blocked behind this
+   in earlier testing. **Evidence:** a run against this server; either the secure endpoint sees a
    CONNECT, or the console shows the same error and the ticket is not the only oversize part.
-   Note that the other stack holds two theories about this error, not one: their README
-   blames the ticket, their `AuthConfig` comment blames the method 6 response shape. This
+   Note that there are two theories about this error, not one: the ticket, or the method 6
+   response shape. This
    server already answers method 6 with the fuller struct-headered result, so if the shape is
    the cause, that half is done.
 1a. **Does the split transport get a login through at all?** This is now the first thing to
@@ -117,7 +116,7 @@ Each of those is one `// ponytail:` comment in the code where it bites.
    may well send method 1, or send something else in `AuthenticationInfo`. **Evidence:** the
    RMC method ID and the token field of the first login packet.
 3. **The station URL type flags.** We now send Public (2), which is what MHXX sends, rather
-   than the BehindNAT|Public (3) the other stack reasons its way to. Neither has been
+   than BehindNAT|Public (3). Neither has been
    observed against MHGU itself. **Evidence:** whether the console dials the secure port at
    all, and what it does with the station it is handed. Flipping it is one line.
 4. **Which DataStore methods MHGU actually calls, and with what data types.** The store is

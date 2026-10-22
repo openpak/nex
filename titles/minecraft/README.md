@@ -1,7 +1,7 @@
 # minecraft
 
 NEX game server for **Minecraft** on Nintendo Switch, built on Pretendo's AGPL `nex-go`
-through the shared host in [`servers/nex`](../../README.md).
+through the shared host in [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 Minecraft's Switch online is session join: a console logs in, then hosts a world or joins
 one — including a friend's. This binary registers the protocol set Minecraft speaks on the
@@ -21,16 +21,15 @@ for where each fact came from.
 
 | Protocol | ID | Where |
 | --- | --- | --- |
-| TicketGranting | `0x0A` | `servers/nex` |
-| SecureConnection | `0x0B` | `servers/nex` |
+| TicketGranting | `0x0A` | `platforms/wiiu-3ds/games/nex` |
+| SecureConnection | `0x0B` | `platforms/wiiu-3ds/games/nex` |
 | NATTraversal | `0x03` | here |
 | MatchMaking | `0x15` | here |
 | MatchMakingExt | `0x32` | here |
 | MatchmakeExtension | `0x6D` | here |
 | Utility | `0x6E` | here |
 
-DataStore (`0x73`) and Ranking (`0x70`) are **not** registered — Minecraft's working server
-does not link DataStore, and its Ranking handler is measured against Mario Kart 8 Deluxe with
+DataStore (`0x73`) and Ranking (`0x70`) are **not** registered — no DataStore client is linked, and the only known Ranking handler is measured against Mario Kart 8 Deluxe with
 no Minecraft-specific fact behind it. See `docs/provenance.md`.
 
 ## Configuration
@@ -39,11 +38,11 @@ Copy [`example.env`](example.env) to `.env` and fill it in. The per-title values
 provenance in `docs/provenance.md`:
 
 - `NEX_ACCESS_KEY=f4983d87` — cryptographically verified against a measured CONNECT signature.
-- `NEX_VERSION=40000` (4.0.0) — the value the working server ran; a source comment says 4.3.1
+- `NEX_VERSION=40000` (4.0.0) — the value earlier research ran; a note says 4.3.1
   (recorded contradiction, behaviourally equal for us).
 - `NEX_STATION_SCHEME=prudp` — Minecraft's observed scheme, unusual for the fleet; the top
   thing to verify on hardware.
-- Stream ID and transport are `servers/nex` defaults (two-listener, websocket) and are right
+- Stream ID and transport are `platforms/wiiu-3ds/games/nex` defaults (two-listener, websocket) and are right
   for Minecraft.
 
 `MINECRAFT_DATABASE_URL` (Postgres) is required; matchmaking and NEX unique IDs live there.

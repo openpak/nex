@@ -19,7 +19,7 @@ neither of them can know:
 
 There is no wrapper around any of it. A protocol the common library implements is registered
 and left alone. Unlike Mario Tennis Aces, this title has **no** hand-written matchmaking
-behaviours: the earlier server added none for SMM2, so there is no measured quirk to port.
+behaviours: no measured quirk calls for one.
 
 ## Why SMM2 is the DataStore shape-defining case
 
@@ -42,8 +42,8 @@ Everything the shared store must eventually do shows up here first:
 
 The full method map, the `UserInfo` profile object (revision 3, its stat tables and field
 order), the four relation-upload types, and the NSA→PID lookup rule are all recorded in
-[`provenance.md`](provenance.md) and were sent to the `nex-base` agent as the design input for
-`github.com/openpak/nex/datastore`.
+[`provenance.md`](provenance.md) and were sent as the design input for the shared object store
+(`github.com/openpak/nex/datastore`).
 
 ## DataStore: what is wired here
 
@@ -89,14 +89,14 @@ to the shared store*, not yet *working on hardware*.
 
 ## Two things that will decide whether it works on hardware
 
-1. **Secure PRUDP minor version 0.** Reference forced this on the secure endpoint with a strong
+1. **Secure PRUDP minor version 0.** A working server forced this on the secure endpoint, on a strong
    measurement (answering the client's offered version 6 with anything but 0 makes it skip its
    kerberos ticket, and SMM2 then dies at matchmaking while the menu still looks fine). That is
-   a fact about the earlier server's own NEX stack; whether Pretendo's `nex-go` needs the same forcing is
+   a fact about that server's own NEX stack; whether Pretendo's `nex-go` needs the same forcing is
    **unverified** and is the top hardware risk. If it does, it is a one-line `servers/nex`
    change scoped to the secure endpoint — the auth endpoint must stay on its default or it
    stops receiving logins. See [`provenance.md`](provenance.md).
-2. **`NEX_VERSION`.** `4.0.0` is inherited from the earlier server. The console reports
+2. **`NEX_VERSION`.** `4.0.0` is inherited from a working server's runtime value. The console reports
    `apiVersionGeneral`; the first capture settles it, and `NEX_VERSION` takes the integer form
    directly (`40000`).
 

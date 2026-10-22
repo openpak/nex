@@ -53,9 +53,8 @@ func Register(host *nexhost.Host) error {
 
 	// Station URL type stays at servers/nex's default, the Public flag alone: that is what
 	// Pretendo's Monster Hunter XX server sends, and MHGU runs Monster Hunter XX's NEX code.
-	// The other stack sets BehindNAT|Public here but records it as its own reading rather
-	// than a capture, against a title it has never got a packet out of. See
-	// docs/provenance.md: a shipped server for the same engine outranks a reading.
+	// BehindNAT|Public is only a reading, not a capture. See docs/provenance.md: a shipped
+	// server for the same engine outranks a reading.
 
 	// Register (0x0B.1) rather than RegisterEx (0x0B.4). The 3DS-era Pia calls the plain
 	// one, which nex-protocols-common-go refuses unless this is switched on.

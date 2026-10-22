@@ -11,9 +11,7 @@ package smo
 // every base DataStore handler and leaves the operator two things — where object metadata
 // lives, and where object bodies live. Here that is Postgres and an S3 bucket.
 //
-// The ExternalReference Odyssey server implemented DataStore too, but as an in-memory map
-// flushed to a JSON file every five seconds, with a search that decoded only dataType and a
-// local HTTPS file host standing in for S3. "Real" here means durable Postgres metadata, a
+// "Real" here means durable Postgres metadata, a
 // search that honours the whole DataStoreSearchParam, presigned S3 for bodies, and
 // friends-only visibility resolved against OpenPak's actual friend graph rather than a stub.
 //

@@ -1,7 +1,7 @@
 # animal-crossing-new-horizons
 
 NEX game server for **Animal Crossing: New Horizons** on Nintendo Switch, built on Pretendo's
-AGPL `nex-go` through [`servers/nex`](../../README.md).
+AGPL `nex-go` through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 **Status (2026-09-09): runs, never seen a console.** Verified locally against a real Postgres:
 it starts, creates its schemas (`acnh`, plus the libraries' `matchmaking`/`tracking`/`utility`),
@@ -18,15 +18,15 @@ Registers the protocol set ACNH speaks and supplies the two things `nex-protocol
 leaves to the operator:
 
 - **The "visit a friend" friend lookup.** The matchmaking manager's friend lookup goes to
-  [`nx-baas`](../../../../nx-baas) through `servers/nex`, so ACNH keeps no friend graph of its own and
+  [`nx-baas`](../../../../../switch/infra/nx-baas) through `platforms/wiiu-3ds/games/nex`, so ACNH keeps no friend graph of its own and
   a player is the same person here as in any other OpenPak title.
-- **A real DataStore.** `earlier-nex` has none, so the earlier network ACNH server ran `0x73`
-  in "discovery" mode (log every call, answer empty-success). Here `GetMeta`, `GetMetas`,
+- **A real DataStore.** ACNH's DataStore usage was never mapped from captures, so a stub that logs every call and
+  answers empty-success would be the alternative. Here `GetMeta`, `GetMetas`,
   `SearchObject`, `PreparePostObject`, `PrepareGetObject`, `CompletePostObject`, `PostMetaBinary`,
   `ChangeMeta`, `RateObject` and `DeleteObject` are implemented against Postgres, with object
   bodies presigned straight to S3 so none of them passes through this process.
 
-Login, kerberos, PRUDP, SecureConnection and account identity are all `servers/nex`'s. This
+Login, kerberos, PRUDP, SecureConnection and account identity are all `platforms/wiiu-3ds/games/nex`'s. This
 repository does not reimplement any of them.
 
 ### Not yet covered (see [`docs/design.md`](docs/design.md) → Gaps)
@@ -36,7 +36,7 @@ The Pretendo common libraries do not implement four ACNH-specific things; they a
 built: `FindMatchmakeSessionByParticipant` (`0x6D.0x33`, friend island visits),
 `UpdateMatchmakeSession` (`0x6D.0x2C`, writing a Dodo Code post-create), Utility `0x6E.9`/`0x6E.10`
 and Ranking `0x70.25`, and the Pia-5.19 public-station shape (`type=0x0B`), which is a change
-`servers/nex` must make. Standard session create/join/browse-by-code and Utility 1–8 do work.
+`platforms/wiiu-3ds/games/nex` must make. Standard session create/join/browse-by-code and Utility 1–8 do work.
 
 ## Run
 

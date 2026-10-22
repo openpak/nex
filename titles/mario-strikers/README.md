@@ -1,10 +1,10 @@
 # mario-strikers
 
 NEX game server for **Mario Strikers: Battle League** on Nintendo Switch, built on Pretendo's
-AGPL `nex-go` through [`servers/nex`](../../README.md).
+AGPL `nex-go` through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 **Status:** the confirmed protocol substrate is registered and the binary builds, vets and tests
-green; full club/online play is capture-driven next-round work. `servers/nex` owns login; this
+green; full club/online play is capture-driven next-round work. `platforms/wiiu-3ds/games/nex` owns login; this
 binary registers what Strikers speaks on the secure endpoint.
 
 ## What runs
@@ -18,12 +18,12 @@ binary registers what Strikers speaks on the secure endpoint.
 | Utility | `0x6E` | `nex-protocols-common-go`, Postgres |
 | DataStore | `0x73` | `nex-protocols-common-go`, Postgres + optional S3 |
 
-TicketGranting (`0x0A`) and SecureConnection (`0x0B`) come from [`servers/nex`](../../README.md).
+TicketGranting (`0x0A`) and SecureConnection (`0x0B`) come from [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 Ranking (`0x70`), MatchmakeReferee (`0x78`), Subscriber (`0x79`), Ranking2 (`0x7A`) and the
 Strikers-specific MatchmakeExtension **club** methods (`0x6D` method 54+) are **deferred** —
-they have no common implementation and/or are unconfirmed reverse-engineering in the Reference
-source, so they wait on OpenPak captures. See [`docs/provenance.md`](docs/provenance.md) and
+they have no common implementation and/or are unconfirmed reverse-engineering in earlier notes,
+so they wait on OpenPak captures. See [`docs/provenance.md`](docs/provenance.md) and
 [`docs/design.md`](docs/design.md).
 
 ## Configure
@@ -37,7 +37,7 @@ Copy [`example.env`](example.env) to `.env`. The whole title-specific configurat
 | `NEX_VERSION` | `4.0.0` | the NEX library Strikers links |
 | `STRIKERS_DATABASE_URL` | Postgres URL | matchmaking, unique IDs, DataStore metadata |
 
-Everything else is a `servers/nex` default that is already correct for Strikers (two-listener
+Everything else is a `platforms/wiiu-3ds/games/nex` default that is already correct for Strikers (two-listener
 `prudps`, secure PID 2, 32-byte source key, websocket transport). `STRIKERS_S3_*` is optional and
 only needed if a DataStore object body ever has to move.
 
@@ -56,7 +56,7 @@ STRIKERS_TEST_DATABASE_URL=postgres://... go test ./...   # DataStore SQL agains
 ## Ground rules
 
 - Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before writing a
-  line. The earlier server is read for facts — ports, keys, method IDs, wire shapes, flows —
+  line. Earlier research notes are read for facts — ports, keys, method IDs, wire shapes, flows —
   never copied. Facts and their sources are recorded in [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
 - Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).

@@ -56,9 +56,9 @@ cannot enter, so failing loudly beats starting.
 
 ## DataStore — real, but ACNH's usage is unmapped
 
-`earlier-nex` has no DataStore at all, so the earlier network ACNH server ran `0x73` in a
-"discovery" mode — log every call, answer empty-success — because ACNH's DataStore usage was
-never mapped from captures. This server implements the real handlers instead, over
+ACNH's DataStore usage was never mapped from captures, so the cheap option would be a
+"discovery" stub on `0x73` — log every call, answer empty-success. This server implements the
+real handlers instead, over
 `nex-protocols-common-go/v2/datastore`:
 
 | Call | Method | What now happens |
@@ -114,7 +114,7 @@ Each is verified absent from `nex-protocols-common-go@v2.6.1` and documented wit
 wire shape and source in `provenance.md`. They answer `Core::NotImplemented` today rather than a
 wrong guess, and each is either a future custom handler here or a convergence into `openpak/nex`.
 None can be built correctly without a capture, because the details that make them work were
-reverse-engineered by earlier network from live reference-server measurements we do not have.
+depend on live measurements of a working session that we do not have.
 
 1. **`FindMatchmakeSessionByParticipant` (`0x6D.0x33`)** — locating a friend's island. Without
    it, "visit a friend" returns nothing. The response must be `{PID, session}` pairs carrying
@@ -123,7 +123,7 @@ reverse-engineered by earlier network from live reference-server measurements we
    sends the code only here. The common library *does* store and search the code word when it is
    set at `CreateMatchmakeSession` time, so this gap bites only if ACNH sets the code post-create
    — which the facts say it does. A capture settles it.
-3. **Utility `0x6E.9` / `0x6E.10`, Ranking `0x70.25`** — small overlays earlier network added.
+3. **Utility `0x6E.9` / `0x6E.10`, Ranking `0x70.25`** — small non-standard overlays on the common handlers.
    Ranking is left entirely unregistered (its only known ACNH call is the unimplemented method
    25). Utility 1–8 work via the common library.
 4. **Public P2P station `type=0x0B`** — an `openpak/nex` change. Pretendo's common
@@ -136,13 +136,12 @@ reverse-engineered by earlier network from live reference-server measurements we
 ## What is not here, and why
 
 - **Custom matchmaking handlers for the gaps above.** They depend on captures we do not have and
-  on reference-server-measured behaviours (`PublicStationFirst`, `JoinRespExistingCount`), and
-  hand-writing them blind would guess at wire shapes earlier network determined empirically.
+  on behaviours that can only be measured on a live session (`PublicStationFirst`, `JoinRespExistingCount`), and
+  hand-writing them blind would guess at wire shapes.
   Registered common protocols + documented gaps is the honest scope until hardware speaks.
-- **A monitoring dashboard, presence reporter, connection reaper.** The earlier server has all
-  three; OpenPak answers "is it up" with `/healthz` and "who is online" belongs to the account
+- **A monitoring dashboard, presence reporter, connection reaper.** OpenPak answers "is it up" with `/healthz` and "who is online" belongs to the account
   side. nex-go reaps its own dead connections.
-- **The Reference online gates** (verified-email, one-place-at-a-time, NSA allow-listing). Those
+- **Online gates** (verified-email, one-place-at-a-time, NSA allow-listing). Those
   are `nx-baas`/account policy, applied at identity resolution in `openpak/nex`, not here.
 
 ## Open questions — what the next round needs
@@ -159,7 +158,7 @@ In the order a first live run would answer them:
    of the first `0x0B` call.
 4. **Does the peer's public station need `type=0x0B`?** The facts say yes and `openpak/nex`
    builds `0x03`. **Evidence:** the `type` field in the `InitiateProbe` / registered public
-   station of a working reference session vs. ours; a visit stalling at 2618-0502 while the
+   station of a working retail session vs. ours; a visit stalling at 2618-0502 while the
    server-side punch succeeds is the signature.
 5. **Which MatchmakeExtension methods does ACNH call, in what order, with what session fields?**
    Especially `0x33`, `0x2C`, and whether the code word is set at create or via `0x2C`.

@@ -1,13 +1,12 @@
 # mario-party-superstars
 
 NEX game server for **Mario Party Superstars** on Nintendo Switch (title `01006FE013472000`,
-NEX 4.6.5, Pia 5.33.0), built on [`servers/nex`](../../README.md) and Pretendo's AGPL `nex-go`.
+NEX 4.6.5, Pia 5.33.0), built on [`platforms/wiiu-3ds/games/nex`](../../README.md) and Pretendo's AGPL `nex-go`.
 
 **Status (2026-09-09): it builds, starts, serves `/healthz`, listens on both WebSocket
 listeners of its NEX block and creates its schemas.** Nothing has been run against a console
 or the game. The identity and wire-shape values it
-uses — access key, NEX version, station scheme, listener shape — are confirmed measurements carried across from the
-earlier network server for this title; everything about how the *game* behaves against
+uses — access key, NEX version, station scheme, listener shape — are confirmed measurements from earlier research notes; everything about how the *game* behaves against
 `nex-go` is unverified. [`docs/design.md`](docs/design.md) says what is implemented and what
 is not; [`docs/provenance.md`](docs/provenance.md) says where every fact came from and which
 assumptions are still guesses.
@@ -25,12 +24,12 @@ host nor `nex-protocols-common-go` provides for it:
   nobody has captured this title's real values yet.
 
 DataStore is deliberately registered by nothing: no capture has ever shown this title making
-a DataStore call, and the object store is a shared component of `servers/nex` rather than a
+a DataStore call, and the object store is a shared component of `platforms/wiiu-3ds/games/nex` rather than a
 per-title one. See [`docs/design.md`](docs/design.md).
 
 Everything else — PRUDP, kerberos, Switch login, OpenPak accounts, match making, NAT
 traversal, NEX unique IDs, cleaning up a lobby after a dropped connection — is a call into
-`servers/nex` or `nex-protocols-common-go`.
+`platforms/wiiu-3ds/games/nex` or `nex-protocols-common-go`.
 
 ## Run
 
@@ -52,7 +51,7 @@ running.
 | `NEX_PORT_BASE` | no | Defaults to **22110**, this title's block from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md). Authentication `+0`, secure `+1`, `/healthz` `+2` |
 | `NEX_VERSION` | no | Defaults to **4.6.5**, the version the game was built against. Changing it changes the login method and the wire encoding — do not, without a capture that says otherwise |
 | `NEX_SECURE_HOST` | no | Address the console is told to reach the secure server on. Default `127.0.0.1`; set it to the host's real address for anything but a loopback test |
-| `NEX_TITLE`, `NEX_HTTP_ADDR`, `NX_INTERNAL_URL` | no | As in [`servers/nex`](../../README.md) |
+| `NEX_TITLE`, `NEX_HTTP_ADDR`, `NX_INTERNAL_URL` | no | As in [`platforms/wiiu-3ds/games/nex`](../../README.md) |
 | `MPS_INTEGER_SETTINGS` | no | `Utility::GetIntegerSettings` values as `index:key=value` entries, e.g. `0:0=60, 0:1=30`. Empty by default because this title's real values have never been captured |
 | `NEX_STATION_SCHEME` | no | Defaults to **`prudps`**, measured for this title. Under `prudp` the handshake completes but CONNECT carries an empty payload, and the game fails later, when it first needs the session |
 | `NEX_SECURE_STREAM_ID` | no | Defaults to **1**: this is a two-listener title, secure on its own port. Do not set it to 2 |
@@ -73,7 +72,7 @@ go test ./...
 ```
 
 For local work across both repositories, use a `go.work` at `~/REPOS/Openpak/servers` rather
-than a `replace` directive — see [`servers/nex`](../../README.md)'s README.
+than a `replace` directive — see [`platforms/wiiu-3ds/games/nex`](../../README.md)'s README.
 
 ## Deploy
 

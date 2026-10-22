@@ -1,7 +1,7 @@
 # mario-golf-super-rush
 
 NEX game server for **Mario Golf: Super Rush** on Nintendo Switch. It runs on
-[`servers/nex`](../../README.md), OpenPak's shared NEX host, which wraps Pretendo's AGPL-3.0
+[`platforms/wiiu-3ds/games/nex`](../../README.md), OpenPak's shared NEX host, which wraps Pretendo's AGPL-3.0
 `nex-go`, `nex-protocols-go` and `nex-protocols-common-go`.
 
 Golf is a peer-to-peer title: the server logs a console in, keeps the lobby list and
@@ -19,13 +19,13 @@ version is an era guess and the station scheme has never been measured for this 
 
 | Protocol | State |
 | --- | --- |
-| Ticket Granting `0x0A`, Secure Connection `0x0B` | from `servers/nex` |
+| Ticket Granting `0x0A`, Secure Connection `0x0B` | from `platforms/wiiu-3ds/games/nex` |
 | Match Making `0x15`, Matchmake Extension `0x6D`, Match Making Ext `0x32` | Postgres |
 | NAT Traversal `0x03` | stateless |
 | Utility `0x6E` | Postgres |
 | Ranking `0x70`, DataStore `0x73` | not registered — see [`docs/design.md`](docs/design.md) |
 
-Friend-only lobbies are answered from [`nx-baas`](../../../../nx-baas), so there is no friend
+Friend-only lobbies are answered from [`nx-baas`](../../../../../switch/infra/nx-baas), so there is no friend
 table here: a player's friends are the same people to every OpenPak service. Lobbies live in
 Postgres and survive a restart.
 

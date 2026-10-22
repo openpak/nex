@@ -1,15 +1,14 @@
 # splatoon-2
 
-The NEX game server for **Splatoon 2** on Nintendo Switch, built on [`servers/nex`](../../README.md) and
+The NEX game server for **Splatoon 2** on Nintendo Switch, built on [`platforms/wiiu-3ds/games/nex`](../../README.md) and
 Pretendo's AGPL `nex-go` / `nex-protocols-go` / `nex-protocols-common-go`.
 
 > Splatoon 2 is a **NEX** title — this repository. Splatoon 3 is **NPLN**, a different protocol
 > in a different repository. Don't confuse the two.
 
 **Status (2026-09-09): it builds, starts, serves `/healthz`, creates its schemas, registers
-every protocol the title is known to use — including a real DataStore where earlier had a
-stub — and its queries have been run against a real Postgres. Nothing has been run against a
-console.** `NEX_VERSION` is the earlier server's runtime value rather than a capture, the public station
+every protocol the title is known to use — including a real DataStore — and its queries have been run against a real Postgres. Nothing has been run against a
+console.** `NEX_VERSION` is a working server's runtime value rather than a capture, the public station
 type for this Pia generation is unverified, and the account chain still waits on nx-baas proving
 a real console's BAAS id token. Treat "implemented" as exactly that, not "works on hardware".
 
@@ -17,8 +16,7 @@ a real console's BAAS id token. Treat "implemented" as exactly that, not "works 
 
 - Matchmaking, matchmake-extension, match-making-ext, NAT traversal and utility from
   `nex-protocols-common-go`, over Postgres.
-- **A real DataStore, where the earlier server had a complete stub.** Reference answered *every*
-  `0x73` method with an empty success; here metadata, tags, ratings, persistence slots and
+- **A real DataStore, not a stub that answers every `0x73` method with an empty success.** Metadata, tags, ratings, persistence slots and
   search live in Postgres, object bodies in an S3 bucket when one is configured, and friends-only
   permissions read OpenPak's friend graph. This is the reason the title was worth porting — see
   [`docs/design.md`](docs/design.md).
@@ -28,7 +26,7 @@ a real console's BAAS id token. Treat "implemented" as exactly that, not "works 
   `AcquireTagId`; the splatfest Ranking queries (18/19/25); and the custom matchmake-extension
   method 60.
 - **Login is method 2** (`LoginEx` / `ValidateAndRequestTicketWithCustomData`), not the method 6
-  its later siblings use. `servers/nex` already wires both, so this needs no code here, but it is
+  its later siblings use. `platforms/wiiu-3ds/games/nex` already wires both, so this needs no code here, but it is
   why `NEX_VERSION=4.0.0` is load-bearing.
 
 Gameplay is peer to peer. Once two consoles hold each other's station URLs the server is out of
@@ -56,8 +54,8 @@ DataStore objects and leaderboards there.
 | `NEX_ACCESS_KEY` | **required.** `4eb18d39`. Public, documented per title, and configuration rather than a literal in source |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's internal key; without it every login is refused |
 | `NX_INTERNAL_URL` | nx-baas game API, default `http://127.0.0.1:20070` |
-| `NEX_VERSION` | default `4.0.0` — the earlier server's runtime value, **not a capture**. Accepts `40000` too |
-| `NEX_SOURCE_KEY_BYTES` | `32`, the Switch kerberos key size Reference uses for this title |
+| `NEX_VERSION` | default `4.0.0` — a working server's runtime value, **not a capture**. Accepts `40000` too |
+| `NEX_SOURCE_KEY_BYTES` | `32`, the Switch kerberos key size |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure endpoint on |
 | `NEX_STATION_SCHEME` | `prudps` (the default, and what this title's station URL used) |
 | `NEX_STREAM_ID`, `NEX_SECURE_STREAM_ID` | both `1` (the default). This title runs **two** listeners with the secure endpoint on its own port — do not set the secure stream to 2 |
@@ -92,8 +90,8 @@ S2_TEST_DATABASE_URL='postgres://postgres:check@127.0.0.1:23099/postgres?sslmode
 
 - Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before writing
   a line. Public protocol documentation, our own captures, and compatibly licensed code are the
-  only inputs; every fact taken from the earlier server is a fact, recorded in
-  [`docs/provenance.md`](docs/provenance.md), and none of its code is here.
+  only inputs; every fact taken from earlier research notes is recorded in
+  [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
 - Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
 

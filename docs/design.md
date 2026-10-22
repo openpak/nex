@@ -336,7 +336,7 @@ login records the translation; DataStore reads it back.
 
 ## What is settled, and what is not
 
-Facts taken from the existing earlier servers, from Kinnay's wiki and from the Pretendo
+Facts taken from earlier research notes, from Kinnay's wiki and from the Pretendo
 libraries are recorded with their sources in [`provenance.md`](provenance.md). The four
 questions that blocked the first round are answered there:
 

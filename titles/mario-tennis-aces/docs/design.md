@@ -37,7 +37,7 @@ participation closed and only opens it in a separate, later call. Every search f
 `open_participation = true`, so in that window two searching players miss each other, both
 create a session, and both wait for a join that never comes. `openParticipationOnCreate`
 marks the session open as it is created, on all five methods that can create one. This was a
-real, diagnosed deadlock on the earlier server, not a theory.
+real, diagnosed deadlock, not a theory.
 
 **Playing with a friend needs `FindMatchmakeSessionByParticipant`.**
 `nex-protocols-common-go` has no handler for method `0x33`, so it answers
@@ -46,17 +46,16 @@ lines over the common library's own playing-session query.
 
 ## DataStore: implemented, not stubbed
 
-The earlier server has no DataStore at all — `earlier-nex` never implemented the protocol,
-so its server answers an empty list to every DataStore method, with two hand-written
-exceptions: `GetMeta` answers `NotFound`, and `PostMetaBinary` answers a made-up, unstored
-object id (a real bug for them: answering it with the generic empty list left the client with
+A server with no DataStore implementation answers an empty list to every DataStore method,
+with two hand-written exceptions: `GetMeta` answers `NotFound`, and `PostMetaBinary` answers
+a made-up, unstored object id (answering it with the generic empty list left the client with
 no id for the tournament data it had just posted, and it died silently).
 
 Pretendo's `nex-protocols-common-go/v2/datastore` implements the protocol properly and asks
 only where objects live. `datastore.go` answers that with Postgres, so these calls now do
 what they say:
 
-| Method | Was, on earlier | Is, here |
+| Method | Without a store | Is, here |
 | --- | --- | --- |
 | `GetMeta` (8) | always `NotFound` | the object's real metadata, ratings included |
 | `GetMetas` (9), `GetMetasMultipleParam` (36) | empty list | the objects that exist |
@@ -83,10 +82,10 @@ are written as "no password, or the right one" and are marked in the source.
 
 **It was a missing implementation, not a missing fact, and it is implemented here.**
 
-`earlier-nex`'s Ranking file implements the *custom* Ranking methods Mario Kart 8 Deluxe
+A Ranking handler written only for the *custom* methods Mario Kart 8 Deluxe
 uses — profile upload, competition list, competition ranking, score and time submission —
-written from an MK8 capture. Its default branch answers `Core::NotImplemented`. Mario Tennis
-Aces registers that same handler, so every **standard** Ranking method it calls is refused.
+answers `Core::NotImplemented` in its default branch. Mario Tennis
+Aces on such a handler has every **standard** Ranking method it calls refused.
 That is exactly the shape of "fully functional besides the Rankings page".
 
 Pretendo's `nex-protocols-common-go/v2/ranking` implements the standard protocol —
@@ -111,11 +110,11 @@ the honest claim, not "Rankings works".
 ## What is not implemented
 
 - **`SecureConnection::TestConnectivity` (method 5).** This title calls it — 23 times in six
-  hours on the earlier server. `nex-protocols-common-go` leaves it unset, and the protocol
+   hours in earlier research. `nex-protocols-common-go` leaves it unset, and the protocol
   is registered inside `servers/nex`, where a title server cannot reach it. Registering a
   second secure-connection protocol here would make both answer, so this needs a one-line
   change in `servers/nex`: an empty success. Until then the title gets
-  `Core::NotImplemented` for it, which is what it got on earlier for months without
+   `Core::NotImplemented` for it, which is what it got in earlier research for months without
   visible harm.
 - **The Pia keepalive, PRUDP packet type 8.** nex-go logs "unhandled packet type" and drops
   it. `PRUDPEndPoint.RegisterCustomPacketHandler` is exported, so it can be answered without
@@ -128,10 +127,10 @@ the honest claim, not "Rankings works".
 
 ## Two things that will decide whether it works on hardware
 
-1. **`NEX_VERSION`.** 4.3.5 is a guess inherited from the earlier server, which says so
-   itself. The console reports `apiVersionGeneral`; the first capture settles it, and
+1. **`NEX_VERSION`.** 4.3.5 is a guess inherited from earlier research notes, which say so
+   themselves. The console reports `apiVersionGeneral`; the first capture settles it, and
    `NEX_VERSION` takes the integer form directly (`40305`).
-2. **`NEX_STATION_SCHEME`.** `prudps` here, from the earlier server's station URL. The wrong value
+2. **`NEX_STATION_SCHEME`.** `prudps` here, from the observed station URL. The wrong value
    fails late — menus work and the session fails when it is needed.
 
 Everything else is checkable now: the server starts, serves `/healthz`, listens on its block,

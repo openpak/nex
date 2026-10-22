@@ -39,36 +39,35 @@ shared host and common library are identical; what differs is the per-title conf
 
 ## What is not here, and why
 
-- **DataStore (`0x73`).** Minecraft's working earlier network server never registers it
+- **DataStore (`0x73`).** No DataStore client has been observed for Minecraft
   (`provenance.md`). ARMS's update does, which is why ARMS's port has a real DataStore backing
   and this one has none. Nothing to build.
-- **Ranking (`0x70`).** Minecraft's server *does* register a Ranking handler, but that handler
+- **Ranking (`0x70`).** Earlier notes *do* register a Ranking handler, but that handler
   is measured against Mario Kart 8 Deluxe, not Minecraft, and there is no Minecraft-specific
   ranking fact anywhere. `provenance.md` lays out the full reasoning; the short version is:
   registering the common Ranking protocol without a backing returns `Core::NotImplemented`,
   which is byte-for-byte what an unregistered protocol returns, so registering it bare buys
   nothing; and inventing an MK8D-shaped backing is fork, not facts. Left off, exactly as ARMS
   is. A capture showing a Minecraft `0x70` call is what would change this — see open questions.
-- **The identity, gates, dashboard, reaper, and presence reporter** in Minecraft's server.
-  Those are the earlier server's account integration and operational shape; OpenPak's identity is
+- **Identity, gates, a dashboard, a reaper, and a presence reporter.** OpenPak's identity is
   nx-baas via `servers/nex`, liveness is `/healthz`, and online policy is the account side.
 
 ## Transport and the station scheme
 
 **Transport is `websocket`** (the `servers/nex` default): Switch NEX titles speak PRUDP over
-WebSocket, and Minecraft's working server listens WSS on both endpoints and opens no UDP
+WebSocket, and the observed server listens WSS on both endpoints and opens no UDP
 socket. TLS termination is the front proxy's unless `NEX_TLS_CERT`/`NEX_TLS_KEY` are set.
 
 **The secure stream ID stays `1`** (the default), the two-listener shape: auth on `22310`,
-secure on its own dialable `22311`. Minecraft's server runs two listeners and hands out a
+secure on its own dialable `22311`. The observed server runs two listeners and hands out a
 station URL with `sid=1`. Do not set `NEX_SECURE_STREAM_ID=2` — that single-listener shape is
 SMB35's, and the symptom of getting it wrong is the host logging `trying to connect to unbound
 PRUDPEndPoint`.
 
 **The station scheme is `prudp`, and this is the one non-obvious setting.** Most fleet titles
-(ARMS included) advertise the secure station URL as `prudps`; Minecraft's working server
-advertises `prudp`. `provenance.md` records this as a cross-title contradiction — ARMS's own
-evidence says `prudp` breaks Pia, Minecraft's own working server uses it — and the value here
+(ARMS included) advertise the secure station URL as `prudps`; Minecraft is observed to
+advertise `prudp`. `provenance.md` records this as a cross-title contradiction — ARMS's own
+evidence says `prudp` breaks Pia, Minecraft is observed using it — and the value here
 matches what is attested to work *for Minecraft*. Because the wrong scheme fails silently and
 late (menus work, the title gives up when Pia needs the session), this is the first thing to
 confirm on hardware. `NEX_STATION_SCHEME` changes it in one line.

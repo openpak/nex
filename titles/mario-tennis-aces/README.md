@@ -1,7 +1,7 @@
 # mario-tennis-aces
 
 The NEX game server for **Mario Tennis Aces** on Nintendo Switch, built on
-[`servers/nex`](../../README.md) and Pretendo's AGPL `nex-go` / `nex-protocols-go` /
+[`platforms/wiiu-3ds/games/nex`](../../README.md) and Pretendo's AGPL `nex-go` / `nex-protocols-go` /
 `nex-protocols-common-go`.
 
 **Status (2026-09-09): it builds, starts, serves `/healthz`, creates its schemas and answers
@@ -17,10 +17,10 @@ console's BAAS id token. Treat "implemented" as exactly that, not as "works on h
   session is marked open immediately, closing the "double host" deadlock two searching
   players otherwise fall into; and `FindMatchmakeSessionByParticipant` is answered, which is
   how playing with a friend finds their room.
-- **A real DataStore**, where the earlier server had a stub: metadata, tags, ratings,
+- **A real DataStore**, not a stub: metadata, tags, ratings,
   persistence slots and search live in Postgres, and object bodies in an S3 bucket when one
   is configured.
-- **Rankings**, which the earlier server never had: leaderboards in all five ranking modes,
+- **Rankings**: leaderboards in all five ranking modes,
   ranked by the database, with the friends modes reading OpenPak's friend graph.
 
 Gameplay is peer to peer. Once two consoles hold each other's station URLs the server is
@@ -83,8 +83,8 @@ MTA_TEST_DATABASE_URL='postgres://postgres:check@127.0.0.1:23099/postgres?sslmod
 
 - Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
-  code are the only inputs; every fact taken from the earlier server is a fact, recorded in
-  [`docs/provenance.md`](docs/provenance.md), and none of its code is here.
+  code are the only inputs; every fact taken from earlier research notes is a fact, recorded in
+  [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
 - Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
 

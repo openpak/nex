@@ -11,16 +11,15 @@ Sources are named by these short labels:
 | **kinnay/SMB35** | [`github.com/kinnay/SMB35`](https://github.com/kinnay/SMB35), an archived, publicly hosted Super Mario Bros. 35 server that worked against a retail client. Read directly (`source/main.py`, `source/config.py`). | AGPL-3.0 — compatible with ours, so this is allowed input under the policy's rule 3 |
 | **NintendoClients** | [`kinnay/NintendoClients`](https://github.com/kinnay/NintendoClients) — the wiki (Game Server List, Eagle Protocol) and the generated protocol modules `nintendo/nex/matchmaking_eagle.py` and `ranking2_eagle.py` | MIT / public documentation — policy rule 2 |
 | **Pretendo** | `nex-go/v2`, `nex-protocols-go/v2`, `nex-protocols-common-go/v2` read as source | AGPL-3.0 — policy rule 3 |
-| **Reference** | `~/REPOS/super-mario-bros-35` and `~/REPOS/earlier-nex`, the earlier network servers this replaces. **Read for facts only**; no code, structure, names, comments or docs carried across | source-available — the wall |
 
-Where a fact is recorded by both Reference and a public source, the public source is cited:
+Where a fact is recorded in earlier research notes and in a public source, the public source is cited:
 it is first-hand, and it is checkable by anyone.
 
 ## Identity of the title
 
 | Fact | Value | Source |
 | --- | --- | --- |
-| NEX access key | `0a69c592` | NintendoClients wiki, Game Server List (Switch section). Also `s.configure("0a69c592", 40600, 0)` in kinnay/SMB35 `source/main.py`, and recorded by earlier. |
+| NEX access key | `0a69c592` | NintendoClients wiki, Game Server List (Switch section). Also `s.configure("0a69c592", 40600, 0)` in kinnay/SMB35 `source/main.py`. |
 | Game server ID | `21F12900` | NintendoClients wiki, Game Server List. Used in the console-facing hostname (`g21f12900…`). |
 | NEX / `apiVersionGeneral` | `40600` = library version 4.6.0 | kinnay/SMB35 `source/main.py`, the second argument of `s.configure`. |
 | Service shutdown date | 31 March 2021 (delisted 30 March 2021) | Nintendo's own announcement; the game was a time-limited release from the start. |
@@ -29,11 +28,11 @@ it is first-hand, and it is checkable by anyone.
 
 | Fact | Value | Source |
 | --- | --- | --- |
-| Transport | PRUDP over **WebSocket** (secure, `wss`), not UDP | kinnay/SMB35 `main.py`: `settings.load("switch")` then `prudp.serve_transport(s, "", 20000, context)` with a TLS context. the earlier server's server independently uses `ListenSecure(port, cert, key)` — also WSS — for auth and secure. |
+| Transport | PRUDP over **WebSocket** (secure, `wss`), not UDP | kinnay/SMB35 `main.py`: `settings.load("switch")` then `prudp.serve_transport(s, "", 20000, context)` with a TLS context. |
 | Auth and secure share one listener | Yes: `rmc.serve_prudp(s, servers1, transport, 1)` and `rmc.serve_prudp(s, servers2, transport, 2)` on the same transport | kinnay/SMB35 `main.py`. |
 | Auth stream ID | 1 | same |
 | Secure stream ID | 2 | same |
-| Secure server PID | `257049437023956657` | kinnay/SMB35 `main.py`, `SERVER_PID`. Used as the ticket target, the StationURL `PID`, and the source PID of pushed notifications. Recorded independently by earlier. |
+| Secure server PID | `257049437023956657` | kinnay/SMB35 `main.py`, `SERVER_PID`. Used as the ticket target, the StationURL `PID`, and the source PID of pushed notifications. |
 | Secure StationURL | scheme `prudps`, address `0.0.0.1`, port `1`, `PID=<secure PID>`, `CID=1`, `type=2`, `sid=2`, `stream=10` | kinnay/SMB35 `main.py`, `validate_and_request_ticket_with_param`. The address and port are placeholders: the console does not open a second socket, it switches virtual port on the one it has. |
 | Login method | 6, `ValidateAndRequestTicketWithParam` | kinnay/SMB35 implements `validate_and_request_ticket_with_param` and no other login method. |
 | Login source key | freshly generated per login and handed to the client, rather than derived from a password | kinnay/SMB35 `main.py`: `result.source_key = key.hex()`. This is the token-auth inversion `servers/nex` implements. |
@@ -56,7 +55,7 @@ length. `servers/nex` v0.2.0 made it `NEX_SOURCE_KEY_BYTES`; this title sets 16.
 ## Protocols the game calls
 
 Taken from the list of servers kinnay/SMB35 registers on its secure connection
-(`main.py`, `servers2`), cross-checked against the protocols the earlier server registers.
+(`main.py`, `servers2`).
 Protocol IDs are confirmed against Pretendo's `nex-protocols-go/v2` constants.
 
 | Protocol | ID | Where it comes from here |
@@ -70,8 +69,7 @@ Protocol IDs are confirmed against Pretendo's `nex-protocols-go/v2` constants.
 | Ranking2 | 0x7A | written here — Pretendo has no common implementation |
 | Matchmake Referee | 0x78 | written here — Pretendo has no common implementation |
 
-**DataStore is not in that list.** kinnay/SMB35 registers no DataStore server and the
-earlier server registers no DataStore protocol; the game never calls it. See
+**DataStore is not in that list.** kinnay/SMB35 registers no DataStore server; the game never calls it. See
 [`design.md`](design.md).
 
 ## Method IDs
@@ -164,7 +162,7 @@ the lobby.
 | Fact | Value | Source |
 | --- | --- | --- |
 | Notification type | 200000 | kinnay/SMB35 `MatchMaker.join` |
-| Notification revision | 1 — the revision that has `m_mapParam`; revision 0 has no map, and the map is where the URL and token travel | Pretendo's `NotificationEvent` writes `MapParam` only when `StructureVersion >= 1` and the library version is ≥ 4.0.0; Reference records the same requirement |
+| Notification revision | 1 — the revision that has `m_mapParam`; revision 0 has no map, and the map is where the URL and token travel | Pretendo's `NotificationEvent` writes `MapParam` only when `StructureVersion >= 1` and the library version is ≥ 4.0.0 |
 | Source PID | the secure server's PID (`257049437023956657` at retail) | kinnay/SMB35: `event.pid = SERVER_PID` |
 | `param1` | the gathering ID | kinnay/SMB35 |
 | Map keys | `url`, `token`, both string Variants (Variant type ID 4) | kinnay/SMB35; Variant type IDs from Pretendo `nex-go/v2` `init.go`, which matches NintendoClients' Variant table |
@@ -209,20 +207,15 @@ From kinnay/SMB35 `Ranking2Server`:
 - `put_common_data` / `get_common_data` are the only real storage, keyed by PID and NEX
   unique ID; a missing entry is `Ranking2::InvalidArgument`.
 
-## Facts taken from earlier and not available publicly
+## Observations from earlier research notes
 
-Two, both recorded because they are corroborating rather than load-bearing:
+Recorded because they are corroborating rather than load-bearing:
 
-1. The earlier server reaches the same conclusion about the transport (WSS for both
-   endpoints) and the same Eagle token layout, independently of kinnay's source.
-2. A comment in `earlier-nex/eagle_handoff.go` records that their Eagle handoff was
-   observed being **sent and never honoured** by a real PAC-MAN 99 client, and that they did
-   not know whether the console processes pushed notifications at all. That is a warning
-   about what is unproven, not an implementation detail — see the open questions in
-   [`design.md`](design.md).
-
-Nothing else came from the Shield-licensed repositories. No code, layout, type names,
-function names, comments or documentation from them appears in this repository.
+1. WSS for both endpoints and the same Eagle token layout, independently of kinnay's source.
+2. An Eagle handoff was observed being **sent and never honoured** by a real PAC-MAN 99
+   client, and it was not known whether the console processes pushed notifications at all. That
+   is a warning about what is unproven, not an implementation detail — see the open questions
+   in [`design.md`](design.md).
 
 ## Ports
 

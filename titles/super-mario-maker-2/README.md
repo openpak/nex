@@ -1,7 +1,7 @@
 # super-mario-maker-2
 
 NEX game server for **Super Mario Maker 2** on Nintendo Switch, built on Pretendo's AGPL
-`nex-go` through [`servers/nex`](../../README.md).
+`nex-go` through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
 SMM2's whole online mode is DataStore: Course World is course upload, download, search,
 comments, bookmarks, world maps and per-maker profiles — all one protocol (`0x73`). This is

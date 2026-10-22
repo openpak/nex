@@ -2,9 +2,7 @@ package strikers
 
 // DataStore (0x73) for Mario Strikers, over Postgres and an optional S3 bucket.
 //
-// earlier-nex has no DataStore at all, so the ExternalReference Strikers server answers every
-// 0x73 call with an empty list and 0x73.8 with DataStore::NotFound — a probe stub so the game
-// proceeds, not a store. Strikers' real online data (clubs, roster) travels over
+// Strikers' real online data (clubs, roster) travels over
 // MatchmakeExtension (0x6D), not DataStore; see docs/provenance.md. We register the common
 // DataStore anyway so the game's 0x73 init calls get a correct answer (an empty store returns
 // the same empty list / NotFound the stub did, but through the real handlers) rather than
