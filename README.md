@@ -36,7 +36,7 @@ a genuine console's login is still refused. See the end of [`docs/design.md`](do
   permission callback that upstream documents as not working on Switch for want of a friend
   graph. Titles whose whole online mode is DataStore depend on it.
 - Runs the authentication and secure endpoints on one port block from
-  [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md), with an HTTP `/healthz` because nothing in OpenPak infers
+  [`ports.md`](https://docs.openpak.org/contributors/ports/), with an HTTP `/healthz` because nothing in OpenPak infers
   liveness from a UDP socket.
 
 ## Titles
@@ -81,7 +81,7 @@ Production runs the passthrough form: Traefik routes each title's `g<id>-lp1.s.n
 SNI to the title container's `+0` port and the title terminates TLS with one OpenPak-CA leaf
 covering `*.s.n.srv.nintendo.net` (`NEX_TLS_CERT`/`NEX_TLS_KEY`). Two-listener titles also
 publish `+1` on the host, because the secure station URL names that port directly. See
-[`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
+[`ports.md`](https://docs.openpak.org/contributors/ports/).
 
 ## Use (as a library)
 
@@ -168,12 +168,12 @@ No code, comment, structure or naming was copied from a source-available impleme
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs, alongside facts read from the implementation being replaced.
   Every protocol fact cites its source in `docs/provenance.md`.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md). Claim your block in the PR that first needs it.
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/). Claim your block in the PR that first needs it.
 
 This project is not affiliated with or endorsed by Nintendo, NEX's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,

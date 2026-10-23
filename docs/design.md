@@ -19,7 +19,7 @@ AGPL-3.0, which is OpenPak's own licence:
 
 Writing a fourth one would be a year of work to arrive at the same place. `servers/nex`
 consumes those three and adds only what OpenPak has that Pretendo does not: our accounts,
-our port plan, our deploy shape. <https://github.com/openpak/docs/blob/main/research/research-third-party-networks.md> records the decision.
+our port plan, our deploy shape. internal research notes records the decision.
 
 ## What nex-go gives us
 

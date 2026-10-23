@@ -1,7 +1,7 @@
 # kirbys-dream-buffet
 
 Kirby's Dream Buffet (`0100A8E016236000`) on the shared NEX host. **Scaffold.** Port block `22380`
-([ports.md](https://github.com/openpak/docs/blob/main/ports.md)): auth `22380`, secure `22381`, `/healthz` `22382`.
+([ports.md](https://docs.openpak.org/contributors/ports/)): auth `22380`, secure `22381`, `/healthz` `22382`.
 
 ## What has to be found out before a console can use it
 

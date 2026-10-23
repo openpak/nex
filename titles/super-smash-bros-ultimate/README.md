@@ -41,7 +41,7 @@ env $(grep -v '^#' .env | xargs) ./super-smash-bros-ultimate
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22350` — this title's block from [ports.md](https://github.com/openpak/docs/blob/main/ports.md). Two listeners: authentication `22350`, secure `22351` |
+| `NEX_PORT_BASE` | **required.** `22350` — this title's block from [ports.md](https://docs.openpak.org/contributors/ports/). Two listeners: authentication `22350`, secure `22351` |
 | `NEX_ACCESS_KEY` | **required.** SSBU's NEX access key, `9587602b`. A per-title constant out of the game binary, not a secret, but configuration — never a literal in source. A wrong one fails *silently*: the console retries forever and nothing is logged |
 | `NEX_VERSION` | **unverified.** `4.0.0` inherited from earlier research notes where it was a copied MK8 template value; a capture reporting `apiVersionGeneral` settles it |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
@@ -89,11 +89,11 @@ Those tests skip when the variable is unset, so the default run needs no databas
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before writing
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before writing
   a line. Public protocol documentation, our own captures, and compatibly licensed code are the
   only inputs; `docs/provenance.md` records which was which.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/).
 
 This project is not affiliated with or endorsed by Nintendo, Super Smash Bros. Ultimate's
 publisher, or any original service provider. It contains no proprietary game code, assets, SDK

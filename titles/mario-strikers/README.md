@@ -55,11 +55,11 @@ STRIKERS_TEST_DATABASE_URL=postgres://... go test ./...   # DataStore SQL agains
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before writing a
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before writing a
   line. Earlier research notes are read for facts — ports, keys, method IDs, wire shapes, flows —
   never copied. Facts and their sources are recorded in [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/).
 
 This project is not affiliated with or endorsed by Nintendo, Mario Strikers: Battle League's
 publisher, or any original service provider. It contains no proprietary game code, assets, SDK

@@ -1,7 +1,7 @@
 # Provenance
 
 Where every non-obvious fact in this server came from, as
-[the clean-room policy](https://github.com/openpak/docs/blob/main/clean-room-policy.md) requires. Nothing here was
+[the clean-room policy](https://docs.openpak.org/contributors/clean-room/) requires. Nothing here was
 copied: the facts were read, written down, and the server was built from this page.
 
 "MHXX" means Pretendo's **Monster Hunter XX** server, AGPL-3.0, vendored in this tree at
@@ -89,7 +89,7 @@ DataStore method IDs used here (`GetMeta` `0x8`, `GetMetas` `0x9`, `SearchObject
 
 | Fact | Source |
 | --- | --- |
-| Port block 22120 (auth 22120, secure 22121, healthz 22122) | [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md), claimed by this repository. |
+| Port block 22120 (auth 22120, secure 22121, healthz 22122) | [`ports.md`](https://docs.openpak.org/contributors/ports/), claimed by this repository. |
 | Identity: BAAS id token -> nx-baas `/internal/switch/identity` -> PID, nickname, friends | [`servers/nex`](../../../README.md) `docs/design.md`; nx-baas's internal game API on ports.md 20070. |
 | Login methods, ticket construction, account callbacks | `servers/nex`, which implements them. This server adds none of it. |
 | Matchmaking, NAT traversal, unique IDs, DataStore handlers | Pretendo's AGPL-3.0 `nex-protocols-common-go/v2`. |

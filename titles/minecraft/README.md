@@ -60,11 +60,11 @@ rm ~/.netrc
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md): block `22310`.
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/): block `22310`.
 
 This project is not affiliated with or endorsed by Nintendo, Minecraft's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,

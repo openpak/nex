@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact this server is built on, and where it came from. Required by
-[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): it is what makes "we
+[clean-room policy](https://docs.openpak.org/contributors/clean-room/): it is what makes "we
 rewrote it from the facts" checkable instead of a claim.
 
 Sources are named by these short labels:
@@ -219,6 +219,6 @@ Recorded because they are corroborating rather than load-bearing:
 
 ## Ports
 
-`22160` from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md): the next free NEX block of ten at the time this
+`22160` from [`ports.md`](https://docs.openpak.org/contributors/ports/): the next free NEX block of ten at the time this
 repository was written. Auth `+0`, secure `+1`, `/healthz` `+2`, per the shared host's
 convention.

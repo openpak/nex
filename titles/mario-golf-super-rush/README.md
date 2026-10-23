@@ -40,7 +40,7 @@ env $(grep -v '^#' .env | xargs) ./golf
 | Env | Meaning |
 | --- | --- |
 | `NEX_TITLE` | name in logs, default `mario-golf-super-rush` |
-| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md). One listener carries both endpoints on `+0`; `+1` stays reserved and unbound |
+| `NEX_PORT_BASE` | **required.** `22130` — Golf's block from [`ports.md`](https://docs.openpak.org/contributors/ports/). One listener carries both endpoints on `+0`; `+1` stays reserved and unbound |
 | `NEX_ACCESS_KEY` | **required.** `1cb8027c` — Golf's NEX access key: eight hex digits, confirmed, and not the game server ID in the DNS name. Configuration, never a literal in source |
 | `NEX_VERSION` | NEX library version the title was built against. `4.6.5` here, an era guess. The integer form `40605` is accepted too |
 | `NEX_SECURE_HOST` | address the console is told to reach the secure server on. A bare host or IP; the port comes from the block |
@@ -68,12 +68,12 @@ go build ./... && go vet ./... && go test ./...
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs. Every fact this server rests on cites its source in
   [`docs/provenance.md`](docs/provenance.md).
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md). This repository holds block 22130.
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/). This repository holds block 22130.
 
 This project is not affiliated with or endorsed by Nintendo, Mario Golf: Super Rush's
 publisher, or any original service provider. It contains no proprietary game code, assets,

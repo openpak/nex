@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact this server is built on, and where it came from. Required by
-[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): OpenPak takes facts from
+[clean-room policy](https://docs.openpak.org/contributors/clean-room/): OpenPak takes facts from
 research notes and writes its own code, so the facts have to be
 checkable separately from the code.
 

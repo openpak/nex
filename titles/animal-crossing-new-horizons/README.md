@@ -48,7 +48,7 @@ env $(grep -v '^#' .env | xargs) ./acnhd
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22180` — this title's block from [ports.md](https://github.com/openpak/docs/blob/main/ports.md). Two listeners: authentication `22180`, secure `22181` |
+| `NEX_PORT_BASE` | **required.** `22180` — this title's block from [ports.md](https://docs.openpak.org/contributors/ports/). Two listeners: authentication `22180`, secure `22181` |
 | `NEX_ACCESS_KEY` | **required.** `v43a10em` — ACNH's NEX access key, an 8-character **string, not hex**. A per-title constant out of the game binary, not a secret, but configuration. A wrong one fails *silently*: the console retries forever and nothing is logged. Do not confuse it with the Game Server ID `2EE2E300` |
 | `NEX_VERSION` | `40000` — the NEX library ACNH links (4.0.0) |
 | `NEX_SECURE_HOST` | bare address the console is told to dial for the secure endpoint |
@@ -97,12 +97,12 @@ Those tests skip when the variable is unset, so the default run needs no databas
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before writing
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before writing
   a line. Public protocol documentation, our own captures, and compatibly licensed code are the
   only inputs; `docs/provenance.md` records which was which. The DataStore backend is adapted
   from the OpenPak sibling `servers/arms`, our own AGPL code.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md).
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/).
 
 This project is not affiliated with or endorsed by Nintendo, Animal Crossing's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material, binaries,

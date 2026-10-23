@@ -48,7 +48,7 @@ something that cannot work.
 
 | Env | Meaning |
 | --- | --- |
-| `NEX_PORT_BASE` | **required.** `22150` for this title ([ports.md](https://github.com/openpak/docs/blob/main/ports.md)): authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
+| `NEX_PORT_BASE` | **required.** `22150` for this title ([ports.md](https://docs.openpak.org/contributors/ports/)): authentication on `+0`, secure on `+1`, `/healthz` on `+2` |
 | `NEX_ACCESS_KEY` | **required.** MK8D's NEX access key. Per title, derivable from the game; configuration, never a literal in this repository |
 | `NX_INTERNAL_KEY` | **required.** nx-baas's `NX_INTERNAL_KEY`, sent as `X-Internal-Key`. Without it every login is refused |
 | `MK8D_DATABASE_URL` | **required.** Postgres URL. Matchmaking, utility and ranking keep their state here and create their schemas on first run |
@@ -80,12 +80,12 @@ silently misaligns every structure if it is wrong.
 
 ## Ground rules
 
-- Clean room. Read [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md) before
+- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before
   writing a line. Public protocol documentation, our own captures, and compatibly licensed
   code are the only inputs, and every fact taken from an existing implementation is recorded
   in [`docs/provenance.md`](docs/provenance.md) as a fact, never as code.
 - AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://github.com/openpak/docs/blob/main/ports.md); this title holds 22150.
+- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/); this title holds 22150.
 
 This project is not affiliated with or endorsed by Nintendo, Mario Kart 8 Deluxe's publisher, or any
 original service provider. It contains no proprietary game code, assets, SDK material,

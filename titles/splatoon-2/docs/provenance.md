@@ -1,7 +1,7 @@
 # Provenance
 
 Where every non-obvious fact in this repository came from. Required by
-[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): facts about a console and a
+[clean-room policy](https://docs.openpak.org/contributors/clean-room/): facts about a console and a
 protocol are facts, and this file is what makes "we rewrote it from the facts" checkable.
 
 Splatoon 2 is a **NEX** title and this is its NEX server. Splatoon 3 is **NPLN**, a different

@@ -39,7 +39,7 @@ have the full story and what building it properly requires.
 ## Configuration
 
 Everything is environment-driven; see [`example.env`](example.env). Port block **22340** from
-[`ports.md`](https://github.com/openpak/docs/blob/main/ports.md): auth `22340`, secure `22341`, `/healthz` `22342`. Every
+[`ports.md`](https://docs.openpak.org/contributors/ports/): auth `22340`, secure `22341`, `/healthz` `22342`. Every
 `platforms/wiiu-3ds/games/nex` transport default is correct for Odyssey; the one unconfirmed value is
 `NEX_VERSION` (a `4.0.0` guess). No secrets live in the repository.
 
@@ -53,7 +53,7 @@ until then.
 
 ## Ground rules
 
-Clean room — see [`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md). Public protocol
+Clean room — see [clean-room policy](https://docs.openpak.org/contributors/clean-room/). Public protocol
 documentation, our own captures, and compatibly licensed code are the only inputs. AGPL-3.0-only, English only, Go 1.25.
 
 This project is not affiliated with or endorsed by Nintendo, Super Mario Odyssey's publisher,

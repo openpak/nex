@@ -1,7 +1,7 @@
 # Provenance
 
 Every non-obvious fact this server is built on, and where it came from. Required by
-[`docs/clean-room-policy.md`](https://github.com/openpak/docs/blob/main/clean-room-policy.md): facts about a console and a
+[clean-room policy](https://docs.openpak.org/contributors/clean-room/): facts about a console and a
 protocol are not authorship, but which fact came from where has to stay checkable.
 
 Each row is a value or a behaviour that was read, written down, and then implemented in OpenPak's own shape. The DataStore backend is
