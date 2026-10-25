@@ -1,184 +1,106 @@
-# nex
+# NEX
 
-The shared NEX host and, under `titles/`, every OpenPak NEX title. One module, one image
-(`ghcr.io/openpak/nex`), one tag per release; a container runs one title, chosen by `NEX_TITLE`.
-The shared NEX host every OpenPak NEX title imports. Thin by design: Pretendo's
-AGPL-3.0 [`nex-go`](https://github.com/PretendoNetwork/nex-go),
-[`nex-protocols-go`](https://github.com/PretendoNetwork/nex-protocols-go) and
-[`nex-protocols-common-go`](https://github.com/PretendoNetwork/nex-protocols-common-go) do
-PRUDP, kerberos and the standard protocols. This adds the three things they leave to us —
-Switch token login, OpenPak identity, and the OpenPak service shape. **Not a from-scratch NEX
-implementation.**
+OpenPak's NEX Server.
 
-Status (2026-09-09): the host builds, runs, serves `/healthz`, listens on a configured NEX
-block, and completes the ticket-granting handshake for a Switch login whose id token nx-baas
-proves. **Nothing has been run against a console or a real title.** The wire shapes are no
-longer guesses — they are taken from working servers and public documentation, each recorded
-with its source in [`docs/provenance.md`](docs/provenance.md) — but one dependency is open:
-nx-baas cannot yet prove a *real console's* BAAS id token, only an emulator's bound claim, so
-a genuine console's login is still refused. See the end of [`docs/design.md`](docs/design.md).
-
-## What it does
-
-- Implements `ValidateAndRequestTicketWithParam` (method 6) and
-  `ValidateAndRequestTicketWithCustomData` (method 2) — the Switch login methods, which
-  `nex-protocols-common-go` leaves unset, so a NEX 4 title otherwise answers
-  `Core::NotImplemented` to every login.
-- Resolves a console to an OpenPak account through [`nx-baas`](../../../switch/infra/nx-baas)'s internal game
-  API, the same door [`platforms/switch/games/npln/titles/stardew-valley`](../../../switch/games/npln/titles/stardew-valley) uses for NPLN, and hands
-  the title the player's friend graph with it. It also records the name the console logged in
-  under — its NSA id, which is not its NEX PID — because titles go on to ask for players by
-  that name and nothing else can translate it (`Host.PIDForLoginName`).
-- Will host the shared DataStore object store (`github.com/openpak/nex/datastore`, agreed and
-  specified in [`docs/design.md`](docs/design.md), **not yet built** — three titles have their
-  own today and should not add a fourth).
-- Makes Pretendo's complete DataStore usable: `Host.FriendPIDs` fills the friends-only
-  permission callback that upstream documents as not working on Switch for want of a friend
-  graph. Titles whose whole online mode is DataStore depend on it.
-- Runs the authentication and secure endpoints on one port block from
-  [`ports.md`](https://docs.openpak.org/contributors/ports/), with an HTTP `/healthz` because nothing in OpenPak infers
-  liveness from a UDP socket.
+| | |
+| --- | --- |
+| Network | Nintendo Switch, Wii U, Nintendo 3DS |
+| Protocol | NEX over PRUDP |
+| Image | `ghcr.io/openpak/nex` |
+| Licence | AGPL-3.0-only |
 
 ## Titles
 
-Each game is a package `titles/<game>` exposing one value:
+| Game | Title ID | Module |
+| --- | --- | --- |
+| [Animal Crossing: New Horizons](https://openpak.org/titles#t-6) | `01006F8002326000` | `titles/animal-crossing-new-horizons` |
+| [Animal Crossing: New Leaf](https://openpak.org/titles#t-1040) | — | `titles/animal-crossing-new-leaf` |
+| [ARMS](https://openpak.org/titles#t-11) | `01009B500007C000` | `titles/arms` |
+| [Dr. Luigi](https://openpak.org/titles#t-9140) | — | `titles/dr-luigi` |
+| [Dr. Mario: Miracle Cure](https://openpak.org/titles#t-9141) | — | `titles/miracle-cure` |
+| [F1 2011](https://openpak.org/titles#t-9139) | — | `titles/f1-2011` |
+| [Ice Station Z](https://openpak.org/titles#t-9602) | — | `titles/ice-station-z` |
+| [IRONFALL Invasion](https://openpak.org/titles#t-1047) | — | `titles/ironfall-invasion` |
+| [Kid Icarus: Uprising](https://openpak.org/titles#t-1045) | — | `titles/kid-icarus-uprising` |
+| [Kirby's Dream Buffet](https://openpak.org/titles#t-8708) | `0100A8E016236000` | `titles/kirbys-dream-buffet` |
+| [Luigi's Mansion 3](https://openpak.org/titles#t-16) | `0100DCA0064A6000` | `titles/luigis-mansion-3` |
+| [Luigi's Mansion: Dark Moon](https://openpak.org/titles#t-1056) | — | `titles/luigis-mansion-2` |
+| [Mario Golf: Super Rush](https://openpak.org/titles#t-13) | `0100C9C00E25C000` | `titles/mario-golf-super-rush` |
+| [Mario Kart 7](https://openpak.org/titles#t-1034) | — | `titles/mario-kart-7` |
+| [Mario Kart 8 Deluxe](https://openpak.org/titles#t-4) | — | `titles/mario-kart-8-deluxe` |
+| [Mario Kart 8](https://openpak.org/titles#t-1011) | — | `titles/mario-kart-8` |
+| [Mario Party Superstars](https://openpak.org/titles#t-14) | `01006FE013472000` | `titles/mario-party-superstars` |
+| [Mario Strikers: Battle League](https://openpak.org/titles#t-15) | — | `titles/mario-strikers` |
+| [Mario Tennis Aces](https://openpak.org/titles#t-12) | — | `titles/mario-tennis-aces` |
+| [Mario vs. Donkey Kong: Tipping Stars](https://openpak.org/titles#t-10071) | — | `titles/mario-vs-donkey-kong-tipping-stars` |
+| [Metroid Prime: Federation Force](https://openpak.org/titles#t-1058) | — | `titles/metroid-prime-federation-force` |
+| [Minecraft](https://openpak.org/titles#t-8) | — | `titles/minecraft` |
+| [Minecraft: Wii U Edition](https://openpak.org/titles#t-1031) | — | `titles/minecraft-wiiu` |
+| [Monster Hunter 4](https://openpak.org/titles#t-9603) | — | `titles/monster-hunter-4` |
+| [Monster Hunter 4 Ultimate](https://openpak.org/titles#t-1041) | — | `titles/monster-hunter-4-ultimate` |
+| [Monster Hunter Generations](https://openpak.org/titles#t-1042) | — | `titles/monster-hunter-generations` |
+| [Monster Hunter Generations Ultimate](https://openpak.org/titles#t-17) | — | `titles/monster-hunter-generations-ultimate` |
+| [Monster Hunter Stories](https://openpak.org/titles#t-9604) | — | `titles/monster-hunter-stories` |
+| [Monster Hunter XX](https://openpak.org/titles#t-1043) | — | `titles/monster-hunter-xx` |
+| [Pikmin 3](https://openpak.org/titles#t-1017) | — | `titles/pikmin-3` |
+| [Pokemon Rumble World](https://openpak.org/titles#t-1050) | — | `titles/pokemon-rumble-world` |
+| [Pokemon X / Y / Omega Ruby / Alpha Sapphire](https://openpak.org/titles) | — | `titles/pokemon-gen6` |
+| [Pokken Tournament](https://openpak.org/titles#t-1015) | — | `titles/pokken-tournament` |
+| [Puyo Puyo!! 20th Anniversary](https://openpak.org/titles#t-9605) | — | `titles/puyo-puyo-20th` |
+| [Puyo Puyo Tetris](https://openpak.org/titles#t-9142) | — | `titles/puyo-puyo-tetris` |
+| [Resident Evil: The Mercenaries 3D](https://openpak.org/titles#t-9606) | — | `titles/resident-evil-the-mercenaries-3d` |
+| [Splatoon 2](https://openpak.org/titles#t-9) | `0100F8F0000A2000` | `titles/splatoon-2` |
+| [Splatoon](https://openpak.org/titles#t-1012) | — | `titles/splatoon` |
+| [Steel Diver: Sub Wars](https://openpak.org/titles#t-1046) | — | `titles/steel-diver-sub-wars` |
+| [Super Mario 3D World + Bowser's Fury](https://openpak.org/titles#t-8707) | `010028600EBDA000` | `titles/super-mario-3d-world-bowsers-fury` |
+| [Super Mario 3D World](https://openpak.org/titles#t-1033) | — | `titles/super-mario-3d-world` |
+| [Super Mario Bros. 35](https://openpak.org/titles#t-18) | — | `titles/super-mario-bros-35` |
+| [Super Mario Maker 2](https://openpak.org/titles#t-10) | — | `titles/super-mario-maker-2` |
+| [Super Mario Maker](https://openpak.org/titles#t-1014) | — | `titles/super-mario-maker` |
+| [Super Mario Odyssey](https://openpak.org/titles#t-7) | `0100000000010000` | `titles/super-mario-odyssey` |
+| [Super Smash Bros. for Nintendo 3DS](https://openpak.org/titles#t-1035) | — | `titles/super-smash-bros-3ds` |
+| [Super Smash Bros. for Wii U](https://openpak.org/titles#t-1013) | — | `titles/super-smash-bros-wiiu` |
+| [Super Smash Bros. Ultimate](https://openpak.org/titles#t-5) | — | `titles/super-smash-bros-ultimate` |
+| [Super Street Fighter IV 3D Edition](https://openpak.org/titles#t-9143) | — | `titles/super-street-fighter-iv` |
+| [Team Kirby Clash Deluxe](https://openpak.org/titles#t-1049) | — | `titles/team-kirby-clash-deluxe` |
+| [Tetris Axis](https://openpak.org/titles) | — | `titles/tetris-axis` |
+| [The Legend of Zelda: Tri Force Heroes](https://openpak.org/titles#t-1048) | — | `titles/tri-force-heroes` |
+| [Wii U Chat](https://openpak.org/titles#t-9144) | — | `titles/wiiu-chat` |
+| [Yo-kai Watch 2](https://openpak.org/titles#t-1052) | — | `titles/yo-kai-watch-2` |
+| [Yo-kai Watch Blasters](https://openpak.org/titles#t-9607) | — | `titles/yo-kai-watch-blasters` |
 
-```go
-var Title = nexhost.Title{Name: "arms", Defaults: defaults, Register: Register}
-```
+Each container runs one title, chosen by `NEX_TITLE`. A title is a package under `titles/`, listed in `titles/titles.go`.
 
-`Defaults` sets the per-title facts (NEX version, stream shape, port block) that the
-environment may still override; `Register` puts the title's protocols on `host.Secure`.
-`titles/titles.go` lists them all — adding a game is a new package and one line there.
-`cmd/nexd` reads `NEX_TITLE`, builds the config as `Defaults → title → environment` and runs
-that one title; with no `NEX_TITLE` it is the bare host below. Each title keeps its own README,
-docs and example.env in its directory. The former per-title repositories are archived; their
-history is merged here.
+## What it serves
 
-## Wii U and 3DS titles (Pretendo-derived)
+| Host | What | Served by |
+| --- | --- | --- |
+| `g<id>-lp1.s.n.srv.nintendo.net` | A title's NEX login and secure stage, routed by SNI to the container's `+0` port | The title container |
 
-Thirty-six of Pretendo's AGPL game servers live here too, and `titles/mario-kart-8` is OpenPak's Go port of Pretendo's Python Mario Kart 8 server, one package each, history merged.
-They are the other `Title` shape: `Run` instead of `Register`. Upstream's code builds its own
-authentication and secure PRUDP servers over UDP and logs consoles in through the account
-server (nn-account) and friends server (nn-friends) over gRPC; `title.go` in each package only
-translates the host Config (port block, secure host, database, gRPC addresses and keys) into
-the `PN_*` environment upstream reads, then calls upstream's former `init()` and `main()`.
-`OPENPAK.md` beside each upstream README lists the mapping and the pass-through variables.
-Consoles find these servers through nn-account's `servers` table, not Traefik.
-
-## Bans
-
-An account banned in the OpenPak admin is locked out of every title here
-([`website/docs/ban-lookup.md`](../../../../openpak/website/docs/ban-lookup.md)). Login is refused with
-`RendezVous::AccountDisabled` (0x00030067) and live connections are dropped within a minute
-by `nexhost.WatchBans`. Switch titles learn the ban from nx-baas (`/internal/switch/identity`
-answers 403 `account_banned`); Wii U and 3DS titles from nn-account (`GetNEXPassword` refuses a
-banned owner). Nothing to configure.
-
-## Deployed shape
-
-Production runs the passthrough form: Traefik routes each title's `g<id>-lp1.s.n.srv.nintendo.net`
-SNI to the title container's `+0` port and the title terminates TLS with one OpenPak-CA leaf
-covering `*.s.n.srv.nintendo.net` (`NEX_TLS_CERT`/`NEX_TLS_KEY`). Two-listener titles also
-publish `+1` on the host, because the secure station URL names that port directly. See
-[`ports.md`](https://docs.openpak.org/contributors/ports/).
-
-## Use (as a library)
-
-```go
-host, err := nexhost.New(nexhost.FromEnv())
-if err != nil {
-	log.Fatal(err)
-}
-host.Secure.RegisterServiceProtocol(myProtocol) // register BEFORE NewCommonProtocol
-log.Fatal(host.Run())
-```
-
-Order matters: `nex-protocols-common-go`'s `NewCommonProtocol` reads the endpoint off the
-protocol, and `RegisterServiceProtocol` is what sets it. Building the common protocol first
-panics with `interface conversion: nex.EndpointInterface is nil`.
-
-`host.Auth` and `host.Secure` are plain `nex.PRUDPEndPoint`s — register nex-go protocols on
-them directly. `host.PlayerByPID` answers the one question nex-go cannot: who this PID is on
-OpenPak. `host.SecureStationURL` is what the login response tells the console about the secure
-server; overwrite it before `Run` to match a retail-observed shape. See
-[`docs/design.md`](docs/design.md) for the full worked example.
-
-A Switch title typically wants:
-
-```sh
-# websocket is already the default; if Traefik passes the SNI through rather than
-# terminating it, this server needs the cert:
-NEX_TLS_CERT=/certs/title.crt NEX_TLS_KEY=/certs/title.key
-```
-
-### The per-title values
-
-Three settings are genuinely per title, and **every one of them fails silently or late** —
-none produces a red test or a useful error. That is why they are stated here with their
-failure mode, not just their value.
-
-| Setting | Value | Known for | Failure mode when wrong |
-| --- | --- | --- | --- |
-| `NEX_SECURE_STREAM_ID` | `1` (default) — two listeners, `+0` auth and `+1` secure, real dialable secure URL | ARMS, Mario Golf, Mario Party Superstars | Not silent, for once: nex-go logs `trying to connect to unbound PRUDPEndPoint 2` for every packet. **That line means set it to `2`** |
-| | `2` — one listener on `+0`, placeholder secure URL, `+1` reserved | Super Mario Bros. 35 | Console reaches nothing on the secure stream |
-| `NEX_STATION_SCHEME` | `prudps` (default) | ARMS, Mario Party Superstars, Splatoon 2, SSBU | **Late.** Under `prudp` the handshake completes but CONNECT carries an empty payload, so the title works through menus and dies the moment it first needs the session |
-| | `prudp` | Mario Kart 8 Deluxe | As above, mirrored |
-| `NEX_SOURCE_KEY_BYTES` | `32` (default) | Mario Kart 8 Deluxe, Mario Party Superstars — both derive it with SHA-256 and return all 32 | **Fully silent.** The login fails with nothing logged on either side |
-| | `16` | observed working against a retail Super Mario Bros. 35 | As above |
-| `NEX_SECURE_TRANSPORT` | unset (default) — the secure listener takes `NEX_TRANSPORT` | every title but one | — |
-| | `udp` alongside `NEX_TRANSPORT=websocket` | Monster Hunter Generations Ultimate: a Switch port of a 3DS game, whose auth stage the console reaches over TLS by SNI while its secure-connect code opens a UDP socket | **Fully silent, and it was wrong for months.** A UDP auth listener behind a TCP SNI route never receives a packet, and nothing logs a connection that was refused by the kernel |
-
-On the source key specifically: the servers that use 32 tend to carry a comment claiming it
-*must* be 32, "the Switch kerberos key size". **That generalisation is wrong** — the 16-byte
-counter-example is a server that works against a retail console. RC4 takes any key length and
-the console is told the key rather than deriving it, so the only thing that must hold is that
-the key the ticket is encrypted with is the key advertised in the response. Do not propagate
-the "MUST".
-
-Title servers are encouraged to pin all three in their own repository rather than inherit the
-default here, so the measured value lives next to the measurement.
-
-## Deploy
-
-Tag `v1.2.3` and the release workflow publishes `ghcr.io/openpak/nex:1.2.3` and `:latest` for
-amd64 and arm64; the deploy host runs `podman-auto-update` against `:latest`.
-
-## Test
+## Run
 
 ```sh
-go build ./...
-go test ./...
-go vet ./...
+NEX_TITLE=<title> go run ./cmd/nexd
 ```
 
-The tests cover the parts that are not one-liners: config validation, both spellings of a NEX
-version, reading the binding claim out of a token *and* accepting a real console's token that
-has none, the nx-baas identity call including the refused-token case, that a login name is an
-NSA id rather than a PID, the per-title station scheme, and a full kerberos ticket round trip
-— minted by the authentication endpoint, opened with the source key the client is handed, and
-the internal ticket opened again by the secure server.
+| Variable | Value |
+| --- | --- |
+| `NEX_TITLE` | The module name, for example `mario-kart-8-deluxe`. Unset runs the bare host |
+| `NEX_TLS_CERT`, `NEX_TLS_KEY` | Leaf certificate and key, when the proxy passes SNI through instead of terminating TLS |
 
-## Provenance
+All settings are in [docs/deploy.md](docs/deploy.md).
 
-Wire-level facts in this repository come from public protocol documentation, from Pretendo's
-AGPL libraries, and from reading existing working servers for facts under the clean-room
-policy. Every one is listed with its source in [`docs/provenance.md`](docs/provenance.md).
-No code, comment, structure or naming was copied from a source-available implementation.
+## Docs
 
-## Ground rules
+- [Protocol](docs/protocol.md): hosts, login methods, bans
+- [Evidence](docs/evidence.md): provenance of protocol facts
+- [Deploy](docs/deploy.md): ports, environment, image, build and test
+- [Notes](docs/notes.md): design, status, ground rules
+- [Design](docs/design.md): worked example and open dependency
+- [Provenance](docs/provenance.md): source of every wire-level fact
 
-- Clean room. Read [clean-room policy](https://docs.openpak.org/contributors/clean-room/) before
-  writing a line. Public protocol documentation, our own captures, and compatibly licensed
-  code are the only inputs, alongside facts read from the implementation being replaced.
-  Every protocol fact cites its source in `docs/provenance.md`.
-- AGPL-3.0-only, English only, Go 1.25, no secrets in the repository.
-- Ports come from [`ports.md`](https://docs.openpak.org/contributors/ports/). Claim your block in the PR that first needs it.
+Live compatibility status: [openpak.org/titles](https://openpak.org/titles)
 
-This project is not affiliated with or endorsed by Nintendo, NEX's publisher, or any
-original service provider. It contains no proprietary game code, assets, SDK material,
-binaries, certificates, keys, firmware, extracted files, credentials, or raw packet captures.
+## Licence
 
-## License
-
-AGPL-3.0-only — see `LICENSE`.
+AGPL-3.0-only. See [LICENSE](LICENSE).
