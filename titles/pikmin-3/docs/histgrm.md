@@ -44,7 +44,7 @@ Then replace `Build`/`Parse` and drop the guard.
 ## Go live (waiting on the BOSS keys)
 
 Deployed 2026-11-01: image rolled, quadlet `openpak-pikmin-3-histgrm.container` and
-`.timer` installed, **timer not enabled**, `histgrm` tasks registered on nn-boss.
+`.timer` (in ~/.config/systemd/user, not the quadlet dir) installed, **timer not enabled**, `histgrm` tasks registered on nn-boss.
 
 1. Set `PN_BOSS_CONFIG_BOSS_WIIU_AES_KEY` and `PN_BOSS_CONFIG_BOSS_WIIU_HMAC_KEY` in
    `~/openpak/deploy/.env` (console-dumped; nn-boss md5-checks them); `systemctl --user restart openpak-nn-boss`.
