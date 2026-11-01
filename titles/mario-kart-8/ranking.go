@@ -358,14 +358,13 @@ func (s *Server) uploadCompetitionScore(in *nex.ByteStreamIn, conn *nex.PRUDPCon
 }
 
 // rewardsTournamentRun tells rewards that a player's tournament run was stored: one
-// tournament entered, and one finished race. The event id is the (tournament, season,
-// player) entry, so re-uploading a better score never counts twice.
+// tournament entered. The event id is the (tournament, season, player) entry, so
+// re-uploading a better score never counts twice.
 func (s *Server) rewardsTournamentRun(pid uint64, tournament, season int64) {
 	rw := nexhost.Rewards()
 	who := nexhost.PlayerOf("wiiu", pid)
 	id := fmt.Sprintf("mk8:tour:%d:%d:%d", tournament, season, pid)
 	rw.Event(emit.Event{ID: id + ":entered", Metric: "kart_tournaments_entered", Player: who, Keys: []string{fmt.Sprint(tournament)}})
-	rw.Event(emit.Event{ID: id + ":race", Metric: "kart_races_completed.mk8", Player: who})
 }
 
 func (s *Server) competitionInfo(in *nex.ByteStreamIn, conn *nex.PRUDPConnection, out *nex.ByteStreamOut) *nex.Error {

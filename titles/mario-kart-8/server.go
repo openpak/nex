@@ -70,6 +70,8 @@ type Server struct {
 
 // Run starts the title and blocks for the life of the process.
 func Run(cfg nexhost.Config) error {
+	// Rewards: count online sessions (two players sharing a gathering for 3 minutes).
+	nexhost.WatchSessions(cfg, "kart_sessions.mk8", "wiiu")
 	s, err := newServer(cfg)
 	if err != nil {
 		return err

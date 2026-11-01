@@ -6,6 +6,10 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.10 — 2026-11-02
+
+- rewards: online sessions (two players sharing a matchmaking gathering for 3 minutes, `REWARDS_SESSION_MIN`) are reported for Splatoon, Mario Kart 7, Mario Kart 8 and Smash 3DS / Wii U. The finished-race/match events are dropped.
+
 ## v1.4.9 — 2026-11-01
 
 - rewards: Mario Kart 8 tournament runs, Splatoon Splatfest match uploads and Super Mario Maker course clears and

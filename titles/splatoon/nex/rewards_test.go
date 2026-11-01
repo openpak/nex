@@ -50,7 +50,7 @@ func TestSplatfestMatchEmitsRewardsEvents(t *testing.T) {
 	c.Close(context.Background())
 	mu.Lock()
 	defer mu.Unlock()
-	if len(got) != 2 {
+	if len(got) != 1 {
 		t.Fatalf("events %v", got)
 	}
 	metrics := map[string]bool{}
@@ -60,7 +60,7 @@ func TestSplatfestMatchEmitsRewardsEvents(t *testing.T) {
 			t.Fatalf("identity %v", id)
 		}
 	}
-	if !metrics["splatfests_joined"] || !metrics["splatoon_matches_completed.s1"] {
+	if !metrics["splatfests_joined"] {
 		t.Fatalf("%v", metrics)
 	}
 }

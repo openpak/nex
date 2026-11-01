@@ -89,11 +89,10 @@ func (s festStore) record(pid uint64, p CompetitionRankingUploadScoreParam) erro
 		return err
 	}
 	defer tx.Rollback()
-	var resultID int64
-	if err = tx.QueryRow(`INSERT INTO ranking_splatoon.results
+	if _, err = tx.Exec(`INSERT INTO ranking_splatoon.results
 		(uploader_pid, splatfest_id, team_id, score, team_score, is_first_upload, app_data)
-		VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING upload_id`,
-		int64(pid), int64(p.FestID), int16(p.TeamID), int64(p.Score), int64(p.TeamScore), bool(p.IsFirstUpload), []byte(p.AppData)).Scan(&resultID); err != nil {
+		VALUES ($1,$2,$3,$4,$5,$6,$7) `,
+		int64(pid), int64(p.FestID), int16(p.TeamID), int64(p.Score), int64(p.TeamScore), bool(p.IsFirstUpload), []byte(p.AppData)); err != nil {
 		return err
 	}
 	if _, err = tx.Exec(`INSERT INTO ranking_splatoon.user_scores
@@ -111,19 +110,17 @@ func (s festStore) record(pid uint64, p CompetitionRankingUploadScoreParam) erro
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	rewardsFestMatch(pid, uint32(p.FestID), resultID)
+	rewardsFestMatch(pid, uint32(p.FestID))
 	return nil
 }
 
-// rewardsFestMatch tells rewards a finished Splatfest match was stored: one Splatfest joined
-// (distinct per festival) and one completed Splatoon match. The result row id makes the event
-// id unique per upload, so a retried upload never counts twice. Only Splatfest matches reach
-// the server; ordinary Turf War and Ranked matches leave no trace here.
-func rewardsFestMatch(pid uint64, fest uint32, resultID int64) {
+// rewardsFestMatch tells rewards a finished Splatfest match was stored: one Splatfest joined,
+// distinct per festival (the event id and key are the festival, so every upload after the first
+// counts nothing).
+func rewardsFestMatch(pid uint64, fest uint32) {
 	rw := nexhost.Rewards()
 	who := nexhost.PlayerOf("wiiu", pid)
 	rw.Event(emit.Event{ID: fmt.Sprintf("splatoon:fest:%d:%d:joined", fest, pid), Metric: "splatfests_joined", Player: who, Keys: []string{fmt.Sprint(fest)}})
-	rw.Event(emit.Event{ID: fmt.Sprintf("splatoon:fest-match:%d", resultID), Metric: "splatoon_matches_completed.s1", Player: who})
 }
 
 // Tally is a festival's per-team totals.
