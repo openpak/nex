@@ -26,25 +26,29 @@ func RecommendedCourseSearchObject(err error, packet nex.PacketInterface, callID
 	// * Course World (Expert)       ["1", "75", "95",  "0", "0"]
 	// * Course World (Super Expert) ["1", "96", "100", "0", "0"]
 	// *
-	// * Indexes 1 and 2 seem to be a min and max for the *failure*
-	// * rate of the courses. This is not taken into account yet,
-	// * as the SQL query for this would need to be rather complex.
+	// * Indexes 1 and 2 are the inclusive min and max *failure* rate
+	// * of the courses (see ParseDifficultyExtra). The failure rate is
+	// * 100 minus the clear rate, from the course's clear and attempt
+	// * ratings (slots 2 and 3). Courses nobody has attempted have no
+	// * rate, so they only appear in the unfiltered "All" list.
 	// * The last 2 values always seem to be 0, and the first seems
 	// * to always be 1 besides filtering for "All"
-	// *
-	// ! All requests are treated as filtering for "All" right now
-	// TODO - Use these ranges to properly filter by difficulty
 
 	// HACK The database load is exponential here and
 	length := int(param.ResultRange.Length)
-	maxLength := 25
-	if length < 0 || length > maxLength {
+	maxLength := 100 // * 100 Mario asks for ONE_HUNDRED_MARIO_RECOMMENDED_COURSE_COUNT at once
+	if length <= 0 || length > maxLength {
 		globals.Logger.Warningf("Limiting request to %d courses (was %d)", maxLength, length)
 		length = maxLength
 	}
 
+	filter := datastore_smm_db.CourseFilter{Random: true, Limit: length}
+	if lo, hi, ok := ParseDifficultyExtra(extraData); ok {
+		filter.FailMin, filter.FailMax = &lo, &hi
+	}
+
 	// TODO - Use the offet? Real client never uses it, but might be nice for completeness sake?
-	pRankingResults, nexError := datastore_smm_db.GetRandomCoursesWithLimit(length)
+	pRankingResults, nexError := datastore_smm_db.QueryCourses(filter)
 	if nexError != nil {
 		return nil, nexError
 	}

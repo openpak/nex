@@ -41,6 +41,10 @@ func registerCommonSecureProtocols() {
 	smmDatastore.GetMetasWithCourseRecord = nex_datastore_super_mario_maker.GetMetasWithCourseRecord
 	smmDatastore.CheckRateCustomRankingCounter = nex_datastore_super_mario_maker.CheckRateCustomRankingCounter
 	smmDatastore.CTRPickUpCourseSearchObject = nex_datastore_super_mario_maker.CTRPickUpCourseSearchObject
+	smmDatastore.LatestCourseSearchObject = nex_datastore_super_mario_maker.LatestCourseSearchObject
+	smmDatastore.GetCustomRanking = nex_datastore_super_mario_maker.GetCustomRanking
+	smmDatastore.BestScoreRateCourseSearchObject = nex_datastore_super_mario_maker.BestScoreRateCourseSearchObject
+	smmDatastore.ScoreRangeCascadedSearchObject = nex_datastore_super_mario_maker.ScoreRangeCascadedSearchObject
 
 	globals.SecureEndpoint.RegisterServiceProtocol(smmDatastore)
 
