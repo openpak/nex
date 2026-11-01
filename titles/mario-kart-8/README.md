@@ -2,7 +2,9 @@
 
 Mario Kart 8 (Wii U, `000500001010EB00`) on the shared NEX host. Written in Go for OpenPak on
 nex-go and the common protocol set; the title-specific behaviour is ported from Pretendo's Python
-server (`mario-kart-8-python`, AGPL-3.0), which is the one Pretendo runs.
+server (`mario-kart-8-python`), which is the one Pretendo runs. (Neither Pretendo MK8 repo ships
+a LICENSE file, so GitHub reports none: nothing was copied from them for the tournament code,
+which follows NintendoClients' wiki (MIT) and was written from the wire layouts.)
 
 | Fact | Value | Source |
 | --- | --- | --- |
@@ -21,6 +23,14 @@ server (`mario-kart-8-python`, AGPL-3.0), which is the one Pretendo runs.
   search by conditions, search by ids, join with a participant count. Wire layouts follow
   NintendoClients' `matchmaking_mk8d.py`; the Go library's types for these are placeholders.
   Tournament metadata (the game's `0x5a5a` chunk blob) is parsed for validation and the name.
+  Only the creator (the authenticated connection, never the PID in the object) may update or
+  delete; the owner check is part of the SQL write. Validated: 20 attributes within their sets,
+  metadata size and name/description length and characters, 12-digit unique community code,
+  start not after end, at most 50 tournaments per player. The community code is fixed at create.
+  Tests: `tournaments_test.go` (set `MK8_TEST_DSN` for the Postgres-backed ones).
+- **Mario Kart TV to YouTube:** see [docs/mktv-youtube.md](docs/mktv-youtube.md): what the game
+  does (the console uploads to YouTube itself), the opt-in worker (`youtube.go`, off by default)
+  and what credentials the owner must create.
 - **Rankings:** the standard Ranking protocol on Postgres (all categories ascending; time
   trials) plus the competition methods 14–16 (`ranking_mk8d.py` layouts). Pretendo kept team
   totals in Redis; here they are sums over the scores table.

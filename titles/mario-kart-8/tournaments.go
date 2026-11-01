@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	nex "github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -89,11 +91,21 @@ func newTournamentStore(db *sql.DB) (*tournamentStore, error) {
 	return &tournamentStore{db: db}, nil
 }
 
-// verify is the game's own validity envelope for a tournament (Pretendo's server checked the
-// same ranges): 20 attributes, the enumerated ones within their sets, parseable metadata.
+// Limits on what a client may store. The game's own editor stays well inside them.
+const (
+	maxTournamentMetadata   = 4096
+	maxTournamentNameRunes  = 64
+	maxTournamentDescRunes  = 512
+	maxTournamentsPerOwner  = 50
+	tournamentAttributeSize = 20
+)
+
+// verifyTournament is the game's own validity envelope for a tournament: 20 attributes, the
+// enumerated ones within their sets, parseable bounded metadata with a non-empty name, a
+// 12-digit community code and a start that is not after the end.
 func verifyTournament(o simpleSearchObject) *nex.Error {
 	a := o.Attributes
-	if len(a) != 20 {
+	if len(a) != tournamentAttributeSize {
 		return invalid("tournament needs 20 attributes, got %d", len(a))
 	}
 	in := func(v uint32, allowed ...uint32) bool {
@@ -110,8 +122,44 @@ func verifyTournament(o simpleSearchObject) *nex.Error {
 		!in(a[11], 1, 2, 3, 4), !in(a[12], 1, 2), !in(a[13], 1, 2):
 		return invalid("tournament attribute out of range")
 	}
-	if _, err := parseTournamentMetadata(o.Metadata); err != nil {
+	if len(o.Metadata) > maxTournamentMetadata {
+		return invalid("tournament metadata too large")
+	}
+	meta, err := parseTournamentMetadata(o.Metadata)
+	if err != nil {
 		return invalid("%v", err)
+	}
+	if err := checkText("name", meta.Name, 1, maxTournamentNameRunes); err != nil {
+		return invalid("%v", err)
+	}
+	if err := checkText("description", meta.Description, 0, maxTournamentDescRunes); err != nil {
+		return invalid("%v", err)
+	}
+	d := o.DateTime
+	if d.EndDateTime != 0 && d.StartDateTime > d.EndDateTime {
+		return invalid("tournament starts after it ends")
+	}
+	return nil
+}
+
+// checkText bounds a user-visible string by length and refuses control characters, which
+// would otherwise reach the website and other players' consoles.
+func checkText(what, s string, min, max int) error {
+	n := utf8.RuneCountInString(s)
+	if n < min || n > max {
+		return fmt.Errorf("tournament %s must be %d-%d characters", what, min, max)
+	}
+	for _, r := range s {
+		if r == utf8.RuneError || (unicode.IsControl(r) && r != '\n') {
+			return fmt.Errorf("tournament %s has an invalid character", what)
+		}
+	}
+	return nil
+}
+
+func verifyCommunity(o simpleSearchObject) *nex.Error {
+	if len(o.CommunityCode) != 12 || o.CommunityID == 0 || strings.Trim(o.CommunityCode, "0123456789") != "" {
+		return invalid("community code must be 12 digits")
 	}
 	return nil
 }
@@ -155,27 +203,11 @@ func (s *Server) createTournament(in *nex.ByteStreamIn, conn *nex.PRUDPConnectio
 	if err != nil {
 		return invalid("%v", err)
 	}
-	if nexErr := verifyTournament(o); nexErr != nil {
+	id, nexErr := s.tournaments.create(uint64(conn.PID()), o)
+	if nexErr != nil {
 		return nexErr
 	}
-	if len(o.CommunityCode) != 12 || o.CommunityID == 0 || strings.Trim(o.CommunityCode, "0123456789") != "" {
-		return invalid("community code must be 12 digits")
-	}
-	meta, _ := parseTournamentMetadata(o.Metadata)
-	var id int64
-	err = s.db.QueryRow(`INSERT INTO mk8.tournaments (owner_pid, attributes, metadata, community_id, community_code,
-			start_daytime, end_daytime, start_time, end_time, start_datetime, end_datetime, name, description)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
-		uint64(conn.PID()), int64s(o.Attributes), o.Metadata, int64(o.CommunityID), o.CommunityCode,
-		int64(o.DateTime.StartDaytime), int64(o.DateTime.EndDaytime), int64(o.DateTime.StartTime), int64(o.DateTime.EndTime),
-		fmt.Sprint(o.DateTime.StartDateTime), fmt.Sprint(o.DateTime.EndDateTime), meta.Name, meta.Description).Scan(&id)
-	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return invalid("community code already used")
-		}
-		return storeError(err)
-	}
-	out.WriteUInt32LE(uint32(id))
+	out.WriteUInt32LE(id)
 	return nil
 }
 
@@ -188,19 +220,7 @@ func (s *Server) updateTournament(in *nex.ByteStreamIn, conn *nex.PRUDPConnectio
 	if err != nil {
 		return invalid("%v", err)
 	}
-	if nexErr := verifyTournament(o); nexErr != nil {
-		return nexErr
-	}
-	if nexErr := s.tournamentOwnedBy(id, conn.PID()); nexErr != nil {
-		return nexErr
-	}
-	meta, _ := parseTournamentMetadata(o.Metadata)
-	_, err = s.db.Exec(`UPDATE mk8.tournaments SET attributes=$2, metadata=$3, start_daytime=$4, end_daytime=$5,
-			start_time=$6, end_time=$7, start_datetime=$8, end_datetime=$9, name=$10, description=$11, updated=now() WHERE id=$1`,
-		int64(id), int64s(o.Attributes), o.Metadata, int64(o.DateTime.StartDaytime), int64(o.DateTime.EndDaytime),
-		int64(o.DateTime.StartTime), int64(o.DateTime.EndTime), fmt.Sprint(o.DateTime.StartDateTime), fmt.Sprint(o.DateTime.EndDateTime),
-		meta.Name, meta.Description)
-	return storeError(err)
+	return s.tournaments.update(id, uint64(conn.PID()), o)
 }
 
 func (s *Server) deleteTournament(in *nex.ByteStreamIn, conn *nex.PRUDPConnection, out *nex.ByteStreamOut) *nex.Error {
@@ -208,26 +228,85 @@ func (s *Server) deleteTournament(in *nex.ByteStreamIn, conn *nex.PRUDPConnectio
 	if err != nil {
 		return invalid("%v", err)
 	}
-	if nexErr := s.tournamentOwnedBy(id, conn.PID()); nexErr != nil {
-		return nexErr
-	}
-	_, err = s.db.Exec(`DELETE FROM mk8.tournaments WHERE id=$1`, int64(id))
-	return storeError(err)
+	return s.tournaments.delete(id, uint64(conn.PID()))
 }
 
-func (s *Server) tournamentOwnedBy(id uint32, pid types.PID) *nex.Error {
-	var owner string
-	err := s.db.QueryRow(`SELECT owner_pid FROM mk8.tournaments WHERE id=$1`, int64(id)).Scan(&owner)
+// create stores a tournament owned by owner. The owner, id and liveliness the client put in the
+// object are ignored: the owner is the authenticated connection.
+func (t *tournamentStore) create(owner uint64, o simpleSearchObject) (uint32, *nex.Error) {
+	if nexErr := verifyTournament(o); nexErr != nil {
+		return 0, nexErr
+	}
+	if nexErr := verifyCommunity(o); nexErr != nil {
+		return 0, nexErr
+	}
+	var count int
+	if err := t.db.QueryRow(`SELECT count(*) FROM mk8.tournaments WHERE owner_pid=$1`, fmt.Sprint(owner)).Scan(&count); err != nil {
+		return 0, storeError(err)
+	}
+	if count >= maxTournamentsPerOwner {
+		return 0, nex.NewError(nex.ResultCodes.Core.AccessDenied, "too many tournaments")
+	}
+	meta, _ := parseTournamentMetadata(o.Metadata)
+	var id int64
+	err := t.db.QueryRow(`INSERT INTO mk8.tournaments (owner_pid, attributes, metadata, community_id, community_code,
+			start_daytime, end_daytime, start_time, end_time, start_datetime, end_datetime, name, description)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
+		fmt.Sprint(owner), int64s(o.Attributes), o.Metadata, int64(o.CommunityID), o.CommunityCode,
+		int64(o.DateTime.StartDaytime), int64(o.DateTime.EndDaytime), int64(o.DateTime.StartTime), int64(o.DateTime.EndTime),
+		fmt.Sprint(o.DateTime.StartDateTime), fmt.Sprint(o.DateTime.EndDateTime), meta.Name, meta.Description).Scan(&id)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return 0, invalid("community code already used")
+		}
+		return 0, storeError(err)
+	}
+	return uint32(id), nil
+}
+
+// update replaces a tournament's attributes, metadata and schedule. Only its owner may; the
+// community id and code are fixed at creation (a changed code would orphan players' links).
+// The owner check is part of the UPDATE, so it cannot race a delete.
+func (t *tournamentStore) update(id uint32, owner uint64, o simpleSearchObject) *nex.Error {
+	if nexErr := verifyTournament(o); nexErr != nil {
+		return nexErr
+	}
+	meta, _ := parseTournamentMetadata(o.Metadata)
+	res, err := t.db.Exec(`UPDATE mk8.tournaments SET attributes=$3, metadata=$4, start_daytime=$5, end_daytime=$6,
+			start_time=$7, end_time=$8, start_datetime=$9, end_datetime=$10, name=$11, description=$12, updated=now()
+		WHERE id=$1 AND owner_pid=$2`,
+		int64(id), fmt.Sprint(owner), int64s(o.Attributes), o.Metadata, int64(o.DateTime.StartDaytime), int64(o.DateTime.EndDaytime),
+		int64(o.DateTime.StartTime), int64(o.DateTime.EndTime), fmt.Sprint(o.DateTime.StartDateTime), fmt.Sprint(o.DateTime.EndDateTime),
+		meta.Name, meta.Description)
+	if err != nil {
+		return storeError(err)
+	}
+	return t.ownerResult(res, id)
+}
+
+// delete removes a tournament and (by cascade) its scores. Only its owner may.
+func (t *tournamentStore) delete(id uint32, owner uint64) *nex.Error {
+	res, err := t.db.Exec(`DELETE FROM mk8.tournaments WHERE id=$1 AND owner_pid=$2`, int64(id), fmt.Sprint(owner))
+	if err != nil {
+		return storeError(err)
+	}
+	return t.ownerResult(res, id)
+}
+
+// ownerResult turns a zero-row owner-guarded write into "no such tournament" or "not yours".
+func (t *tournamentStore) ownerResult(res sql.Result, id uint32) *nex.Error {
+	if n, _ := res.RowsAffected(); n > 0 {
+		return nil
+	}
+	var one int
+	err := t.db.QueryRow(`SELECT 1 FROM mk8.tournaments WHERE id=$1`, int64(id)).Scan(&one)
 	if err == sql.ErrNoRows {
 		return nex.NewError(nex.ResultCodes.Core.InvalidIndex, "no such tournament")
 	}
 	if err != nil {
 		return storeError(err)
 	}
-	if owner != fmt.Sprint(uint64(pid)) {
-		return nex.NewError(nex.ResultCodes.Core.AccessDenied, "not the tournament's owner")
-	}
-	return nil
+	return nex.NewError(nex.ResultCodes.Core.AccessDenied, "not the tournament's owner")
 }
 
 func (s *Server) searchTournaments(in *nex.ByteStreamIn, conn *nex.PRUDPConnection, out *nex.ByteStreamOut) *nex.Error {

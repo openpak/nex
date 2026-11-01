@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.2 — 2026-11-01
+
+- mario-kart-8: tournament create/modify/delete hardened and tested: owner-guarded SQL writes (only the
+  creator modifies or deletes; the owner is the authenticated connection), bounded name/description/metadata,
+  start-before-end, 50 tournaments per player, community code fixed at create. Postgres-backed unit tests.
+- mario-kart-8: Mario Kart TV to YouTube worker (off unless MK8_YT_ENABLED=1; needs the owner-created Google
+  credentials) with per-player opt-in and the YouTube video id stored for the MKTV site. Findings on how the
+  game uploads to YouTube are in titles/mario-kart-8/docs/mktv-youtube.md.
+
 ## v1.4.1 — 2026-11-01
 
 - pikmin-3: rankings rewritten. One row per player and category, UpdateMode and OrderBy honoured,
