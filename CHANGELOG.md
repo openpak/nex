@@ -6,6 +6,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.7 — 2026-11-01
+
+- splatoon (Wii U): Splatfest competition ranking (GetCompetitionRankingScore, UploadCompetitionRankingScore) with a
+  per-team vote and win tally in `ranking_splatoon`; Splatfest lobbies opened for the opposing team (upstream
+  feat/fests); at each rotation phase boundary, lobbies from the earlier phase are closed, from Rotationator's
+  `schedule.json` (optional, `SPLATOON_ROTATION_FILE`); `SPLATOON_TRACE_MATCHMAKING=1` traces request shapes.
+  Not console-verified. See titles/splatoon/docs/splatfest.md.
+
 ## v1.4.6 — 2026-11-01
 
 - pikmin-3: rankings rewritten. One row per player and category, UpdateMode and OrderBy honoured,

@@ -25,3 +25,5 @@ container's host and the block's `+0` port; the console asks nn-account for the 
 `game_server_id` and gets that address, its NEX password and a token.
 
 **Registration (2026-09-11):** row in nn-account's `servers` table (title ids from Pretendo's nex-viewer title database; Wii U game-server ids from Kinnay's Wii U list, where the id is the low 32 bits of the title id). Deployed as one container from the shared image. Not console-verified.
+
+**Splatfest, rotation and matchmaking (2026-11-01):** competition ranking (Ranking 0x70.16 and .18) with per-team tally, Splatfest lobby opening, phase-boundary lobby closing from Rotationator's schedule. Not console-verified. See `docs/splatfest.md`.

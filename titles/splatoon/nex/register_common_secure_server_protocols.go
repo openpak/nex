@@ -10,7 +10,6 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
-	match_making_types "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/splatoon"
@@ -20,12 +19,6 @@ import (
 
 func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
 	return nil
-}
-
-func cleanupMatchmakeSessionSearchCriteriasHandler(searchCriterias types.List[match_making_types.MatchmakeSessionSearchCriteria]) {
-	for _, searchCriteria := range searchCriterias {
-		searchCriteria.Attribs[4] = types.NewString("")
-	}
 }
 
 func registerCommonSecureServerProtocols() {
@@ -53,9 +46,16 @@ func registerCommonSecureServerProtocols() {
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.CleanupMatchmakeSessionSearchCriterias = cleanupMatchmakeSessionSearchCriteriasHandler
+	commonMatchmakeExtensionProtocol.OnAfterAutoMatchmakeWithParamPostpone = onAfterAutoMatchmakeWithParamPostpone
 	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
 
 	rankingProtocol := ranking.NewProtocol(globals.SecureEndpoint)
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
 	commonranking.NewCommonProtocol(rankingProtocol)
+	fests := festStore{db: globals.Postgres}
+	if err := fests.setup(); err != nil {
+		globals.Logger.Errorf("Ranking: Splatfest tables: %v", err)
+	}
+	fests.wire(rankingProtocol)
+	startRotation()
 }
