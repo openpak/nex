@@ -15,5 +15,12 @@ func initPostgres() {
 		return
 	}
 
+	for _, statement := range []string{RankingSchema, DatastoreSchema} {
+		if _, err = Postgres.Exec(statement); err != nil {
+			globals.Logger.Critical(err.Error())
+			return
+		}
+	}
+
 	globals.Logger.Success("Postgres tables created")
 }

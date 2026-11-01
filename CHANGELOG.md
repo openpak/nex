@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.11 — 2026-11-02
+
+- mario-kart-7: stores what the game uploads. Time-trial rankings on the legacy Ranking protocol (0x70; the
+  upstream "legacy ranking" TODO) in Postgres schema `mk7`, ghosts on DataStore with bodies in S3 (`MK7_S3_*`),
+  and a read-only JSON API on `MK7_API_ADDR` (courses, rankings, ghosts, objects, players; same shape as MK8).
+  Communities stay the common persistent-gathering matchmaking. Response layouts and the course id are inferred
+  (the NintendoClients wiki has no MK7 pages); every ranking/DataStore request is logged in hex for the console
+  test. See `titles/mario-kart-7/docs/`.
+
 ## v1.4.10 — 2026-11-02
 
 - rewards: online sessions (two players sharing a matchmaking gathering for 3 minutes, `REWARDS_SESSION_MIN`) are reported for Splatoon, Mario Kart 7, Mario Kart 8 and Smash 3DS / Wii U. The finished-race/match events are dropped.

@@ -15,7 +15,15 @@ Runs as `NEX_TITLE=mario-kart-7` in the shared `ghcr.io/openpak/nex` image, one 
 
 Health: nexd answers `/healthz` on the block's `+2` port.
 
-No other variables.
+Additional variables (all optional):
+
+| Variable | Meaning |
+| --- | --- |
+| `MK7_API_ADDR` | read API listen address (production `:22855`); unset = off. See `docs/read-api.md` |
+| `MK7_S3_ENDPOINT`, `MK7_S3_BUCKET`, `MK7_S3_ACCESS_KEY`, `MK7_S3_SECRET_KEY`, `MK7_S3_INSECURE=1` | S3 store for ghost bodies; unset = bodies not served |
+
+Rankings (legacy Ranking protocol) and ghosts (DataStore) are stored in the Postgres schema `mk7`;
+see `docs/README.md` for what is fact and what is inferred, and the console test.
 
 Consoles reach it through nn-account: the title's row in nn-account's `servers` table names this
 container's host and the block's `+0` port.

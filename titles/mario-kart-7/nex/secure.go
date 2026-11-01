@@ -1,6 +1,7 @@
 package nex
 
 import (
+	"encoding/hex"
 	"fmt"
 	nexhost "github.com/openpak/nex"
 	"os"
@@ -33,6 +34,10 @@ func StartSecureServer() {
 		fmt.Printf("Protocol ID: %#v\n", request.ProtocolID)
 		fmt.Printf("Method ID: %#v\n", request.MethodID)
 		fmt.Println("====================")
+		// Unknown bytes are logged verbatim for the console test (ranking and DataStore only).
+		if request.ProtocolID == 0x70 || request.ProtocolID == 0x73 {
+			fmt.Printf("params: %s\n", hex.EncodeToString(request.Parameters))
+		}
 	})
 
 	globals.SecureEndpoint.OnError(func(err *nex.Error) {
