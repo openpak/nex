@@ -24,4 +24,4 @@ Consoles reach it through nn-account: the title's row in nn-account's `servers` 
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
 
-**Status (2026-11-01):** imported and builds in the shared image. No `servers` row and no container yet; not console-verified.
+**Deployed (2026-11-01, nex v1.4.0):** container `openpak-bayonetta-2`, block 22910 (auth 22910/udp, secure 22911/udp, host firewall open), database `bayonetta2`. nn-account `servers` row(s) applied on prod for game server `1011B900` (from upstream's PN validation). Not console-verified.

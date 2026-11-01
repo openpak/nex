@@ -24,4 +24,4 @@ Consoles reach it through nn-account: the title's row in nn-account's `servers` 
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
 
-**Status (2026-11-01):** imported and builds in the shared image. No `servers` row and no container yet; not console-verified.
+**Deployed (2026-11-01, nex v1.4.0):** container `openpak-monster-hunter-3-ultimate`, block 22940 (auth 22940/udp, secure 22941/udp, host firewall open), database `mh3u`. nn-account `servers` row(s) applied on prod for game server `10104D00`, `10117200` and `10118300`, one row per regional title id, because no public source names the id the console asks for; drop the two that are never asked once one is observed. The 3DS half of the cross-play pair is not registered. Not console-verified.

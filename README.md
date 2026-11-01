@@ -16,7 +16,7 @@ OpenPak's NEX Server.
 | [Animal Crossing: New Horizons](https://openpak.org/titles#t-6) | `01006F8002326000` | `titles/animal-crossing-new-horizons` |
 | [Animal Crossing: New Leaf](https://openpak.org/titles#t-1040) | — | `titles/animal-crossing-new-leaf` |
 | [ARMS](https://openpak.org/titles#t-11) | `01009B500007C000` | `titles/arms` |
-| Bayonetta 2 | — | `titles/bayonetta-2` |
+| [Bayonetta 2](https://openpak.org/titles#t-1020) | — | `titles/bayonetta-2` |
 | [Dr. Luigi](https://openpak.org/titles#t-9140) | — | `titles/dr-luigi` |
 | [Dr. Mario: Miracle Cure](https://openpak.org/titles#t-9141) | — | `titles/miracle-cure` |
 | [F1 2011](https://openpak.org/titles#t-9139) | — | `titles/f1-2011` |
@@ -37,7 +37,7 @@ OpenPak's NEX Server.
 | [Metroid Prime: Federation Force](https://openpak.org/titles#t-1058) | — | `titles/metroid-prime-federation-force` |
 | [Minecraft](https://openpak.org/titles#t-8) | — | `titles/minecraft` |
 | [Minecraft: Wii U Edition](https://openpak.org/titles#t-1031) | — | `titles/minecraft-wiiu` |
-| Monster Hunter 3 Ultimate | — | `titles/monster-hunter-3-ultimate` |
+| [Monster Hunter 3 Ultimate](https://openpak.org/titles#t-1019) | — | `titles/monster-hunter-3-ultimate` |
 | [Monster Hunter 4](https://openpak.org/titles#t-9603) | — | `titles/monster-hunter-4` |
 | [Monster Hunter 4 Ultimate](https://openpak.org/titles#t-1041) | — | `titles/monster-hunter-4-ultimate` |
 | [Monster Hunter Generations](https://openpak.org/titles#t-1042) | — | `titles/monster-hunter-generations` |
@@ -51,7 +51,7 @@ OpenPak's NEX Server.
 | [Puyo Puyo!! 20th Anniversary](https://openpak.org/titles#t-9605) | — | `titles/puyo-puyo-20th` |
 | [Puyo Puyo Tetris](https://openpak.org/titles#t-9142) | — | `titles/puyo-puyo-tetris` |
 | [Resident Evil: The Mercenaries 3D](https://openpak.org/titles#t-9606) | — | `titles/resident-evil-the-mercenaries-3d` |
-| Sonic & All-Stars Racing Transformed | — | `titles/sonic-all-stars-racing-transformed-wiiu` |
+| [Sonic & All-Stars Racing Transformed](https://openpak.org/titles#t-1028) | — | `titles/sonic-all-stars-racing-transformed-wiiu` |
 | [Splatoon 2](https://openpak.org/titles#t-9) | `0100F8F0000A2000` | `titles/splatoon-2` |
 | [Splatoon](https://openpak.org/titles#t-1012) | — | `titles/splatoon` |
 | [Steel Diver: Sub Wars](https://openpak.org/titles#t-1046) | — | `titles/steel-diver-sub-wars` |
@@ -66,7 +66,7 @@ OpenPak's NEX Server.
 | [Super Smash Bros. Ultimate](https://openpak.org/titles#t-5) | — | `titles/super-smash-bros-ultimate` |
 | [Super Street Fighter IV 3D Edition](https://openpak.org/titles#t-9143) | — | `titles/super-street-fighter-iv` |
 | [Team Kirby Clash Deluxe](https://openpak.org/titles#t-1049) | — | `titles/team-kirby-clash-deluxe` |
-| Terraria | — | `titles/terraria` |
+| [Terraria](https://openpak.org/titles#t-72673) | — | `titles/terraria` |
 | [Tetris Axis](https://openpak.org/titles) | — | `titles/tetris-axis` |
 | [The Legend of Zelda: Tri Force Heroes](https://openpak.org/titles#t-1048) | — | `titles/tri-force-heroes` |
 | [Wii U Chat](https://openpak.org/titles#t-9144) | — | `titles/wiiu-chat` |

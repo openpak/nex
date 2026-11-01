@@ -24,4 +24,4 @@ Consoles reach it through nn-account: the title's row in nn-account's `servers` 
 container's host and the block's `+0` port; the console asks nn-account for the game server by
 `game_server_id` and gets that address, its NEX password and a token.
 
-**Status (2026-11-01):** imported and builds in the shared image. No `servers` row and no container yet; not console-verified.
+**Deployed (2026-11-01, nex v1.4.0):** container `openpak-terraria-wiiu`, block 22930 (auth 22930/udp, secure 22931/udp, host firewall open), database `terraria`. nn-account `servers` row(s) applied on prod for game server `10198F00` (Kinnay's Wii U NEX list and upstream's PN validation); the container is `openpak-terraria-wiiu` because `openpak-terraria` is the Switch NPLN server. Not console-verified.
