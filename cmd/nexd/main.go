@@ -14,9 +14,22 @@ import (
 
 	nexhost "github.com/openpak/nex"
 	"github.com/openpak/nex/titles"
+	"github.com/openpak/nex/titles/pikmin-3/histgrm"
 )
 
 func main() {
+	// `nexd job <name> [flags]` runs a one-shot scheduled job instead of a title.
+	if len(os.Args) >= 3 && os.Args[1] == "job" {
+		switch os.Args[2] {
+		case "pikmin-3-histgrm":
+			if err := histgrm.Run(os.Args[3:]); err != nil {
+				log.Fatalf("pikmin-3-histgrm: %v", err)
+			}
+			return
+		default:
+			log.Fatalf("unknown job %q; one of: pikmin-3-histgrm", os.Args[2])
+		}
+	}
 	name := os.Getenv("NEX_TITLE")
 	title, ok := titles.All[name]
 	if !ok && name != "" && name != "nex" {

@@ -1,0 +1,19 @@
+[Unit]
+Description=OpenPak Pikmin 3 ranking histogram job (nexd job pikmin-3-histgrm, oneshot, fired by the .timer)
+Wants=openpak-nn-boss.service openpak-postgres.service
+After=openpak-nn-boss.service openpak-postgres.service
+
+[Container]
+ContainerName=openpak-pikmin-3-histgrm
+Image=ghcr.io/openpak/nex:latest
+AutoUpdate=registry
+Network=openpak.network
+EnvironmentFile=%h/openpak/deploy/.env
+Environment=NEX_DATABASE_URL=postgres://openpak@openpak-postgres/pikmin3?sslmode=disable
+Environment=HISTGRM_GRPC_HOST=openpak-nn-boss:20081
+Volume=openpak-pikmin-3-histgrm-data:/data:U
+Exec=job pikmin-3-histgrm
+
+[Service]
+Type=oneshot
+TimeoutStartSec=300

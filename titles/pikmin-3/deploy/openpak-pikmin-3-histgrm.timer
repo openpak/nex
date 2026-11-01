@@ -1,0 +1,10 @@
+[Unit]
+Description=Pikmin 3 ranking histogram, hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

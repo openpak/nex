@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.1 — 2026-11-01
+
+- pikmin-3: rankings rewritten. One row per player and category, UpdateMode and OrderBy honoured,
+  tie handling (113/123), group filter, and every GetRanking mode (range, near, friends, friends near, own);
+  common data stored. UploadScore is logged so the category map can be learnt.
+- pikmin-3: `nexd job pikmin-3-histgrm` registers the `histgrm` BOSS tasks and publishes a score
+  histogram for all four Pikmin 3 BOSS apps. The file layout is provisional and the upload is guarded
+  (see titles/pikmin-3/docs/histgrm.md).
+
 ## v1.4.0 — 2026-11-01
 
 - titles: Bayonetta 2, Sonic & All-Stars Racing Transformed, Terraria and Monster Hunter 3

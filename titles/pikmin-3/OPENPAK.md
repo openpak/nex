@@ -22,3 +22,8 @@ container's host and the block's `+0` port; the console asks nn-account for the 
 `game_server_id` and gets that address, its NEX password and a token.
 
 **Registration (2026-09-11):** row in nn-account's `servers` table (title ids from Pretendo's nex-viewer title database; Wii U game-server ids from Kinnay's Wii U list, where the id is the low 32 bits of the title id). Deployed as one container from the shared image. Not console-verified.
+
+**Rankings (2026-11-01):** `board/` holds the leaderboard rules and SQL, `histgrm/` the BOSS
+histogram job (`nexd job pikmin-3-histgrm`). See `docs/histgrm.md` for the established flow, what is
+still unknown (the histgrm file layout, the category map) and the go-live steps. Optional variables
+for the friends modes: `NEX_FRIENDS_GRPC_ADDR` / `NEX_FRIENDS_GRPC_KEY`.
