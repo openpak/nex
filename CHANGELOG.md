@@ -6,6 +6,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.0 — 2026-11-01
+
+- titles: Bayonetta 2, Sonic & All-Stars Racing Transformed, Terraria and Monster Hunter 3
+  Ultimate (Wii U), adapted from Pretendo's servers with their history (59 titles).
+- deps: nex-protocols-common-go to b5bf44f (v2.6.2 pre-release): per-title MatchmakeSession
+  attribute count and buffer length, JoinCommunity, AutoMatchmakeWithGatheringID_Postpone,
+  UpdateMatchmakeSessionAttributes, GetDetailedParticipants. MH3U needs the first two.
+
 ## v1.2.2 — 2026-10-10
 
 - logs: the login, ban, friend-list and endpoint lines no longer carry pids, account ids,
