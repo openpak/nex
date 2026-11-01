@@ -69,3 +69,11 @@ require (
 )
 
 replace github.com/PretendoNetwork/nex-go/v2 => ./nex-go-patched
+
+// OpenPak forks of Pretendo's protocol libraries (full history, AGPL-3.0, module paths unchanged
+// so the replaces drop out once the changes are upstream):
+//   github.com/openpak/nex-protocols-go          branch openpak, from v2.3.7
+//   github.com/openpak/nex-protocols-common-go   branch openpak, from b5bf44f
+replace github.com/PretendoNetwork/nex-protocols-go/v2 => github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2
+
+replace github.com/PretendoNetwork/nex-protocols-common-go/v2 => github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2

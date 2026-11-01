@@ -6,6 +6,17 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.8 — 2026-11-01
+
+- deps: nex-protocols-go and nex-protocols-common-go now come from the OpenPak forks
+  (github.com/openpak/nex-protocols-go v2.3.8-openpak.2, github.com/openpak/nex-protocols-common-go
+  v2.6.2-openpak.2, full upstream history, module paths unchanged, two replace lines). The forks add
+  the Ubisoft/Quazal Rendez-Vous definitions and handlers, hook-driven common handlers for ranking 2,
+  rating, subscription, storage manager, matchmake referee, persistent store, account management,
+  friends, screening, AA user, subscriber and the Pokemon Bank shop, matchmaking Find* and block-list
+  methods, ranking UseEmptyBoards() and a TestConnectivity hook. No title is changed; a handler a
+  title assigns before NewCommonProtocol is kept.
+
 ## v1.4.7 — 2026-11-01
 
 - splatoon (Wii U): Splatfest competition ranking (GetCompetitionRankingScore, UploadCompetitionRankingScore) with a
