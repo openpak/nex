@@ -48,6 +48,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /v1/courses/{id}", s.course)
 	mux.HandleFunc("GET /v1/courses/{id}/thumbnail", s.thumbnail)
 	mux.HandleFunc("GET /v1/makers", s.makers)
+	mux.HandleFunc("GET /v1/makers/{id}", s.maker)
 	mux.HandleFunc("GET /v1/bookmarks", s.listBookmarks)
 	mux.HandleFunc("PUT /v1/bookmarks", s.putBookmark)
 	mux.HandleFunc("DELETE /v1/bookmarks", s.deleteBookmark)
@@ -222,6 +223,27 @@ type wireMaker struct {
 	Created string `json:"created"`
 }
 
+func toWireMaker(m Maker) wireMaker {
+	return wireMaker{
+		ID: strconv.Itoa(int(m.PID)), Name: m.Name, Courses: m.Courses, Stars: m.Stars, Plays: m.Plays,
+		Medals: Medals(m.Stars), Created: m.Created.UTC().Format(time.RFC3339),
+	}
+}
+
+func (s *Server) maker(w http.ResponseWriter, r *http.Request) {
+	pid, err := strconv.ParseInt(r.PathValue("id"), 10, 32)
+	if err != nil || pid <= 0 {
+		writeError(w, http.StatusNotFound, "not a maker id")
+		return
+	}
+	m, err := s.Store.Maker(r.Context(), int32(pid))
+	if err != nil {
+		storeError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, toWireMaker(m))
+}
+
 func (s *Server) makers(w http.ResponseWriter, r *http.Request) {
 	list, total, err := s.Store.Makers(r.Context(), intParam(r, "limit", defaultLimit, maxLimit), intParam(r, "offset", 0, 0))
 	if err != nil {
@@ -230,10 +252,7 @@ func (s *Server) makers(w http.ResponseWriter, r *http.Request) {
 	}
 	out := make([]wireMaker, 0, len(list))
 	for _, m := range list {
-		out = append(out, wireMaker{
-			ID: strconv.Itoa(int(m.PID)), Name: m.Name, Courses: m.Courses, Stars: m.Stars, Plays: m.Plays,
-			Medals: Medals(m.Stars), Created: m.Created.UTC().Format(time.RFC3339),
-		})
+		out = append(out, toWireMaker(m))
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"total": total, "makers": out})
 }

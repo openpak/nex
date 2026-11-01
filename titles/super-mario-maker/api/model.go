@@ -53,7 +53,7 @@ type CourseQuery struct {
 	Limit        int
 	Offset       int
 	UpdatedSince time.Time
-	Name         string // contains, ignoring case
+	Name         string // contained in the name or a tag, ignoring case
 	OwnerPID     int32  // 0 for any maker
 	FailMin      *int   // failure rate band, inclusive; unattempted courses are left out
 	FailMax      *int
@@ -65,6 +65,7 @@ type Store interface {
 	Course(ctx context.Context, dataID uint64) (Course, error)
 	Thumbnail(ctx context.Context, dataID uint64) ([]byte, error)
 	Makers(ctx context.Context, limit, offset int) ([]Maker, int, error)
+	Maker(ctx context.Context, pid int32) (Maker, error)
 	// Pickup lists data IDs for the Dothub pickup list: failure rate inside [min, max], most starred first.
 	Pickup(ctx context.Context, failMin, failMax, limit int) ([]uint64, error)
 

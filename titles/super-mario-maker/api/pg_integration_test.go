@@ -137,6 +137,17 @@ func TestPostgres(t *testing.T) {
 		t.Fatalf("makers: %v %d %+v", err, mt, makers)
 	}
 
+	mk, err := s.Maker(ctx, 7)
+	if err != nil || mk.Stars != 63 || mk.Courses != 2 {
+		t.Fatalf("maker: %v %+v", err, mk)
+	}
+	if _, err := s.Maker(ctx, 99); err != ErrNotFound {
+		t.Fatalf("unknown maker: %v", err)
+	}
+	if list, _, _ := s.Courses(ctx, CourseQuery{Name: "tag", Limit: 10}); len(list) != 3 {
+		t.Fatalf("q matches tags too: %+v", list)
+	}
+
 	ids, err := s.Pickup(ctx, 96, 100, 400)
 	if err != nil || len(ids) != 1 || ids[0] != 943271 {
 		t.Fatalf("pickup: %v %v", err, ids)

@@ -54,6 +54,12 @@ func (f *fakeStore) Thumbnail(_ context.Context, id uint64) ([]byte, error) {
 func (f *fakeStore) Makers(context.Context, int, int) ([]Maker, int, error) {
 	return []Maker{{PID: 7, Name: "mari0", Courses: 1, Stars: 60, Plays: 10, Created: time.Unix(1700000000, 0)}}, 1, nil
 }
+func (f *fakeStore) Maker(_ context.Context, pid int32) (Maker, error) {
+	if pid == 7 {
+		return Maker{PID: 7, Name: "mari0", Courses: 1, Stars: 60}, nil
+	}
+	return Maker{}, ErrNotFound
+}
 func (f *fakeStore) Pickup(_ context.Context, lo, hi, limit int) ([]uint64, error) {
 	if lo == 96 {
 		return []uint64{950491, 943270}, nil
@@ -164,6 +170,19 @@ func TestMakersCarryMedals(t *testing.T) {
 	mk := m["makers"].([]any)[0].(map[string]any)
 	if mk["medals"].(float64) != 2 { // 60 stars: 1st (1) and 2nd (50) medals
 		t.Errorf("maker = %v", mk)
+	}
+}
+
+func TestSingleMaker(t *testing.T) {
+	h := (&Server{Store: newFake(), Key: "k"}).Handler()
+	_, m := do(t, h, "GET", "/v1/makers/7", "", "k")
+	if m["id"] != "7" || m["name"] != "mari0" || m["medals"].(float64) != 2 {
+		t.Errorf("maker = %v", m)
+	}
+	for path, want := range map[string]int{"/v1/makers/8": 404, "/v1/makers/x": 404} {
+		if rec, _ := do(t, h, "GET", path, "", "k"); rec.Code != want {
+			t.Errorf("%s: %d", path, rec.Code)
+		}
 	}
 }
 

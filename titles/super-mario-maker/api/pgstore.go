@@ -90,7 +90,8 @@ func courseFilters(q CourseQuery) (string, []any) {
 	}
 	if q.Name != "" {
 		esc := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(q.Name)
-		sb.WriteString(` AND o.name ILIKE '%' || ` + arg(esc) + ` || '%' ESCAPE '\'`)
+		a := arg(esc)
+		sb.WriteString(` AND (o.name ILIKE '%' || ` + a + ` || '%' ESCAPE '\' OR array_to_string(o.tags, ' ') ILIKE '%' || ` + a + ` || '%' ESCAPE '\')`)
 	}
 	if q.OwnerPID > 0 {
 		sb.WriteString(" AND o.owner = " + arg(q.OwnerPID))
@@ -193,6 +194,10 @@ func (s *PGStore) Thumbnail(ctx context.Context, dataID uint64) ([]byte, error) 
 
 // Makers implements Store. A maker is anyone who owns a visible course, best-starred first.
 func (s *PGStore) Makers(ctx context.Context, limit, offset int) ([]Maker, int, error) {
+	return s.makers(ctx, limit, offset, 0)
+}
+
+func (s *PGStore) makers(ctx context.Context, limit, offset int, only int32) ([]Maker, int, error) {
 	const base = `
 		SELECT c.owner, COALESCE(mk.name, ''), COUNT(*), COALESCE(SUM(c.stars), 0), COALESCE(SUM(c.plays), 0), MIN(c.created)
 		FROM (
@@ -200,13 +205,17 @@ func (s *PGStore) Makers(ctx context.Context, limit, offset int) ([]Maker, int, 
 			FROM datastore.objects o
 			LEFT JOIN datastore.object_custom_rankings st ON st.data_id = o.data_id AND st.application_id = 0
 			LEFT JOIN datastore.object_ratings pl ON pl.data_id = o.data_id AND pl.slot = %d
-			WHERE o.upload_completed AND NOT o.deleted AND NOT o.under_review AND o.data_type > 2 AND o.data_type < 50 AND o.owner IS NOT NULL
+			WHERE o.upload_completed AND NOT o.deleted AND NOT o.under_review AND o.data_type > 2 AND o.data_type < 50 AND o.owner IS NOT NULL%s
 		) c
 		LEFT JOIN LATERAL (
 			SELECT m.name FROM datastore.objects m
 			WHERE m.owner = c.owner AND m.data_type = 1 AND NOT m.deleted ORDER BY m.data_id DESC LIMIT 1) mk ON TRUE
 		GROUP BY c.owner, mk.name`
-	query := fmt.Sprintf(base, datastore_smm_db.RatingSlotPlays)
+	restrict := ""
+	if only > 0 {
+		restrict = fmt.Sprintf(" AND o.owner = %d", only)
+	}
+	query := fmt.Sprintf(base, datastore_smm_db.RatingSlotPlays, restrict)
 
 	var total int
 	if err := s.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM ("+query+") m").Scan(&total); err != nil {
@@ -229,6 +238,20 @@ func (s *PGStore) Makers(ctx context.Context, limit, offset int) ([]Maker, int, 
 		out = append(out, m)
 	}
 	return out, total, rows.Err()
+}
+
+// Maker implements Store.
+func (s *PGStore) Maker(ctx context.Context, pid int32) (Maker, error) {
+	// * The whole list is one grouped query over course rows; a single maker is cheap to pick out
+	// * with the same SQL, so the aggregation lives in one place.
+	list, _, err := s.makers(ctx, 1, 0, pid)
+	if err != nil {
+		return Maker{}, err
+	}
+	if len(list) == 0 {
+		return Maker{}, ErrNotFound
+	}
+	return list[0], nil
 }
 
 // Pickup implements Store.
