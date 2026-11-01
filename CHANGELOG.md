@@ -6,6 +6,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.9 — 2026-11-01
+
+- rewards: Mario Kart 8 tournament runs, Splatoon Splatfest match uploads and Super Mario Maker course clears and
+  uploads are reported to the rewards service (`REWARDS_EVENTS_URL` / `REWARDS_EVENTS_KEY`; unset = off). Async,
+  never blocks a NEX call.
+
 ## v1.4.8 — 2026-11-01
 
 - deps: nex-protocols-go and nex-protocols-common-go now come from the OpenPak forks
