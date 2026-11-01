@@ -12,6 +12,8 @@ import (
 	mk8ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/mario-kart-8"
 	ranking_types "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
 	"github.com/lib/pq"
+	nexhost "github.com/openpak/nex"
+	emit "github.com/openpak/rewards-emit"
 )
 
 // mk8Ranking answers Mario Kart 8's competition methods (14-16) and leaves the standard
@@ -350,8 +352,20 @@ func (s *Server) uploadCompetitionScore(in *nex.ByteStreamIn, conn *nex.PRUDPCon
 	if err := tx.Commit(); err != nil {
 		return storeError(err)
 	}
+	s.rewardsTournamentRun(uint64(conn.PID()), int64(p.ID), int64(p.SeasonID))
 	out.WriteBool(true)
 	return nil
+}
+
+// rewardsTournamentRun tells rewards that a player's tournament run was stored: one
+// tournament entered, and one finished race. The event id is the (tournament, season,
+// player) entry, so re-uploading a better score never counts twice.
+func (s *Server) rewardsTournamentRun(pid uint64, tournament, season int64) {
+	rw := nexhost.Rewards()
+	who := nexhost.PlayerOf("wiiu", pid)
+	id := fmt.Sprintf("mk8:tour:%d:%d:%d", tournament, season, pid)
+	rw.Event(emit.Event{ID: id + ":entered", Metric: "kart_tournaments_entered", Player: who, Keys: []string{fmt.Sprint(tournament)}})
+	rw.Event(emit.Event{ID: id + ":race", Metric: "kart_races_completed.mk8", Player: who})
 }
 
 func (s *Server) competitionInfo(in *nex.ByteStreamIn, conn *nex.PRUDPConnection, out *nex.ByteStreamOut) *nex.Error {

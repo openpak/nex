@@ -9,8 +9,10 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	datastore_super_mario_maker "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-mario-maker"
 	datastore_types "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/types"
+	nexhost "github.com/openpak/nex"
 	datastore_db "github.com/openpak/nex/titles/super-mario-maker/database/datastore"
 	"github.com/openpak/nex/titles/super-mario-maker/globals"
+	emit "github.com/openpak/rewards-emit"
 )
 
 func CompleteAttachFile(err error, packet nex.PacketInterface, callID uint32, param datastore_types.DataStoreCompletePostParam) (*nex.RMCMessage, *nex.Error) {
@@ -48,6 +50,13 @@ func CompleteAttachFile(err error, packet nex.PacketInterface, callID uint32, pa
 	if nexError != nil {
 		return nil, nexError
 	}
+
+	// The thumbnail attach ends a course upload: one course uploaded (distinct per course).
+	nexhost.Rewards().Event(emit.Event{
+		ID:     fmt.Sprintf("smm:upload:%d", uint64(param.DataID)),
+		Metric: "maker_courses_uploaded", Player: nexhost.PlayerOf("wiiu", uint64(packet.Sender().PID())),
+		Keys: []string{fmt.Sprint(uint64(param.DataID))},
+	})
 
 	pURL, err := globals.Presigner.GetObject(bucket, key, time.Minute*15)
 	if err != nil {

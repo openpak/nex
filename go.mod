@@ -1,6 +1,6 @@
 module github.com/openpak/nex
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/PretendoNetwork/grpc/go v0.0.0-20260901213955-10909a868ea7
@@ -15,6 +15,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
+	github.com/openpak/rewards-emit v0.1.0
 	google.golang.org/grpc v1.83.2
 )
 
