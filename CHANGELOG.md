@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.4 — 2026-11-01
+
+- super-mario-maker (Wii U): GameplayConfig from Pretendo PR 29 (100 Mario bands and counts, ranking timeframe,
+  upload notice); course lists (Latest, GetCustomRanking, ScoreRangeCascaded, BestScoreRate); difficulty
+  filtering in RecommendedCourseSearchObject from clear and attempt ratings; course queries bounded to course
+  data types (Pretendo issue 21). Internal read and bookmark API (SMM_API_ADDR, SMM_API_KEY), Dothub pickup
+  list (SMM_DOTHUB_ADDR, off by default), datastore.bookmarks, maker medals, course codes. Not console-verified;
+  see titles/super-mario-maker/OPENPAK.md.
+
 ## v1.4.3 — 2026-11-01
 
 - mario-kart-8: read-only JSON API for the OpenKart site (openpak/mktv), off unless MK8_API_ADDR is set:
