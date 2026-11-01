@@ -244,6 +244,7 @@ func (s *Server) serveSecure() {
 		log.Fatalf("[mario-kart-8] datastore: %v", err)
 	}
 
+	s.startAPI()
 	s.startYouTube()
 	log.Printf("[mario-kart-8] secure on udp :%d (nex %s)", s.cfg.SecurePort(), s.cfg.Version)
 	server.Listen(s.cfg.SecurePort())

@@ -6,6 +6,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.3 — 2026-11-01
+
+- mario-kart-8: read-only JSON API for the OpenKart site (openpak/mktv), off unless MK8_API_ADDR is set:
+  Mario Kart TV highlights, ghosts per course, course rankings, per-player standings, tournaments with
+  season leaderboards, and object bodies (images served as images, everything else as attachments).
+  Includes the YouTube id the upload worker stores. Unit tests plus a Postgres-backed test
+  (MK8_TEST_DATABASE_URL). Documented in titles/mario-kart-8/docs/read-api.md.
+
 ## v1.4.2 — 2026-11-01
 
 - mario-kart-8: tournament create/modify/delete hardened and tested: owner-guarded SQL writes (only the
