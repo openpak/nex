@@ -6,8 +6,8 @@ import (
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
-	megaranking "github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/database"
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/globals"
+	megaranking "github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/database"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"

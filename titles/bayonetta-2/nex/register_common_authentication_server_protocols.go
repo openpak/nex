@@ -1,7 +1,7 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/bayonetta-2/globals"
+	"github.com/openpak/nex/titles/bayonetta-2/globals"
 	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"

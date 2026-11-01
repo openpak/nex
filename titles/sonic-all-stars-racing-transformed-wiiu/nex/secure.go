@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/globals"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/globals"
 )
 
 func StartSecureServer() {

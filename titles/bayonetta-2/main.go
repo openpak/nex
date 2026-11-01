@@ -1,14 +1,14 @@
-package main
+package bayonetta2
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/bayonetta-2/nex"
+	"github.com/openpak/nex/titles/bayonetta-2/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

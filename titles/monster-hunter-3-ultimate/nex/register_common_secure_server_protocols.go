@@ -1,12 +1,12 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 
-	local_matchmaking "github.com/PretendoNetwork/monster-hunter-3-ultimate/nex/match-making"
-	local_message_delivery "github.com/PretendoNetwork/monster-hunter-3-ultimate/nex/message-delivery"
-	local_messaging_database "github.com/PretendoNetwork/monster-hunter-3-ultimate/nex/messaging/database"
+	local_matchmaking "github.com/openpak/nex/titles/monster-hunter-3-ultimate/nex/match-making"
+	local_message_delivery "github.com/openpak/nex/titles/monster-hunter-3-ultimate/nex/message-delivery"
+	local_messaging_database "github.com/openpak/nex/titles/monster-hunter-3-ultimate/nex/messaging/database"
 
 	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"

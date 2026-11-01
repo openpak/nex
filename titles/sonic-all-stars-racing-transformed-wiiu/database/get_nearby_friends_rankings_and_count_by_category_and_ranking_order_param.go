@@ -7,7 +7,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	rankingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
 	"github.com/PretendoNetwork/pq-extended"
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/globals"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/globals"
 )
 
 var getNearbyFriendsRankings *sql.Stmt

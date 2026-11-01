@@ -5,7 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonticketgranting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
 	ticketgranting "github.com/PretendoNetwork/nex-protocols-go/v2/ticket-granting"
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/globals"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/globals"
 	"os"
 	"strconv"
 )

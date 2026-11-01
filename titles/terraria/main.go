@@ -1,14 +1,14 @@
-package main
+package terraria
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/terraria/nex"
+	"github.com/openpak/nex/titles/terraria/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

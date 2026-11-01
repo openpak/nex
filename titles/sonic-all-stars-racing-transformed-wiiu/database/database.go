@@ -5,7 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	rankingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/globals"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/globals"
 	"time"
 )
 

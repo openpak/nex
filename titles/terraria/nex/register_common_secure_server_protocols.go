@@ -8,8 +8,8 @@ import (
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	utility "github.com/PretendoNetwork/nex-protocols-go/v2/utility"
-	megaranking "github.com/PretendoNetwork/terraria/database"
-	"github.com/PretendoNetwork/terraria/globals"
+	megaranking "github.com/openpak/nex/titles/terraria/database"
+	"github.com/openpak/nex/titles/terraria/globals"
 
 	commonmatchmaking "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making"
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"

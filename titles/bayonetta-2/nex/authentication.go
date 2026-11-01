@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/bayonetta-2/globals"
+	"github.com/openpak/nex/titles/bayonetta-2/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 )
 

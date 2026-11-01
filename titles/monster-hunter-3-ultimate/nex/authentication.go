@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 )
 

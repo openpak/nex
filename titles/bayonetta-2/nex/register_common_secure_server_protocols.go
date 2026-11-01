@@ -1,7 +1,7 @@
 package nex
 
 import (
-	"github.com/PretendoNetwork/bayonetta-2/globals"
+	"github.com/openpak/nex/titles/bayonetta-2/globals"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"

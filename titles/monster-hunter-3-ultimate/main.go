@@ -1,14 +1,14 @@
-package main
+package mh3u
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/nex"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

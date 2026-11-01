@@ -5,7 +5,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	rankingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/ranking/types"
-	"github.com/PretendoNetwork/terraria/globals"
+	"github.com/openpak/nex/titles/terraria/globals"
 	"time"
 )
 

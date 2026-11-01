@@ -3,7 +3,7 @@ package nex_matchmaking_database
 import (
 	"database/sql"
 
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"

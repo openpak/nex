@@ -1,14 +1,14 @@
-package main
+package sasrtwiiu
 
 import (
 	"sync"
 
-	"github.com/PretendoNetwork/sonic-all-stars-racing-transformed-wiiu/nex"
+	"github.com/openpak/nex/titles/sonic-all-stars-racing-transformed-wiiu/nex"
 )
 
 var wg sync.WaitGroup
 
-func main() {
+func run() {
 	wg.Add(2)
 
 	// TODO - Add gRPC server

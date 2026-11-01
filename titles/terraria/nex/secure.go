@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/PretendoNetwork/nex-go/v2"
-	"github.com/PretendoNetwork/terraria/globals"
+	"github.com/openpak/nex/titles/terraria/globals"
 )
 
 func StartSecureServer() {

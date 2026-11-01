@@ -1,6 +1,6 @@
 package database
 
-import "github.com/PretendoNetwork/monster-hunter-3-ultimate/globals"
+import "github.com/openpak/nex/titles/monster-hunter-3-ultimate/globals"
 
 // * Forgive me for the hacky SQL I must do to make this work.
 

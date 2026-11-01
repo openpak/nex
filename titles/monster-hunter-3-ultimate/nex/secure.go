@@ -2,8 +2,8 @@ package nex
 
 import (
 	"fmt"
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/database"
-	"github.com/PretendoNetwork/monster-hunter-3-ultimate/globals"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/database"
+	"github.com/openpak/nex/titles/monster-hunter-3-ultimate/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	match_making_database "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making/database"

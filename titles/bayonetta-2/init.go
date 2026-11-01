@@ -1,4 +1,4 @@
-package main
+package bayonetta2
 
 import (
 	"crypto/rand"
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PretendoNetwork/bayonetta-2/globals"
+	"github.com/openpak/nex/titles/bayonetta-2/globals"
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"github.com/PretendoNetwork/plogger-go"
@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func init() {
+func initialize() {
 	globals.Logger = plogger.NewLogger()
 
 	var err error
