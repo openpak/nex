@@ -146,6 +146,20 @@ func initPostgres() {
 		os.Exit(0)
 	}
 
+	// * Bookmarks are OpenPak's. A maker's list of bookmarked courses, written by the course
+	// * site through the title's internal API (api package). Nothing in the retail protocol
+	// * is known to read it yet; see OPENPAK.md
+	_, err = Postgres.Exec(`CREATE TABLE IF NOT EXISTS datastore.bookmarks (
+		maker_pid int NOT NULL,
+		data_id bigint NOT NULL,
+		created timestamp NOT NULL DEFAULT NOW(),
+		PRIMARY KEY(maker_pid, data_id)
+	)`)
+	if err != nil {
+		globals.Logger.Critical(err.Error())
+		os.Exit(0)
+	}
+
 	globals.Logger.Success("Postgres tables created")
 
 	ensureEventCourseMetaDataFileExists()
