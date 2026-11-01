@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.6 — 2026-11-01
+
+- pikmin-3: rankings rewritten. One row per player and category, UpdateMode and OrderBy honoured,
+  tie handling (113/123), group filter, and every GetRanking mode (range, near, friends, friends near, own);
+  common data stored. UploadScore is logged so the category map can be learnt.
+- pikmin-3: `nexd job pikmin-3-histgrm` registers the `histgrm` BOSS tasks and publishes a score
+  histogram for all four Pikmin 3 BOSS apps. The file layout is provisional and the upload is guarded
+  (see titles/pikmin-3/docs/histgrm.md).
+
 ## v1.4.5 — 2026-11-01
 
 - super-mario-maker (Wii U): the internal API also serves GET /v1/makers/{id} and matches tags in q, as the course
@@ -36,15 +45,6 @@ OpenPak work starts at the port/fork commit.
 - mario-kart-8: Mario Kart TV to YouTube worker (off unless MK8_YT_ENABLED=1; needs the owner-created Google
   credentials) with per-player opt-in and the YouTube video id stored for the MKTV site. Findings on how the
   game uploads to YouTube are in titles/mario-kart-8/docs/mktv-youtube.md.
-
-## v1.4.1 — 2026-11-01
-
-- pikmin-3: rankings rewritten. One row per player and category, UpdateMode and OrderBy honoured,
-  tie handling (113/123), group filter, and every GetRanking mode (range, near, friends, friends near, own);
-  common data stored. UploadScore is logged so the category map can be learnt.
-- pikmin-3: `nexd job pikmin-3-histgrm` registers the `histgrm` BOSS tasks and publishes a score
-  histogram for all four Pikmin 3 BOSS apps. The file layout is provisional and the upload is guarded
-  (see titles/pikmin-3/docs/histgrm.md).
 
 ## v1.4.0 — 2026-11-01
 
