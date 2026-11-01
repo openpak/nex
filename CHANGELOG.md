@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.5 — 2026-11-01
+
+- super-mario-maker (Wii U): the internal API also serves GET /v1/makers/{id} and matches tags in q, as the course
+  site expects (common/mario-maker docs/api-contract.md).
+
 ## v1.4.4 — 2026-11-01
 
 - super-mario-maker (Wii U): GameplayConfig from Pretendo PR 29 (100 Mario bands and counts, ranking timeframe,
