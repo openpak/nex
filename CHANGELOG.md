@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.4.12 — 2026-11-02
+
+- rankings: the OpenPak rankings contract (`internal/rankingsapi`, read-only JSON on the container network) for every
+  Wii U / 3DS title that already stores ranking rows, on `RANKINGS_ADDR` (for example `:9090`; unset = off). Network
+  `wiiu`; rows carry the stored pid. Shared plumbing in `rankings.go`. Titles: dr-luigi, miracle-cure (`rankings`),
+  puyo-puyo-tetris, sonic-all-stars-racing-transformed-wiiu, terraria (`ranking.scores`), mario-kart-7, mario-kart-8
+  (time trials; the per-course `/api/v1/courses/{course}/rankings` API stays), pikmin-3 (category boards) and splatoon
+  (one board per Splatfest). No new storage.
+
 ## v1.4.11 — 2026-11-02
 
 - mario-kart-7: stores what the game uploads. Time-trial rankings on the legacy Ranking protocol (0x70; the

@@ -247,6 +247,7 @@ func (s *Server) serveSecure() {
 	}
 
 	s.startAPI()
+	nexhost.ServeRankings(nexhost.TimeTrialRankings(s.db, "mk8.ranking_scores", "score"))
 	s.startYouTube()
 	log.Printf("[mario-kart-8] secure on udp :%d (nex %s)", s.cfg.SecurePort(), s.cfg.Version)
 	server.Listen(s.cfg.SecurePort())

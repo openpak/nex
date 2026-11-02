@@ -90,6 +90,7 @@ NEX_TITLE=<title> go run ./cmd/nexd
 | Variable | Value |
 | --- | --- |
 | `NEX_TITLE` | The module name, for example `mario-kart-8-deluxe`. Unset runs the bare host |
+| `RANKINGS_ADDR` | Listen address (for example `:9090`) of the read-only rankings endpoint on titles that store scores; unset = off. Container network only |
 | `NEX_TLS_CERT`, `NEX_TLS_KEY` | Leaf certificate and key, when the proxy passes SNI through instead of terminating TLS |
 
 All settings are in [docs/deploy.md](docs/deploy.md).

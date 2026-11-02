@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/titles/miracle-cure/database"
 )
 
 // Title is this game's entry in the shared NEX host.
@@ -31,6 +32,7 @@ func Run(cfg nexhost.Config) error {
 	setenv("PN_SECURE_SERVER_HOST", cfg.SecureHost)
 	setenv("PN_SECURE_SERVER_PORT", strconv.Itoa(cfg.SecurePort()))
 	initialize()
+	nexhost.ServeRankings(nexhost.LegacyRankings(database.Postgres, nil))
 	run()
 	return nil
 }
