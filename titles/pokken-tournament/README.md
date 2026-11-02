@@ -1,9 +1,6 @@
 # Pokkén Tournament replacement server
 Includes both the authentication and secure servers
 
-## Status
-Mostly functional, besides Ranking data.
-
 ## Compiling
 
 ### Setup

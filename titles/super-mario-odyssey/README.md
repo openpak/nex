@@ -43,13 +43,10 @@ Everything is environment-driven; see [`example.env`](example.env). Port block *
 `platforms/wiiu-3ds/games/nex` transport default is correct for Odyssey; the one unconfirmed value is
 `NEX_VERSION` (a `4.0.0` guess). No secrets live in the repository.
 
-## Status
+## Open questions
 
-Builds, vets and tests green. Run against a throwaway Postgres it starts in the two-listener
-shape, answers `/healthz`, and creates its schema — but no console has touched it. The NEX
-version, the access key (from earlier research notes, not binary-verified), and the whole Balloon
-extension are open questions a live capture must answer. Treat multiplayer claims as a plan
-until then.
+The NEX version, the access key (from earlier research notes, not binary-verified), and the whole
+Balloon extension are open questions a live capture must answer.
 
 ## Ground rules
 

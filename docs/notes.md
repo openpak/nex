@@ -10,15 +10,12 @@ PRUDP, kerberos and the standard protocols. This adds the three things they leav
 Switch token login, OpenPak identity, and the OpenPak service shape. **Not a from-scratch NEX
 implementation.**
 
-## Status
+## Open dependency
 
-Status (2026-09-09): the host builds, runs, serves `/healthz`, listens on a configured NEX
-block, and completes the ticket-granting handshake for a Switch login whose id token nx-baas
-proves. **Nothing has been run against a console or a real title.** The wire shapes are no
-longer guesses — they are taken from working servers and public documentation, each recorded
-with its source in [`provenance.md`](provenance.md) — but one dependency is open:
-nx-baas cannot yet prove a *real console's* BAAS id token, only an emulator's bound claim, so
-a genuine console's login is still refused. See the end of [`docs/design.md`](design.md).
+The wire shapes are taken from working servers and public documentation, each recorded with
+its source in [`provenance.md`](provenance.md). nx-baas proves an emulator's bound claim but not
+a real console's BAAS id token, so a genuine console's login is refused until it can. See the
+end of [`docs/design.md`](design.md).
 
 ## Titles
 

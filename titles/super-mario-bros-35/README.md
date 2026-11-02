@@ -9,11 +9,9 @@ online today except against a server like this one.** That makes it a pure prese
 target, and it is the reason there is no identity wall here — there is no vendor left to
 validate a token.
 
-**Status:** builds, starts, serves `/healthz`, and registers every NEX protocol the game
-calls, with the wire types and values taken from a reference implementation that is publicly
-documented to have worked against a retail client. **Nothing has been run against the game.**
-The one thing missing before a match can actually be played is the Eagle relay, which is not
-in this repository and does not exist in OpenPak yet — see [`docs/design.md`](docs/design.md).
+It registers every NEX protocol the game calls, with the wire types and values taken from a
+reference implementation that is publicly documented to have worked against a retail client.
+A match also needs the Eagle relay, which is not in this repository — see [`docs/design.md`](docs/design.md).
 Every remaining assumption is listed there as an open question, and every protocol fact cites
 its source in [`docs/provenance.md`](docs/provenance.md).
 

@@ -1,7 +1,7 @@
 # Splatoon (Wii U): Splatfest, rotation and matchmaking on OpenPak
 
 What the game server does for the five Splatoon 1 features Pretendo lists, what it takes from elsewhere, and
-what a console still has to confirm. Nothing here is console-verified yet.
+what a console still has to confirm.
 
 ## Upstream comparison (PretendoNetwork/splatoon)
 

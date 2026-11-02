@@ -8,14 +8,10 @@ one — including a friend's. This binary registers the protocol set Minecraft s
 secure endpoint and wires the friend lookup; the shared host owns everything up to and
 including login.
 
-## Status
+## Design
 
-Starts against a real Postgres, serves `/healthz`, listens on its port block, and registers
-Minecraft's protocols. Verified locally (`go build/vet/test` green; run against Postgres 16,
-`/healthz` → `ok minecraft websocket auth=22310 secure=22311`). **Not yet run against a real
-console** — the station scheme and access key are the two things a hardware run confirms. See
-[`docs/design.md`](docs/design.md) for the open questions and [`docs/provenance.md`](docs/provenance.md)
-for where each fact came from.
+See [`docs/design.md`](docs/design.md) for the open questions (station scheme, access key) and
+[`docs/provenance.md`](docs/provenance.md) for where each fact came from.
 
 ## Protocols
 

@@ -3,9 +3,8 @@
 NEX game server for **Mario Strikers: Battle League** on Nintendo Switch, built on Pretendo's
 AGPL `nex-go` through [`platforms/wiiu-3ds/games/nex`](../../README.md).
 
-**Status:** the confirmed protocol substrate is registered and the binary builds, vets and tests
-green; full club/online play is capture-driven next-round work. `platforms/wiiu-3ds/games/nex` owns login; this
-binary registers what Strikers speaks on the secure endpoint.
+`platforms/wiiu-3ds/games/nex` owns login; this binary registers the confirmed protocol substrate
+Strikers speaks on the secure endpoint.
 
 ## What runs
 
