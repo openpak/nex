@@ -110,3 +110,10 @@ because it asks for friends by 32-bit PID. OpenPak has the friend graph from nx-
 - Whether the placeholder station URL is universal across Switch titles or SMB35-specific. It
   is the default only in single-listener mode, so a title that needs a real address gets one
   by leaving the stream IDs equal, or by overwriting `Host.SecureStationURL`.
+
+## Ground rules
+
+Clean room: public protocol documentation, our own captures and compatibly licensed code are the
+only inputs, alongside facts read from the implementation being replaced. Every protocol fact
+cites its source here. No code, comment, structure or naming was copied from a source-available
+implementation. AGPL-3.0-only; ports come from the contributors ports page.

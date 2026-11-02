@@ -97,9 +97,7 @@ All settings are in [docs/deploy.md](docs/deploy.md).
 ## Docs
 
 - [Protocol](docs/protocol.md): hosts, login methods, bans
-- [Evidence](docs/evidence.md): provenance of protocol facts
 - [Deploy](docs/deploy.md): ports, environment, image, build and test
-- [Notes](docs/notes.md): design, ground rules
 - [Design](docs/design.md): worked example and open dependency
 - [Provenance](docs/provenance.md): source of every wire-level fact
 
@@ -108,3 +106,5 @@ Live compatibility status: [openpak.org/titles](https://openpak.org/titles)
 ## Licence
 
 AGPL-3.0-only. See [LICENSE](LICENSE).
+
+PRDs: openpak/prds (private)
