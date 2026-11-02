@@ -49,3 +49,5 @@ which follows NintendoClients' wiki (MIT) and was written from the wire layouts.
 
 Not console-verified. `OPENPAK.md` in the other Wii U titles explains how consoles find a server
 (nn-account's `servers` table); the same row exists for this one.
+
+**Registration (2026-10-27):** rows prepared in [`servers/nex/registration.sql`](../../registration.sql) section A, block 22410 (Wii U game-server id = low 32 bits of the title id; JPN 000500001010EB00, USA 000500001010EC00, EUR 000500001010ED00 from Kinnay's title database; JPN id confirmed in Kinnay's NEX list). Applies with the next deployment pass (container needs NEX_PORT_BASE=22410); not console-verified.

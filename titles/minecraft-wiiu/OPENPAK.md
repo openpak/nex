@@ -22,3 +22,5 @@ Pass-through variables (set them in the container environment as upstream docume
 
 Consoles reach it through nn-account: the title's row in nn-account's `servers` table names this
 container's host and the block's `+0` port.
+
+**Registration (2026-10-27):** rows prepared in [`servers/nex/registration.sql`](../../registration.sql) section A, block 22430 (low-32 derivation; USA 00050000101D9D00, EUR 00050000101D7500, JPN 00050000101DBE00 from Kinnay's title database; USA id confirmed in Kinnay's NEX list; Story Mode is a separate title, not covered). Applies with the next deployment pass (container needs NEX_PORT_BASE=22430); not console-verified.

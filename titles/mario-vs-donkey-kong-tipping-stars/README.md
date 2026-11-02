@@ -24,3 +24,5 @@ three slots from the game's own `RatingInitParams`. Level sharing itself is Miiv
 (nn-juxtaposition), not this server.
 
 Not console-verified.
+
+**Registration (2026-10-27):** Wii U rows prepared in [`servers/nex/registration.sql`](../../registration.sql) section A, block 22420 (low-32 derivation; USA 0005000010149300, EUR 0005000010178E00, JPN 0005000010179200 from Kinnay's title database). The 3DS regions stay unregistered until a console observation supplies the id (NASC rejects mismatches, 152). Applies with the next deployment pass (container needs NEX_PORT_BASE=22420); not console-verified.
