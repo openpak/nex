@@ -3,6 +3,7 @@ package nexhost
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -214,4 +215,35 @@ func TimeTrialRankings(db *sql.DB, table, score string) SQLRankings {
 		Desc:      `false`,
 		Tie:       `updated_at ASC, pid ASC`,
 	}
+}
+
+// combined serves several SQLRankings as one Source: the boards of every part, and a board's
+// rows from the part that owns the id (each part's Match must be false for ids it does not own).
+type combined []SQLRankings
+
+// CombineRankings joins SQLRankings with disjoint board ids into one Source, for a title whose
+// boards come from different tables or kinds (Super Mario Maker's stars and clear times).
+func CombineRankings(parts ...SQLRankings) rankingsapi.Source { return combined(parts) }
+
+func (c combined) Boards(ctx context.Context) ([]rankingsapi.Board, error) {
+	var out []rankingsapi.Board
+	for _, p := range c {
+		b, err := p.Boards(ctx)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, b...)
+	}
+	return out, nil
+}
+
+func (c combined) Rows(ctx context.Context, board string, q rankingsapi.Query) (rankingsapi.Page, error) {
+	for _, p := range c {
+		pg, err := p.Rows(ctx, board, q)
+		if errors.Is(err, rankingsapi.ErrNoBoard) {
+			continue
+		}
+		return pg, err
+	}
+	return rankingsapi.Page{}, rankingsapi.ErrNoBoard
 }

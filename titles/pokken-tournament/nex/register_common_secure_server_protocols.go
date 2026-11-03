@@ -22,7 +22,7 @@ import (
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
 	"github.com/openpak/nex/titles/pokken-tournament/globals"
 	local_common_datastore "github.com/openpak/nex/titles/pokken-tournament/nex/datastore"
-	local_ranking "github.com/openpak/nex/titles/pokken-tournament/nex/ranking"
+	"github.com/openpak/nex/internal/scoreboard"
 )
 
 func registerCommonSecureServerProtocols() {
@@ -59,8 +59,9 @@ func registerCommonSecureServerProtocols() {
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
 	commonRankingProtocol := common_ranking.NewCommonProtocol(rankingProtocol)
-	commonRankingProtocol.GetRankingsAndCountByCategoryAndRankingOrderParam = local_ranking.GetRankingsAndCountByCategoryAndRankingOrder
-	commonRankingProtocol.InsertRankingByPIDAndRankingScoreData = local_ranking.InsertRankingByPIDAndRankingScoreData
+	if err := scoreboard.Install(commonRankingProtocol, globals.PostgresDB, globals.GetUserFriendPIDs); err != nil {
+		globals.Logger.Error(err.Error())
+	}
 
 	datastoreProtocol := datastore.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(datastoreProtocol)

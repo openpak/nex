@@ -1,6 +1,8 @@
 package nex
 
 import (
+	commonranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
+	"github.com/openpak/nex/internal/scoreboard"
 	//"fmt"
 
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -57,6 +59,10 @@ func registerCommonSecureServerProtocols() {
 
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
+	commonRankingProtocol := commonranking.NewCommonProtocol(rankingProtocol)
+	if err := scoreboard.Install(commonRankingProtocol, globals.Postgres, globals.GetUserFriendPIDs); err != nil {
+		globals.Logger.Error(err.Error())
+	}
 
 	matchmakeExtensionProtocol := matchmakeextension.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)

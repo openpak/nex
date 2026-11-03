@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/titles/super-smash-bros-3ds/database"
 )
 
 // Title is this game's entry in the shared NEX host.
@@ -36,6 +37,7 @@ func Run(cfg nexhost.Config) error {
 	setenv("PN_SSB3DS_SECURE_SERVER_HOST", cfg.SecureHost)
 	setenv("PN_SSB3DS_SECURE_SERVER_PORT", strconv.Itoa(cfg.SecurePort()))
 	initialize()
+	nexhost.ServeRankings(nexhost.ScoresRankings(database.Postgres, nil))
 	run()
 	return nil
 }

@@ -23,6 +23,8 @@ func defaults(c *nexhost.Config) { c.Transport = "udp" }
 
 // Run maps the Config onto upstream's environment, then starts upstream's servers.
 func Run(cfg nexhost.Config) error {
+	// Rewards: count online sessions (two players sharing a gathering for 3 minutes).
+	nexhost.WatchSessions(cfg, "game_sessions.minecraft-wiiu", "wiiu")
 	setenv("PN_MINECRAFT_ACCOUNT_GRPC_API_KEY", cfg.AccountGRPCKey)
 	setenv("PN_MINECRAFT_ACCOUNT_GRPC_HOST", hostOf(cfg.AccountGRPCAddr))
 	setenv("PN_MINECRAFT_ACCOUNT_GRPC_PORT", portOf(cfg.AccountGRPCAddr))

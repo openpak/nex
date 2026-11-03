@@ -91,7 +91,15 @@ NEX_TITLE=<title> go run ./cmd/nexd
 | --- | --- |
 | `NEX_TITLE` | The module name, for example `mario-kart-8-deluxe`. Unset runs the bare host |
 | `RANKINGS_ADDR` | Listen address (for example `:9090`) of the read-only rankings endpoint on titles that store scores; unset = off. Container network only |
+| `REWARDS_EVENTS_URL`, `REWARDS_EVENTS_KEY`, `REWARDS_SESSION_MIN` | Rewards events; titles on Postgres matchmaking report online sessions as `game_sessions.<title>` (list in the changelog). Unset = off |
 | `NEX_TLS_CERT`, `NEX_TLS_KEY` | Leaf certificate and key, when the proxy passes SNI through instead of terminating TLS |
+
+Rankings: Tetris Axis, Puyo Puyo!! 20th, Pokken, Smash 3DS / Wii U, Yo-kai Watch 2, Monster Hunter 4, Stories and XX,
+Ice Station Z and RE Mercenaries 3D store uploaded scores through `internal/scoreboard` (`ranking.scores`,
+`ranking.categories`, `ranking.common_data`, the Puyo Puyo Tetris / Sonic schema) and serve the contract with
+`nexhost.ScoresRankings`. Super Mario Maker serves three boards (course stars, maker stars, fastest clears) from its
+datastore tables. Board names are `Board N` unless documented. Pokemon X/Y/OR/AS do not register Ranking (Rating only),
+so there is nothing to store.
 
 All settings are in [docs/deploy.md](docs/deploy.md).
 

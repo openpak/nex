@@ -6,12 +6,15 @@ import (
 	commonmatchmakingext "github.com/PretendoNetwork/nex-protocols-common-go/v2/match-making-ext"
 	commonmatchmakeextension "github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension"
 	commonnattraversal "github.com/PretendoNetwork/nex-protocols-common-go/v2/nat-traversal"
+	commonranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
 	commonsecure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
+	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
 	secure "github.com/PretendoNetwork/nex-protocols-go/v2/secure-connection"
+	"github.com/openpak/nex/internal/scoreboard"
 	"github.com/openpak/nex/titles/puyo-puyo-20th/globals"
 )
 
@@ -45,8 +48,13 @@ func registerCommonSecureServerProtocols() {
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
 
-	// ponytail: upstream registers Ranking (legacy) and StorageManager through common
-	// implementations that exist only on a Pretendo development branch, not in any released
-	// nex-protocols-common-go. Until those ship, the two protocols are not registered and
-	// answer Core::NotImplemented; matchmaking and NAT traversal are unaffected.
+	// Ranking (0x70): the shared ranking.scores store. StorageManager stays unregistered
+	// (upstream's common implementation is only on a Pretendo development branch) and
+	// answers Core::NotImplemented.
+	rankingProtocol := ranking.NewProtocol()
+	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
+	commonRankingProtocol := commonranking.NewCommonProtocol(rankingProtocol)
+	if err := scoreboard.Install(commonRankingProtocol, globals.Postgres, globals.GetUserFriendPIDs); err != nil {
+		globals.Logger.Error(err.Error())
+	}
 }

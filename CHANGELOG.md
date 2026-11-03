@@ -6,6 +6,30 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.5.0 — 2026-11-03
+
+- rewards: online sessions (`WatchSessions`, two players sharing a gathering for 3 minutes) for every title on the
+  common Postgres matchmaking (`matchmaking.gatherings`), metric `game_sessions.<title>`. Wii U (namespace `wiiu`):
+  bayonetta-2, dr-luigi, monster-hunter-3-ultimate, minecraft-wiiu, pokken-tournament, puyo-puyo-tetris,
+  sonic-all-stars-racing-transformed-wiiu, terraria. 3DS (`3ds`): animal-crossing-new-leaf, f1-2011, ice-station-z,
+  ironfall-invasion, kid-icarus-uprising, luigis-mansion-2, metroid-prime-federation-force, monster-hunter-4,
+  monster-hunter-4-ultimate, monster-hunter-generations, monster-hunter-stories, monster-hunter-xx, pokemon-gen6,
+  puyo-puyo-20th, resident-evil-the-mercenaries-3d, steel-diver-sub-wars, super-street-fighter-iv, tetris-axis,
+  tri-force-heroes, yo-kai-watch-2, yo-kai-watch-blasters. MK7, MK8, Splatoon and Smash keep their family metrics.
+  No matchmaking, so no session metric: miracle-cure, wiiu-chat (own handlers), pikmin-3, super-mario-3d-world,
+  super-mario-maker, team-kirby-clash-deluxe, pokemon-rumble-world, tipping-stars. No Pokemon GTS exists in this
+  repo, so no `trades_completed`.
+- rankings: new shared store `internal/scoreboard` (the Puyo Puyo Tetris / Sonic implementation in one place:
+  ranking.scores, categories, common_data; global, nearby, friends, nearby-friends and own boards; common data
+  read and write). Tetris Axis, Puyo Puyo!! 20th (Ranking is now registered; StorageManager stays unregistered),
+  Pokken (the two stubs are gone), Smash 3DS, Smash Wii U, Yo-kai Watch 2, MH4, MH Stories, MHXX, Ice Station Z and
+  RE Mercenaries 3D now keep uploaded scores and serve them on the rankings contract (`RANKINGS_ADDR`). Category
+  ids are not documented for these games, so boards are named `Board N`; no capture was available, so the
+  response layouts are the shared ones.
+- rankings: Super Mario Maker serves "Course stars", "Maker stars" and "Fastest clears" from the datastore
+  tables (`CombineRankings` joins SQLRankings sources).
+- Pokemon X/Y/OR/AS: Ranking is not registered by the server (Rating `Unk1/Unk2` only); nothing stored or served.
+
 ## v1.4.12 — 2026-11-02
 
 - rankings: the OpenPak rankings contract (`internal/rankingsapi`, read-only JSON on the container network) for every

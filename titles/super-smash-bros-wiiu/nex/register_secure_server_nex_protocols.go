@@ -1,9 +1,11 @@
 package nex
 
 import (
+	commonranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
 	datastore_super_smash_bros_4_protocol "github.com/PretendoNetwork/nex-protocols-go/v2/datastore/super-smash-bros-4"
 	matchmake_referee "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-referee"
 	ranking "github.com/PretendoNetwork/nex-protocols-go/v2/ranking"
+	"github.com/openpak/nex/internal/scoreboard"
 	"github.com/openpak/nex/titles/super-smash-bros-wiiu/globals"
 	datastore_super_smash_bros_4 "github.com/openpak/nex/titles/super-smash-bros-wiiu/nex/datastore/super-smash-bros-wiiu"
 )
@@ -27,4 +29,8 @@ func registerSecureServerNEXProtocols() {
 	// TODO - Add legacy ranking protocol!
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)
+	commonRankingProtocol := commonranking.NewCommonProtocol(rankingProtocol)
+	if err := scoreboard.Install(commonRankingProtocol, globals.Postgres, globals.GetUserFriendPids); err != nil {
+		globals.Logger.Error(err.Error())
+	}
 }

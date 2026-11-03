@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/titles/monster-hunter-xx/globals"
 )
 
 // Title is this game's entry in the shared NEX host.
@@ -23,6 +24,8 @@ func defaults(c *nexhost.Config) { c.Transport = "udp" }
 
 // Run maps the Config onto upstream's environment, then starts upstream's servers.
 func Run(cfg nexhost.Config) error {
+	// Rewards: count online sessions (two players sharing a gathering for 3 minutes).
+	nexhost.WatchSessions(cfg, "game_sessions.monster-hunter-xx", "3ds")
 	setenv("PN_MHXX_ACCOUNT_GRPC_API_KEY", cfg.AccountGRPCKey)
 	setenv("PN_MHXX_ACCOUNT_GRPC_HOST", hostOf(cfg.AccountGRPCAddr))
 	setenv("PN_MHXX_ACCOUNT_GRPC_PORT", portOf(cfg.AccountGRPCAddr))
@@ -34,6 +37,7 @@ func Run(cfg nexhost.Config) error {
 	setenv("PN_MHXX_SECURE_SERVER_HOST", cfg.SecureHost)
 	setenv("PN_MHXX_SECURE_SERVER_PORT", strconv.Itoa(cfg.SecurePort()))
 	initialize()
+	nexhost.ServeRankings(nexhost.ScoresRankings(globals.Postgres, nil))
 	run()
 	return nil
 }
