@@ -8,6 +8,7 @@ package nexhost
 // REWARDS_EVENTS_URL / REWARDS_EVENTS_KEY unset every call here is a no-op.
 
 import (
+	"fmt"
 	"context"
 	"strconv"
 	"sync"
@@ -36,7 +37,13 @@ func FlushRewards() {
 
 // PlayerOf names a Wii U / 3DS player for the rewards service: the account core links them as
 // namespace "wiiu" (or "3ds") with the PID as the subject; rewards tries both.
+//
+// Switch titles are linked as namespace "switch" with the nx-baas PID as 16 hex digits, the same
+// subject switch-nex sends.
 func PlayerOf(namespace string, pid uint64) *emit.Identity {
+	if namespace == "switch" {
+		return &emit.Identity{Namespace: namespace, Subject: fmt.Sprintf("%016x", pid)}
+	}
 	return &emit.Identity{Namespace: namespace, Subject: strconv.FormatUint(pid, 10)}
 }
 

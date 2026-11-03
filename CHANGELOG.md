@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.5.2 — 2026-11-03
+
+- Monster Hunter Generations Ultimate reports online sessions (`game_sessions.monster-hunter-generations-ultimate`), card #80.
+  `PlayerOf("switch", pid)` names a Switch player as the 16-hex PID, the subject switch-nex sends.
+
 ## v1.5.1 — 2026-11-03
 
 - The session watcher holds one connection only while it polls (max open 1, no idle): Postgres is capped at 100 connections and the 29 new watchers must not use them up.

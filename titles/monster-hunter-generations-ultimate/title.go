@@ -43,6 +43,8 @@ import (
 
 // Register wires the title's protocols onto the shared host.
 func Register(host *nexhost.Host) error {
+	// Rewards: count online sessions (two players sharing a gathering for 3 minutes).
+	nexhost.WatchSessions(host.Config, "game_sessions.monster-hunter-generations-ultimate", "switch")
 
 	// MHGU is the Switch port of a 3DS game and its online code came with it: it wants the
 	// older kerberos ticket, version 0, without the random-key wrapper version 1 puts in
