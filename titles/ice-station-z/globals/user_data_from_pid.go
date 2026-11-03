@@ -9,6 +9,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
 	"google.golang.org/grpc/metadata"
+	"sync"
 	"time"
 )
 
@@ -17,26 +18,35 @@ type UserDataCacheEntry struct {
 	creationTime time.Time
 }
 
-var UserDataCache map[types.PID]UserDataCacheEntry
+var (
+	UserDataCache   map[types.PID]UserDataCacheEntry
+	userDataCacheMu sync.Mutex
+)
 
 func UserDataFromPID(pid types.PID) (*pb.GetUserDataResponse, uint32) {
 
+	userDataCacheMu.Lock()
 	if UserDataCache == nil {
 		UserDataCache = make(map[types.PID]UserDataCacheEntry)
 	}
-
 	data, exists := UserDataCache[pid]
+	userDataCacheMu.Unlock()
 	if !exists || data.creationTime.Add(time.Hour*24).Before(time.Now().UTC()) {
 		ctx := metadata.NewOutgoingContext(context.Background(), common_globals.GRPCAccountCommonMetadata)
 
 		response, err := common_globals.GRPCAccountClient.GetUserData(ctx, &pb.GetUserDataRequest{Pid: uint32(pid)})
 		if err != nil {
 			Logger.Error(err.Error())
+			userDataCacheMu.Lock()
 			UserDataCache[pid] = UserDataCacheEntry{userData: nil, creationTime: time.Now().UTC()}
+			userDataCacheMu.Unlock()
 			return &pb.GetUserDataResponse{}, nex.ResultCodes.RendezVous.InvalidUsername
 		}
 
-		UserDataCache[pid] = UserDataCacheEntry{userData: response, creationTime: time.Now().UTC()}
+		data = UserDataCacheEntry{userData: response, creationTime: time.Now().UTC()}
+		userDataCacheMu.Lock()
+		UserDataCache[pid] = data
+		userDataCacheMu.Unlock()
 	}
 
 	if data.userData != nil {

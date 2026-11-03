@@ -15,7 +15,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
-	github.com/openpak/rewards-emit v0.1.0
+	github.com/openpak/rewards-emit v0.3.0
 	google.golang.org/grpc v1.83.2
 )
 

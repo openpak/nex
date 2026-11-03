@@ -214,24 +214,28 @@ func randomPassword() string {
 // carrying the login name. Only the login saw both halves, so the translation is recorded
 // there and read back here.
 //
-// ponytail: an in-process map, so a restart forgets it and a title asking about a player who
-// has not logged in since gets a miss. Push it into nx-baas beside the account if that
-// starts costing real lookups.
+// The map is the hot path; Postgres (nexhost.login_names in the title's own database, see
+// loginstore.go) is the record. A write goes through on login, and a miss in the map is looked
+// up there, so a restart does not forget which PID a console's login name belongs to.
 var loginNames sync.Map // login name -> PID
 
 func (h *Host) rememberLoginName(name string, pid uint64) {
 	if name != "" && pid != 0 {
 		loginNames.Store(name, pid)
+		saveLoginName(name, pid)
 	}
 }
 
 // PIDForLoginName translates a name a console logged in under to its OpenPak PID.
 func PIDForLoginName(name string) (uint64, bool) {
-	pid, ok := loginNames.Load(name)
-	if !ok {
-		return 0, false
+	if pid, ok := loginNames.Load(name); ok {
+		return pid.(uint64), true
 	}
-	return pid.(uint64), true
+	if pid, ok := loadLoginName(name); ok {
+		loginNames.Store(name, pid)
+		return pid, true
+	}
+	return 0, false
 }
 
 // FriendPIDs answers "who are this player's friends". Two of Pretendo's common protocols ask

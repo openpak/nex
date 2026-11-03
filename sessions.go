@@ -12,9 +12,12 @@ package nexhost
 // and rewards keeps one count per key per account, so restarts and retries never double count.
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 	"time"
 
 	"github.com/lib/pq"
@@ -38,6 +41,29 @@ type sessionClock struct {
 
 func newSessionClock(min time.Duration) *sessionClock {
 	return &sessionClock{min: min, since: map[string]time.Time{}, emitted: map[string]bool{}}
+}
+
+// state and restore carry the clock through the rewards-emit durable state (Postgres), so a
+// restart does not restart the counting windows. The shape is emit.State.
+func (c *sessionClock) state() emit.State {
+	st := emit.State{Since: make(map[string]time.Time, len(c.since))}
+	for k, v := range c.since {
+		st.Since[k] = v
+	}
+	for k := range c.emitted {
+		st.Emitted = append(st.Emitted, k)
+	}
+	sort.Strings(st.Emitted)
+	return st
+}
+
+func (c *sessionClock) restore(st emit.State) {
+	for k, v := range st.Since {
+		c.since[k] = v
+	}
+	for _, k := range st.Emitted {
+		c.emitted[k] = true
+	}
 }
 
 // tick takes the gatherings present now (gid -> participant pids) and returns the pairs that
@@ -98,6 +124,14 @@ func WatchSessions(cfg Config, metric, namespace string) {
 
 func watchSessions(db *sql.DB, rw *emit.Client, metric, namespace string, min, every time.Duration, stop <-chan struct{}) {
 	clock := newSessionClock(min)
+	stateName := "sessions." + metric
+	if b, ok := rw.LoadState(stateName); ok {
+		var st emit.State
+		if json.Unmarshal(b, &st) == nil {
+			clock.restore(st)
+		}
+	}
+	var last []byte
 	t := time.NewTicker(every)
 	defer t.Stop()
 	for {
@@ -113,6 +147,10 @@ func watchSessions(db *sql.DB, rw *emit.Client, metric, namespace string, min, e
 					Player: PlayerOf(namespace, parseUint(pair[1])), Keys: []string{pair[0]},
 				})
 			}
+		}
+		if b, err := json.Marshal(clock.state()); err == nil && !bytes.Equal(b, last) {
+			rw.SaveState(stateName, b)
+			last = b
 		}
 		select {
 		case <-t.C:

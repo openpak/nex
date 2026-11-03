@@ -100,3 +100,33 @@ func TestWatcherReadsGatheringsAndEmits(t *testing.T) {
 		}
 	}
 }
+
+// The counting windows survive a restart: a second clock restored from the saved state keeps
+// the first one's start times and emitted set.
+func TestSessionClockStateRoundTrip(t *testing.T) {
+	c := newSessionClock(3 * time.Minute)
+	t0 := time.Now()
+	two := map[string][]string{"7": {"1", "2"}}
+	c.tick(t0, two)
+	c.tick(t0.Add(2*time.Minute), two)
+	b, err := json.Marshal(c.state())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var st emit.State
+	if err := json.Unmarshal(b, &st); err != nil {
+		t.Fatal(err)
+	}
+	c2 := newSessionClock(3 * time.Minute)
+	c2.restore(st)
+	if d := c2.tick(t0.Add(3*time.Minute), two); len(d) != 2 {
+		t.Fatalf("restored clock should count at 3 minutes since the original start: %v", d)
+	}
+	b, _ = json.Marshal(c2.state())
+	json.Unmarshal(b, &st)
+	c3 := newSessionClock(3 * time.Minute)
+	c3.restore(st)
+	if d := c3.tick(t0.Add(4*time.Minute), two); len(d) != 0 {
+		t.Fatalf("restored emitted set should prevent a second count: %v", d)
+	}
+}

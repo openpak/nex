@@ -6,6 +6,13 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.6.0 — 2026-11-03
+
+- Persistence audit: rewards-emit v0.3.0. The rewards outbox goes to Postgres when `REWARDS_EMIT_DATABASE_URL_BRIDGE` (all NEX units are on openpak.network) or `REWARDS_EMIT_DATABASE_URL` is set; unset keeps the memory queue.
+- The session counting clock is saved to the rewards-emit state (`sessions.<metric>`) on every poll and restored at start, so a restart no longer restarts the 3-minute windows.
+- Login names (NSA id to PID) are written through to Postgres (`nexhost.login_names`, the title's own database) and looked up on a miss, so a title asking after a restart still resolves. `UseLoginStore(db)` for titles whose database is not `NEX_DATABASE_URL`.
+- monster-hunter-4, monster-hunter-xx, monster-hunter-stories, tetris-axis, ice-station-z, resident-evil-the-mercenaries-3d: `UserDataCache` is now mutex-guarded (concurrent map write crash risk). It is a 24 h cache of account lookups, nothing to persist. A fresh lookup now also returns its own result instead of the stale empty entry.
+
 ## v1.5.2 — 2026-11-03
 
 - Monster Hunter Generations Ultimate reports online sessions (`game_sessions.monster-hunter-generations-ultimate`), card #80.

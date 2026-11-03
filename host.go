@@ -335,6 +335,11 @@ func New(cfg Config) (*Host, error) {
 		return nil, err
 	}
 	version, _ := parseVersion(cfg.Version)
+	if cfg.DatabaseURL != "" {
+		if err := openLoginStore(cfg.DatabaseURL); err != nil {
+			log.Printf("[%s] login names stay in memory only: %v", cfg.Title, err)
+		}
+	}
 
 	h := &Host{
 		Config: cfg,

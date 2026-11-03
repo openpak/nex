@@ -8,8 +8,9 @@ package nexhost
 // REWARDS_EVENTS_URL / REWARDS_EVENTS_KEY unset every call here is a no-op.
 
 import (
-	"fmt"
 	"context"
+	"fmt"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -24,7 +25,14 @@ var (
 
 // Rewards returns the process-wide events client (source "nex-<NEX_TITLE>"). Never nil.
 func Rewards() *emit.Client {
-	rewardsOnce.Do(func() { rewardsClient = emit.FromEnv("nex-" + env("NEX_TITLE", "host")) })
+	rewardsOnce.Do(func() {
+		// Every NEX unit is on the openpak.network bridge, where the shared .env's host-network
+		// REWARDS_EMIT_DATABASE_URL (127.0.0.1) does not resolve; the bridge URL wins when set.
+		if u := os.Getenv("REWARDS_EMIT_DATABASE_URL_BRIDGE"); u != "" {
+			os.Setenv("REWARDS_EMIT_DATABASE_URL", u)
+		}
+		rewardsClient = emit.FromEnv("nex-" + env("NEX_TITLE", "host"))
+	})
 	return rewardsClient
 }
 

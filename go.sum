@@ -96,8 +96,8 @@ github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2 h1:6lIhzg6T94tiZ4
 github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2/go.mod h1:mEIf1rM+qY1lLt64Aa/yFEeFvmNt0UynUI4hFJ6gNLc=
 github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2 h1:kCse7NUQOcLipoVzo0ciWQ7Qc/f3EaHw1dYg38hBIC8=
 github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2/go.mod h1:4+quxpxWcm1bV5LMAEjOKknuFii/CSqxLg3hAewJ0DI=
-github.com/openpak/rewards-emit v0.1.0 h1:5oqOqPBXTOfrl5plTZ8ugEfmuUzfk1IClByqzTebKNg=
-github.com/openpak/rewards-emit v0.1.0/go.mod h1:g4RmrZFCAo4iuYGf+6a1DBXcV5Ut+fIzYzxFIfBk9kk=
+github.com/openpak/rewards-emit v0.3.0 h1:yNNJ8WSX4HaJ1ZrCZqFJS1JBcOublGJerp8Hq/3W4Ls=
+github.com/openpak/rewards-emit v0.3.0/go.mod h1:l763plPuVedNhxT6TApkWquxUY6P/d+thvRIqIe9kVg=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_golang v1.23.2 h1:Je96obch5RDVy3FDMndoUsjAhG5Edi49h0RJWRi/o0o=
