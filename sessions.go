@@ -89,6 +89,10 @@ func WatchSessions(cfg Config, metric, namespace string) {
 		log.Printf("rewards sessions: %v", err)
 		return
 	}
+	// The poll runs every 20 s: one short connection, none held in between. Postgres is shared by
+	// every title and has a hard connection cap.
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(0)
 	go watchSessions(db, rw, metric, namespace, SessionMin(), 20*time.Second, nil)
 }
 

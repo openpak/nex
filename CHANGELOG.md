@@ -6,6 +6,10 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.5.1 — 2026-11-03
+
+- The session watcher holds one connection only while it polls (max open 1, no idle): Postgres is capped at 100 connections and the 29 new watchers must not use them up.
+
 ## v1.5.0 — 2026-11-03
 
 - rewards: online sessions (`WatchSessions`, two players sharing a gathering for 3 minutes) for every title on the
