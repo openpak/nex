@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.7.0 — 2026-11-03
+- Per-RMC logging: one always-on line per RMC request (title, protocol, method, parameter size) on stderr. Never the parameters. NEX_PACKET_LOG=1 still adds the verbose packet trace.
+
 ## v1.6.0 — 2026-11-03
 
 - Persistence audit: rewards-emit v0.3.0. The rewards outbox goes to Postgres when `REWARDS_EMIT_DATABASE_URL_BRIDGE` (all NEX units are on openpak.network) or `REWARDS_EMIT_DATABASE_URL` is set; unset keeps the memory queue.
