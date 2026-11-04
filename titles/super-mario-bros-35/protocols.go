@@ -4,13 +4,16 @@ package smb35
 // nex-protocols-common-go has no implementation of. nex-protocols-go still supplies the
 // wire types and the method dispatch, so what is written here is only the behaviour.
 //
-// Both stores are in memory on purpose. Ranking2 common data is the player's name and Mii,
-// which the game uploads again every time it connects; a round is a single match in
-// progress. Neither survives a restart usefully, and neither is worth a table.
+// Ranking2 common data (the player's name and Mii) is durable in Postgres. A round is a single
+// match in progress and stays in memory: it does not outlive the sockets it is played on.
 
 import (
+	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/openpak/nex/redact"
+	"log"
 	"sync"
 	"time"
 
@@ -32,30 +35,69 @@ import (
 // ---------------------------------------------------------------------------
 
 // ranking2Store holds each player's common data, keyed by PID and then by the NEX unique
-// ID the game files it under.
+// ID the game files it under. It lives in Postgres (schema smb35, table common_data; the PID
+// column is what account erasure finds it by), so a restart loses nothing. Reads go to the
+// database, so a row erased there is gone for every reader at once.
 type ranking2Store struct {
-	mu   sync.RWMutex
-	data map[uint64]map[uint64]ranking2_types.Ranking2CommonData
+	db *sql.DB
 }
 
-func newRanking2Store() *ranking2Store {
-	return &ranking2Store{data: make(map[uint64]map[uint64]ranking2_types.Ranking2CommonData)}
+func newRanking2Store(db *sql.DB) (*ranking2Store, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback() //nolint:errcheck
+	for _, q := range []string{
+		`SELECT pg_advisory_xact_lock(7035)`,
+		`CREATE SCHEMA IF NOT EXISTS smb35`,
+		`CREATE TABLE IF NOT EXISTS smb35.common_data (
+			pid         bigint NOT NULL,
+			unique_id   bigint NOT NULL,
+			user_name   text   NOT NULL,
+			mii         bytea  NOT NULL,
+			binary_data bytea  NOT NULL,
+			updated     timestamptz NOT NULL DEFAULT now(),
+			PRIMARY KEY (pid, unique_id))`,
+	} {
+		if _, err := tx.ExecContext(ctx, q); err != nil {
+			return nil, fmt.Errorf("smb35 schema: %w", err)
+		}
+	}
+	return &ranking2Store{db: db}, tx.Commit()
 }
 
 func (r *ranking2Store) get(pid, uniqueID uint64) (ranking2_types.Ranking2CommonData, bool) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	data, ok := r.data[pid][uniqueID]
-	return data, ok
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var name string
+	var mii, bin []byte
+	err := r.db.QueryRowContext(ctx, `SELECT user_name, mii, binary_data FROM smb35.common_data WHERE pid = $1 AND unique_id = $2`,
+		int64(pid), int64(uniqueID)).Scan(&name, &mii, &bin)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("[smb35] read common data: %v", err)
+		}
+		return ranking2_types.Ranking2CommonData{}, false
+	}
+	data := ranking2_types.NewRanking2CommonData()
+	data.UserName = types.NewString(name)
+	data.Mii = types.NewQBuffer(mii)
+	data.BinaryData = types.NewQBuffer(bin)
+	return data, true
 }
 
 func (r *ranking2Store) put(pid, uniqueID uint64, data ranking2_types.Ranking2CommonData) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if r.data[pid] == nil {
-		r.data[pid] = make(map[uint64]ranking2_types.Ranking2CommonData)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := r.db.ExecContext(ctx, `INSERT INTO smb35.common_data (pid, unique_id, user_name, mii, binary_data) VALUES ($1,$2,$3,$4,$5)
+ON CONFLICT (pid, unique_id) DO UPDATE SET user_name = $3, mii = $4, binary_data = $5, updated = now()`,
+		int64(pid), int64(uniqueID), string(data.UserName), []byte(data.Mii), []byte(data.BinaryData))
+	if err != nil {
+		log.Printf("[smb35] persist common data: %v", err)
 	}
-	r.data[pid][uniqueID] = data
 }
 
 func (s *Server) getCommonData(err error, packet nex.PacketInterface, callID uint32, _ ranking2_constants.Ranking2GetOptionFlags, principalID types.PID, nexUniqueID types.UInt64) (*nex.RMCMessage, *nex.Error) {

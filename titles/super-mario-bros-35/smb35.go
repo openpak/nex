@@ -99,11 +99,16 @@ func New(host *nexhost.Host, cfg Config) (*Server, error) {
 		return nil, fmt.Errorf("reach database: %w", err)
 	}
 
+	common, err := newRanking2Store(db)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
 	s := &Server{
 		host:   host,
 		cfg:    cfg,
 		db:     db,
-		common: newRanking2Store(),
+		common: common,
 		rounds: newRoundStore(),
 	}
 

@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.8.1 — 2026-11-04
+- **Permanent state** (openpak/prds#85): Super Mario Bros. 35 Ranking2 common data (name, Mii, binary data per PID and NEX unique id) moved from
+  memory to Postgres (`smb35.common_data`, created on start; the `pid` column is what account erasure's schema scan deletes by). Test:
+  `SMB35_TEST_DATABASE_URL`.
+
 ## v1.8.0 — 2026-11-04
 - **Account erasure** (card openpak/prds#120): `DELETE /internal/accounts/{account_id}/data` with `Authorization: Bearer $ACCOUNT_ERASE_KEY`, served by every title
   container on its `/healthz` listener (`NEX_HTTP_ADDR`, base+2, container network only). Env unset: 503; wrong key 401; not a UUID 400; PIDs unresolvable 502.
