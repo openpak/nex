@@ -158,16 +158,7 @@ func (s *Server) serveAuthentication() {
 	protocol := ticket_granting.NewProtocol()
 	endpoint.RegisterServiceProtocol(protocol)
 	common := common_ticket_granting.NewCommonProtocol(protocol)
-	station := types.NewStationURL("")
-	station.SetURLType(constants.StationURLPRUDP)
-	station.SetAddress(s.cfg.SecureHost)
-	station.SetPortNumber(uint16(s.cfg.SecurePort()))
-	station.SetConnectionID(1)
-	station.SetPrincipalID(types.NewPID(2))
-	station.SetStreamID(1)
-	station.SetStreamType(constants.StreamTypeRVSecure)
-	station.SetType(uint8(constants.StationURLFlagPublic))
-	common.SecureStationURL = station
+	common.SecureStationURL = secureStationURL(s.cfg.SecureHost, uint16(s.cfg.SecurePort()))
 	common.SecureServerAccount = s.secureAccount
 	common.ConfigurePNValidation(gameServerIDs)
 	log.Printf("[mvdk] authentication on udp :%d, secure station %s:%d", s.cfg.AuthPort(), s.cfg.SecureHost, s.cfg.SecurePort())
@@ -228,4 +219,21 @@ func (s *Server) accountByUsername(username string) (*nex.Account, *nex.Error) {
 		return nil, nex.NewError(nex.ResultCodes.RendezVous.InvalidUsername, "username is not a PID")
 	}
 	return s.accountByPID(types.NewPID(n))
+}
+
+// secureStationURL is the secure server address the login response hands the console. The
+// scheme must be prudps: with plain prudp the Wii U/3DS client still connects to the secure
+// port but sends an empty CONNECT, with no Kerberos ticket, and the server can never accept it
+// (Wii U error 106-0502). Every other Wii U/3DS title here, and Pretendo's, uses prudps.
+func secureStationURL(host string, port uint16) types.StationURL {
+	station := types.NewStationURL("")
+	station.SetURLType(constants.StationURLPRUDPS)
+	station.SetAddress(host)
+	station.SetPortNumber(port)
+	station.SetConnectionID(1)
+	station.SetPrincipalID(types.NewPID(2))
+	station.SetStreamID(1)
+	station.SetStreamType(constants.StreamTypeRVSecure)
+	station.SetType(uint8(constants.StationURLFlagPublic))
+	return station
 }

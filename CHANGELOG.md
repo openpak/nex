@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.8.2 — 2026-11-04
+- **Fix Wii U error 106-0502 (Mario Kart 8) and the same bug in Mario vs. Donkey Kong: Tipping Stars:** the login response named the secure
+  server with `prudp:` instead of `prudps:`. The console still connected to the secure port but sent an empty CONNECT with no Kerberos
+  ticket, which the server rejects. Both now hand out `prudps:` like every other Wii U/3DS title. Regression test per title.
+
 ## v1.8.1 — 2026-11-04
 - **Permanent state** (openpak/prds#85): Super Mario Bros. 35 Ranking2 common data (name, Mii, binary data per PID and NEX unique id) moved from
   memory to Postgres (`smb35.common_data`, created on start; the `pid` column is what account erasure's schema scan deletes by). Test:
