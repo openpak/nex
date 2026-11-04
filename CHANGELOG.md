@@ -6,6 +6,18 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.8.0 — 2026-11-04
+- **Account erasure** (card openpak/prds#120): `DELETE /internal/accounts/{account_id}/data` with `Authorization: Bearer $ACCOUNT_ERASE_KEY`, served by every title
+  container on its `/healthz` listener (`NEX_HTTP_ADDR`, base+2, container network only). Env unset: 503; wrong key 401; not a UUID 400; PIDs unresolvable 502.
+  Answers `{"service":"nex-<title>","rows":N}` and logs one line `account erased`. Idempotent. The website must call every title container (one container is one title with its own database).
+- The account's PIDs come from the account core (`NEX_CORE_ADDR` + `NEX_CORE_KEY`; links in the wiiu, 3ds and switch namespaces) and, when `NEX_ACCOUNT_GRPC_ADDR/_KEY` are set,
+  from nn-account's resolution service (a Wii U/3DS id that was never linked). `internal/resolutionpb` is the vendored contract (same copy as nn-friends).
+- The databases are scrubbed by schema, not by a title list (every Postgres URL in the container: `NEX_DATABASE_URL`, `<TITLE>_DATABASE_URL`, `PN_*_POSTGRES_URI`, `DATABASE_URL`): every table with a PID column
+  (`pid`, `*_pid`, `owner`, `principal_id`, `recipient_id`) loses the account's rows, children first by foreign key; PIDs leave participant/recipient arrays; objects removed take their ratings/records
+  (everything in the schema keyed by `data_id`) and their bodies in the bucket (`<key base>/<data id>.bin`, buckets found from the `*_S3_*` variables) with them.
+  Kept and credited to nobody (PID 0): `mk8.tournaments` created by the player, the world-record holders on other people's `datastore.course_records`, and for Super Mario Maker and Super Mario Maker 2 the player's
+  published (public, completed, not deleted) courses. Private messages (both directions), matchmaking and tracking rows, rankings, profile and common data, login names are deleted. See docs/erasure.md.
+
 ## v1.7.0 — 2026-11-03
 - Per-RMC logging: one always-on line per RMC request (title, protocol, method, parameter size) on stderr. Never the parameters. NEX_PACKET_LOG=1 still adds the verbose packet trace.
 

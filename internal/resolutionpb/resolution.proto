@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package nn_account.resolution.v1;
+
+option go_package = "openpak/nn-account/proto/resolution/v1;resolutionv1";
+
+// Nintendo identity resolution for internal consumers (PRD §7): maps a
+// console PID to the core account it is linked to. Provided by nn-account —
+// consumers never address the core by PID.
+service Resolution {
+  rpc ResolvePid(ResolvePidRequest) returns (ResolvePidResponse);
+  // Reverse mapping for rendering friend lists (account -> PID).
+  rpc ResolveAccount(ResolveAccountRequest) returns (ResolveAccountResponse);
+  // What a NEX token was issued to: "wiiu"/"3ds" for a console, or the
+  // emulator that asked for it ("cemu", "azahar"), so nn-friends can publish
+  // presence as "on Cemu" for the same PNID a console also uses, and the OS
+  // it runs on, which nn-friends passes on with the core session.
+  rpc ResolveNexTokenClient(ResolveNexTokenClientRequest) returns (ResolveNexTokenClientResponse);
+}
+
+message ResolvePidRequest {
+  // Adapter namespace of the subject: "wiiu" | "3ds".
+  string namespace = 1;
+  uint32 pid = 2;
+}
+
+message ResolvePidResponse {
+  bool found = 1;
+  string account_id = 2;
+}
+
+message ResolveAccountRequest {
+  string namespace = 1;
+  string account_id = 2;
+}
+
+message ResolveAccountResponse {
+  bool found = 1;
+  uint32 pid = 2;
+}
+
+message ResolveNexTokenClientRequest {
+  // The NEX token as the console presented it at login (base64).
+  string token = 1;
+}
+
+message ResolveNexTokenClientResponse {
+  // false: no live token by that value.
+  bool found = 1;
+  // "" for tokens issued before clients were recorded.
+  string client = 2;
+  uint32 pid = 3;
+  // The OS the emulator said it runs on ("windows", "macos", "linux",
+  // "android", "ios"); "" for a console, when it did not say, and for tokens
+  // issued before OSes were recorded.
+  string os = 4;
+}

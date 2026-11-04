@@ -109,6 +109,7 @@ All settings are in [docs/deploy.md](docs/deploy.md).
 - [Deploy](docs/deploy.md): ports, environment, image, build and test
 - [Design](docs/design.md): worked example and open dependency
 - [Provenance](docs/provenance.md): source of every wire-level fact
+- [Account erasure](docs/erasure.md): the DELETE route, what is erased and what is kept
 
 Live compatibility status: [openpak.org/titles](https://openpak.org/titles)
 

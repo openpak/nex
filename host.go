@@ -185,6 +185,7 @@ func ServeHealth(addr, title string) error {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %s\n", title)
 	})
+	mountErase(mux, NewEraserFromEnv(title))
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("healthz %s: %w", addr, err)
@@ -539,6 +540,7 @@ func (h *Host) Run() error {
 			h.Config.AuthPort(), h.Config.Transport,
 			h.Config.SecurePort(), h.Config.SecureTransportOr())
 	})
+	mountErase(mux, NewEraserFromEnv(h.Config.Title, h.Config.DatabaseURL))
 	srv := &http.Server{Addr: h.Config.HTTPAddr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 
 	// A title may have overwritten SecureStationURL since New; the Wii U-era handlers hold

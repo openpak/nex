@@ -92,6 +92,8 @@ github.com/minio/minio-go/v7 v7.0.90 h1:TmSj1083wtAD0kEYTx7a5pFsv3iRYMsOJ6A4crjA
 github.com/minio/minio-go/v7 v7.0.90/go.mod h1:uvMUcGrpgeSAAI6+sD3818508nUyMULw94j2Nxku/Go=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq1c1nUAm88MOHcQC9l5mIlSMApZMrHA=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
+github.com/openpak/account-api v0.1.1 h1:d8ERCq99z9ME4tmVhlx/LQuGzZyCmlD6QbMry4ZBZJY=
+github.com/openpak/account-api v0.1.1/go.mod h1:FV6mvgh6tftq77GQs2WJlSk4QhG/f+ggL7MU3zeEwtM=
 github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2 h1:6lIhzg6T94tiZ4iCnoaWdb28JM6CGes9biHgUa8Ldcs=
 github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2/go.mod h1:mEIf1rM+qY1lLt64Aa/yFEeFvmNt0UynUI4hFJ6gNLc=
 github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2 h1:kCse7NUQOcLipoVzo0ciWQ7Qc/f3EaHw1dYg38hBIC8=
