@@ -3,6 +3,9 @@ package histgrm
 import (
 	"reflect"
 	"testing"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestDistribute(t *testing.T) {
@@ -46,5 +49,21 @@ func TestBuildParseRoundTrip(t *testing.T) {
 	}
 	if _, err := Parse(b[:len(b)-1]); err == nil {
 		t.Error("truncated file must fail")
+	}
+}
+
+func TestAlreadyRegistered(t *testing.T) {
+	for _, c := range []struct {
+		err  error
+		want bool
+	}{
+		{status.Error(codes.AlreadyExists, "x"), true},
+		{status.Error(codes.InvalidArgument, "ALREADY_EXISTS: Task histgrm already exists for BOSS app a"), true},
+		{status.Error(codes.InvalidArgument, "bad id"), false},
+		{status.Error(codes.Unavailable, "ALREADY_EXISTS"), false},
+	} {
+		if got := alreadyRegistered(c.err); got != c.want {
+			t.Errorf("%v: got %v", c.err, got)
+		}
 	}
 }

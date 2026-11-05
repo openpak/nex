@@ -119,7 +119,7 @@ func Run(args []string) error {
 		switch {
 		case err == nil:
 			log.Printf("registered task %s for %s (%s)", TaskID, a.ID, a.Region)
-		case status.Code(err) == codes.AlreadyExists:
+		case alreadyRegistered(err):
 		default:
 			return fmt.Errorf("register %s: %w", a.ID, err)
 		}
@@ -177,4 +177,14 @@ func Run(args []string) error {
 		_ = os.WriteFile(last, []byte(hash+"\n"), 0o644)
 	}
 	return nil
+}
+
+// alreadyRegistered reports whether a RegisterTask error only says the task exists. nn-boss answers
+// that with InvalidArgument and "ALREADY_EXISTS: ..." in the message, not with codes.AlreadyExists.
+func alreadyRegistered(err error) bool {
+	if status.Code(err) == codes.AlreadyExists {
+		return true
+	}
+	return status.Code(err) == codes.InvalidArgument &&
+		strings.Contains(strings.ToLower(status.Convert(err).Message()), "already_exists")
 }
