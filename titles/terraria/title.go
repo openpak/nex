@@ -9,8 +9,10 @@
 package terraria
 
 import (
+	"context"
 	"log"
 	"os"
+	"time"
 	"strconv"
 	"strings"
 
@@ -76,7 +78,19 @@ func startCoreMirror(cfg nexhost.Config) {
 	if group == "" {
 		group = "old-gen-1.2.4"
 	}
-	if err := nexhost.StartCoreMirror(cfg, globals.Postgres, nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu"}); err != nil {
+	m, err := nexhost.StartCoreMirror(cfg, globals.Postgres, nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu"})
+	if err != nil {
 		log.Printf("[terraria] core mirror not started: %v", err)
+		return
+	}
+	// TERRARIA_CORE_SEARCH=1 (needs the mirror): the console's search sees only the rooms the core lists
+	// for this group. A core error leaves the search unrestricted. Rollback: unset it.
+	if os.Getenv("TERRARIA_CORE_SEARCH") == "1" {
+		globals.CoreCandidates = func() []uint32 {
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			return m.Candidates(ctx)
+		}
+		log.Printf("[terraria] core search on: rooms come from the matchmaking core, group %s", group)
 	}
 }

@@ -23,6 +23,10 @@ var Postgres *sql.DB
 var MatchmakingManager *common_globals.MatchmakingManager
 var UtilityManager *common_globals.UtilityManager
 
+// CoreCandidates, when set (TERRARIA_CORE_SEARCH=1), answers the gathering ids the matchmaking core
+// lists for this title and group; nil from it means no restriction.
+var CoreCandidates func() []uint32
+
 var GRPCFriendsClientConnection *grpc.ClientConn
 var GRPCFriendsClient pbfriends.FriendsClient
 var GRPCFriendsCommonMetadata metadata.MD

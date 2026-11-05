@@ -94,8 +94,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/openpak/account-api v0.1.1 h1:d8ERCq99z9ME4tmVhlx/LQuGzZyCmlD6QbMry4ZBZJY=
 github.com/openpak/account-api v0.1.1/go.mod h1:FV6mvgh6tftq77GQs2WJlSk4QhG/f+ggL7MU3zeEwtM=
-github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2 h1:6lIhzg6T94tiZ4iCnoaWdb28JM6CGes9biHgUa8Ldcs=
-github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2/go.mod h1:mEIf1rM+qY1lLt64Aa/yFEeFvmNt0UynUI4hFJ6gNLc=
+github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.3 h1:WZKDsHdrYrZIZKW8hrP3x6DL7pejzzsM+26+94DDeZ0=
+github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.3/go.mod h1:mEIf1rM+qY1lLt64Aa/yFEeFvmNt0UynUI4hFJ6gNLc=
 github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2 h1:kCse7NUQOcLipoVzo0ciWQ7Qc/f3EaHw1dYg38hBIC8=
 github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2/go.mod h1:4+quxpxWcm1bV5LMAEjOKknuFii/CSqxLg3hAewJ0DI=
 github.com/openpak/rewards-emit v0.3.0 h1:yNNJ8WSX4HaJ1ZrCZqFJS1JBcOublGJerp8Hq/3W4Ls=

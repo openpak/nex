@@ -244,3 +244,34 @@ func (m *Mirror) heartbeats(ctx context.Context) {
 		}
 	}
 }
+
+// Candidates returns the gathering ids the core lists as open rooms of this title and group
+// (unique key "g:<id>"), for restricting the title's own search. A nil result (not an empty one)
+// means the core could not answer and the search must not be restricted.
+func (m *Mirror) Candidates(ctx context.Context) []uint32 {
+	out := []uint32{}
+	var offset uint32
+	for {
+		resp, err := m.MM.SearchSessions(ctx, &mm.SearchSessionsRequest{
+			Title: m.title(), Kind: "room", Network: m.Network,
+			Filters: []*mm.Filter{{Attr: "compat", Op: "eq", StringValue: m.Compat, IsString: true}},
+			Offset:  offset, Limit: 100,
+		})
+		if err != nil {
+			log.Printf("[%s] coremirror: search: %v", m.Title, err)
+			return nil
+		}
+		for _, s := range resp.GetSessions() {
+			k := s.GetUniqueKey()
+			if len(k) > 2 && k[:2] == "g:" {
+				if n, err := strconv.ParseUint(k[2:], 10, 32); err == nil {
+					out = append(out, uint32(n))
+				}
+			}
+		}
+		offset += uint32(len(resp.GetSessions()))
+		if len(resp.GetSessions()) == 0 || offset >= resp.GetHits() {
+			return out
+		}
+	}
+}

@@ -38,6 +38,12 @@ func StartSecureServer() {
 	})
 
 	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, globals.Postgres)
+	globals.MatchmakingManager.CandidateGatherings = func(_ *nex.PRUDPConnection) []uint32 {
+		if globals.CoreCandidates == nil {
+			return nil
+		}
+		return globals.CoreCandidates()
+	}
 	globals.UtilityManager = common_globals.NewUtilityManager(globals.SecureEndpoint, globals.Postgres)
 
 	registerCommonSecureServerProtocols()

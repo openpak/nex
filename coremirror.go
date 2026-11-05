@@ -29,17 +29,17 @@ type MirrorSpec struct {
 // PID to account; missing settings are an error so a title whose flag is on never quietly
 // skips the core. The NEX protocol layer is untouched: the console is still answered from the
 // title's own tables. It returns after starting the loop.
-func StartCoreMirror(cfg Config, db *sql.DB, spec MirrorSpec) error {
+func StartCoreMirror(cfg Config, db *sql.DB, spec MirrorSpec) (*coremirror.Mirror, error) {
 	conn, err := coreConn("NEX_MATCHMAKING_ADDR", "NEX_MATCHMAKING_KEY", "MATCHMAKING_INTERNAL_KEY")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if cfg.AccountGRPCAddr == "" {
-		return fmt.Errorf("core mirror: NEX_ACCOUNT_GRPC_ADDR is required (PID to account)")
+		return nil, fmt.Errorf("core mirror: NEX_ACCOUNT_GRPC_ADDR is required (PID to account)")
 	}
 	res, err := coreid.DialResolution(cfg.AccountGRPCAddr, cfg.AccountGRPCKey, spec.Network)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	m := &coremirror.Mirror{MM: mm.NewMatchmakingClient(conn), IDs: &coreid.Cache{L: res},
 		Title: spec.Title, Network: spec.Network, Compat: spec.Compat, Console: spec.Console}
@@ -58,7 +58,7 @@ func StartCoreMirror(cfg Config, db *sql.DB, spec MirrorSpec) error {
 		}
 	}()
 	log.Printf("[%s] core mirror on: sessions to the matchmaking core, network %s, group %s", spec.Title, spec.Network, spec.Compat)
-	return nil
+	return m, nil
 }
 
 // readMirrorGatherings reads the registered MatchmakeSessions of the common tables.

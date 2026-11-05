@@ -15,8 +15,10 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	github.com/minio/minio-go/v7 v7.0.90
+	github.com/openpak/account-api v0.1.1
 	github.com/openpak/rewards-emit v0.3.0
 	google.golang.org/grpc v1.83.2
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
@@ -49,7 +51,6 @@ require (
 	github.com/minio/crc64nvme v1.0.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/openpak/account-api v0.1.1 // indirect
 	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
@@ -67,7 +68,6 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260904194346-d0f1323225a4 // indirect
-	google.golang.org/protobuf v1.36.12 // indirect
 )
 
 replace github.com/PretendoNetwork/nex-go/v2 => ./nex-go-patched
@@ -78,4 +78,4 @@ replace github.com/PretendoNetwork/nex-go/v2 => ./nex-go-patched
 //   github.com/openpak/nex-protocols-common-go   branch openpak, from b5bf44f
 replace github.com/PretendoNetwork/nex-protocols-go/v2 => github.com/openpak/nex-protocols-go/v2 v2.3.8-openpak.2
 
-replace github.com/PretendoNetwork/nex-protocols-common-go/v2 => github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.2
+replace github.com/PretendoNetwork/nex-protocols-common-go/v2 => github.com/openpak/nex-protocols-common-go/v2 v2.6.2-openpak.3

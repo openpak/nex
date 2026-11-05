@@ -19,6 +19,9 @@ type fakeMM struct {
 	leaves  []*mm.LeaveSessionRequest
 	updates []*mm.UpdateSessionRequest
 	beats   []string
+	searches  []*mm.SearchSessionsRequest
+	found     []*mm.Session
+	searchErr error
 }
 
 func (f *fakeMM) CreateOrJoinSession(_ context.Context, r *mm.CreateSessionRequest, _ ...grpc.CallOption) (*mm.SessionResponse, error) {
@@ -51,6 +54,14 @@ func (i ids) Account(_ context.Context, pid uint64) (string, error) {
 	return "", coreid.ErrNoLink
 }
 func (i ids) PID(context.Context, string) (uint64, error) { return 0, coreid.ErrNoLink }
+
+func (f *fakeMM) SearchSessions(_ context.Context, r *mm.SearchSessionsRequest, _ ...grpc.CallOption) (*mm.SearchSessionsResponse, error) {
+	f.searches = append(f.searches, r)
+	if f.searchErr != nil {
+		return nil, f.searchErr
+	}
+	return &mm.SearchSessionsResponse{Sessions: f.found, Hits: uint32(len(f.found))}, nil
+}
 
 func newMirror(f *fakeMM, links ids) *Mirror {
 	return &Mirror{MM: f, IDs: links, Title: "terraria", Network: "wiiu", Compat: "old-gen-1.2.4", Console: "wiiu"}
@@ -163,5 +174,30 @@ func TestHeartbeatsEveryMinute(t *testing.T) {
 	m.Tick(context.Background(), g)
 	if len(f.beats) != 2 {
 		t.Fatalf("beats = %d (%s)", len(f.beats), strconv.Itoa(len(f.beats)))
+	}
+}
+
+func TestCandidatesFilterByGroupAndMapKeys(t *testing.T) {
+	f := &fakeMM{found: []*mm.Session{{UniqueKey: "g:7"}, {UniqueKey: "g:12"}, {UniqueKey: "ps3:99"}}}
+	m := newMirror(f, ids{})
+	got := m.Candidates(context.Background())
+	if len(got) != 2 || got[0] != 7 || got[1] != 12 {
+		t.Fatalf("got %v", got)
+	}
+	s := f.searches[0]
+	if s.Title.Title != "terraria" || s.Kind != "room" || len(s.Filters) != 1 || s.Filters[0].Attr != "compat" || s.Filters[0].StringValue != "old-gen-1.2.4" || !s.Filters[0].IsString {
+		t.Fatalf("search = %+v", s)
+	}
+}
+
+func TestCandidatesEmptyIsNotNilAndErrorIsNil(t *testing.T) {
+	f := &fakeMM{}
+	m := newMirror(f, ids{})
+	if got := m.Candidates(context.Background()); got == nil || len(got) != 0 {
+		t.Fatalf("empty = %#v", got)
+	}
+	f.searchErr = context.DeadlineExceeded
+	if got := m.Candidates(context.Background()); got != nil {
+		t.Fatalf("error = %#v", got)
 	}
 }
