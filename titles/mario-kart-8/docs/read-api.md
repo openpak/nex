@@ -1,7 +1,7 @@
 # Mario Kart 8 read API (for OpenKart)
 
 This title serves a read-only JSON API when `MK8_API_ADDR` is set (production: `:22853`, container network only, never published). Every list is `{total, offset, limit, items}`; `limit` defaults to 20 and is capped at 100. PIDs are strings. Errors are `{"error": "..."}` with 400 (bad parameter), 404, 503 (store down; no detail leaked), 501 (no object store configured).
-Configuration: `MK8_API_ADDR` (listen address; unset = off), `MK8_MKTV_DATA_TYPE` (optional), and the `MK8_S3_*` variables for object bodies. The site that consumes it is [openpak/mktv](https://github.com/openpak/mktv) (openkart.openpak.org).
+Configuration: `MK8_API_ADDR` (listen address; unset = off), `MK8_MKTV_DATA_TYPE` (optional), and the `MK8_S3_*` variables for object bodies. With `NEX_CORE_STORAGE` naming `datastore`, highlights, ghosts, ghost counts, thumbnails, ratings and bodies come from title-storage (public objects only, bodies fetched through their presigned URL) and only the YouTube id is joined from `mk8.mktv_videos`; with `rankings`, the rankings come from leaderboards. The site that consumes it is [openpak/mktv](https://github.com/openpak/mktv) (openkart.openpak.org).
 
 
 | Endpoint | Returns |

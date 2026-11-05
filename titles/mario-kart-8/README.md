@@ -35,7 +35,11 @@ which follows NintendoClients' wiki (MIT) and was written from the wire layouts.
   trials) plus the competition methods 14–16 (`ranking_mk8d.py` layouts). Pretendo kept team
   totals in Redis; here they are sums over the scores table.
 - **DataStore:** ghosts and Mario Kart TV through the common DataStore protocol on the same
-  Postgres + MinIO store the Switch titles use (`MK8_S3_*`).
+  Postgres + MinIO store the Switch titles use (`MK8_S3_*`), or, with `NEX_CORE_STORAGE` naming
+  `datastore` (production since nex v1.11.0), in the core's title-storage through
+  `internal/coredatastore`: objects, ratings and bodies (presigned to
+  `http://title-storage.openpak.org`) live there and no DataStore row is kept here. See
+  [docs/core-backed-storage.md](../../docs/core-backed-storage.md).
 
 ## Deliberately not ported
 

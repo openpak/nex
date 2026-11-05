@@ -33,3 +33,19 @@ func TestCoreRankingsRefusesMissingSettings(t *testing.T) {
 		t.Fatalf("want the nn-account error, got %v", err)
 	}
 }
+
+func TestCoreDataStoreRefusesMissingSettings(t *testing.T) {
+	for _, v := range []string{"NEX_TITLE_STORAGE_ADDR", "NEX_TITLE_STORAGE_KEY", "TITLE_STORAGE_INTERNAL_KEY"} {
+		t.Setenv(v, "")
+	}
+	_, err := NewCoreDataStore(Config{}, CoreTitle{Key: "t", Network: "wiiu"}, 0, nil)
+	if err == nil || !strings.Contains(err.Error(), "NEX_TITLE_STORAGE_ADDR") {
+		t.Fatalf("want a loud error, got %v", err)
+	}
+	t.Setenv("NEX_TITLE_STORAGE_ADDR", "127.0.0.1:1")
+	t.Setenv("TITLE_STORAGE_INTERNAL_KEY", "k")
+	_, err = NewCoreDataStore(Config{}, CoreTitle{Key: "t", Network: "wiiu"}, 0, nil)
+	if err == nil || !strings.Contains(err.Error(), "NEX_ACCOUNT_GRPC_ADDR") {
+		t.Fatalf("want the nn-account error, got %v", err)
+	}
+}

@@ -25,6 +25,7 @@ import (
 	common_ranking "github.com/PretendoNetwork/nex-protocols-common-go/v2/ranking"
 	common_secure "github.com/PretendoNetwork/nex-protocols-common-go/v2/secure-connection"
 	common_ticket_granting "github.com/PretendoNetwork/nex-protocols-common-go/v2/ticket-granting"
+	datastore "github.com/PretendoNetwork/nex-protocols-go/v2/datastore"
 	match_making "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	match_making_ext "github.com/PretendoNetwork/nex-protocols-go/v2/match-making-ext"
 	mk8ext "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension/mario-kart-8"
@@ -38,6 +39,7 @@ import (
 
 	_ "github.com/lib/pq"
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/internal/coredatastore"
 	"github.com/openpak/nex/internal/coreranking"
 )
 
@@ -66,7 +68,8 @@ type Server struct {
 
 	matchmaking *common_globals.MatchmakingManager
 	rankings    *rankingStore
-	core        *coreranking.Store // NEX_CORE_STORAGE=rankings: scores in the core, not in rankings
+	core        *coreranking.Store   // NEX_CORE_STORAGE=rankings: scores in the core, not in rankings
+	ds          *coredatastore.Store // NEX_CORE_STORAGE=datastore: DataStore objects in title-storage
 	tournaments *tournamentStore
 }
 
@@ -112,6 +115,11 @@ func newServer(cfg nexhost.Config) (*Server, error) {
 	if nexhost.CoreStorage(nexhost.CoreRankingsStore) {
 		if s.core, err = nexhost.NewCoreRankings(cfg, coreTitle, db); err != nil {
 			return nil, fmt.Errorf("NEX_CORE_STORAGE=rankings: %w", err)
+		}
+	}
+	if nexhost.CoreStorage(nexhost.CoreDataStoreStore) {
+		if s.ds, err = nexhost.NewCoreDataStore(cfg, coreTitle, coreMaxObjectBytes, s.friendPIDs); err != nil {
+			return nil, fmt.Errorf("NEX_CORE_STORAGE=datastore: %w", err)
 		}
 	}
 	if s.tournaments, err = newTournamentStore(db); err != nil {
@@ -244,7 +252,11 @@ func (s *Server) serveSecure() {
 		s.rankings.wire(common_ranking.NewCommonProtocol(ranking.Protocol), s.friendPIDs)
 	}
 
-	if err := registerDataStore(endpoint, s.db, s.friendPIDs); err != nil {
+	if s.ds != nil {
+		protocol := datastore.NewProtocol()
+		endpoint.RegisterServiceProtocol(protocol)
+		s.ds.Install(protocol)
+	} else if err := registerDataStore(endpoint, s.db, s.friendPIDs); err != nil {
 		log.Fatalf("[mario-kart-8] datastore: %v", err)
 	}
 

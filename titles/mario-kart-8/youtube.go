@@ -228,6 +228,20 @@ type ytWorker struct {
 	db  *sql.DB
 	yt  *ytClient
 	now func() time.Time
+	// owner finds a highlight's owner PID: the title's own DataStore table, or the core when the
+	// title is flipped (NEX_CORE_STORAGE=datastore). Consent and upload status stay local
+	// (mk8.mktv_consent, mk8.mktv_videos): they are this feature's own state, not the object.
+	owner func(ctx context.Context, id uint64) (pid string, found bool, err error)
+}
+
+// localOwner reads a highlight's owner from mk8.datastore_objects.
+func (w *ytWorker) localOwner(_ context.Context, id uint64) (string, bool, error) {
+	var owner string
+	err := w.db.QueryRow(`SELECT owner_pid FROM mk8.datastore_objects WHERE data_id=$1 AND NOT deleted`, int64(id)).Scan(&owner)
+	if err == sql.ErrNoRows {
+		return "", false, nil
+	}
+	return owner, err == nil, err
 }
 
 var spoolName = regexp.MustCompile(`^([0-9]{1,18})\.mp4$`)
@@ -290,15 +304,18 @@ func (w *ytWorker) runOnce(ctx context.Context) error {
 }
 
 func (w *ytWorker) handle(ctx context.Context, id uint64, name string) error {
-	var owner string
-	err := w.db.QueryRow(`SELECT owner_pid FROM mk8.datastore_objects WHERE data_id=$1 AND NOT deleted`, int64(id)).Scan(&owner)
-	if err == sql.ErrNoRows {
+	lookup := w.owner
+	if lookup == nil {
+		lookup = w.localOwner
+	}
+	owner, found, err := lookup(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !found {
 		w.record(id, "0", "unknown_object", "", "no such highlight")
 		w.moveTo("rejected", name)
 		return nil
-	}
-	if err != nil {
-		return err
 	}
 	var allowed bool
 	if err := w.db.QueryRow(`SELECT coalesce((SELECT allowed FROM mk8.mktv_consent WHERE pid=$1), false)`, owner).Scan(&allowed); err != nil {
@@ -367,6 +384,12 @@ func (s *Server) startYouTube() {
 		return
 	}
 	w := &ytWorker{cfg: cfg, db: s.db, yt: newYTClient(cfg), now: time.Now}
+	if s.ds != nil {
+		w.owner = func(ctx context.Context, id uint64) (string, bool, error) {
+			pid, ok, err := s.ds.Owner(ctx, id)
+			return strconv.FormatUint(pid, 10), ok, err
+		}
+	}
 	log.Printf("[mario-kart-8] youtube: worker on, spool %s, %d uploads a day, privacy %s", cfg.SpoolDir, cfg.DailyLimit, cfg.Privacy)
 	go func() {
 		for {

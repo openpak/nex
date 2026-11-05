@@ -28,9 +28,9 @@ NEX_CORE_STORAGE=rankings[,datastore][,messaging]   # per title container, defau
 | `NEX_ACCOUNT_GRPC_ADDR`, `NEX_ACCOUNT_GRPC_KEY` | nn-account (PID <-> account), already set on every Wii U/3DS title |
 
 A flag that is on with a setting missing **refuses to start** (`NEX_CORE_STORAGE=rankings: ...`):
-a title never silently keeps local tables while the operator thinks it is core-backed. Only
-`rankings` is built; `datastore` and `messaging` are reserved names and do nothing until the core
-gaps below are closed.
+a title never silently keeps local tables while the operator thinks it is core-backed. `rankings`
+and `datastore` are built (`datastore` since nex v1.11.0, wired for Mario Kart 8 only); `messaging`
+is a reserved name and does nothing until the chat gaps below are closed.
 
 ## Identity and cache
 
@@ -97,7 +97,7 @@ scores and a 256-byte metadata blob; they map onto leaderboards (board `t<id>s<s
 column) but need their own adapter. Splatoon's Splatfest scores (`ranking_splatoon.user_scores`)
 likewise.
 
-### DataStore (0x73) -> title-storage: adapter NOT BUILT; every core gap closed (D1-D5, title-storage v0.3.0-v0.7.0)
+### DataStore (0x73) -> title-storage: BUILT (nex v1.11.0, `internal/coredatastore`; core gaps D1-D5 closed in title-storage v0.3.0-v0.7.0)
 
 The common DataStore protocol leaves storage to ~15 callbacks (`InitializeObjectByPreparePostParam`,
 `GetObjectInfoByDataID`, `UpdateObjectUploadCompletedByDataID`, `GetObjectInfosByDataStoreSearchParam`,
@@ -119,6 +119,73 @@ MHGU, plus the Switch titles (served by switch-nex in production).
 
 Latency: every DataStore read is one gRPC hop (1-3 ms on the box) plus the Resolution cache.
 Searches that today are one SQL query stay one `ListObjects` call where D3 does not apply.
+
+#### The adapter as built (nex v1.11.0)
+
+`internal/coredatastore` registers the DataStore method handlers itself (`Store.Install` on the
+title's `datastore.Protocol`: GetMeta, GetMetas, GetMetasMultipleParam, SearchObject,
+PrepareGetObject, PreparePostObject, CompletePostObject(s), PostMetaBinary, ChangeMeta,
+DeleteObject, RateObject(s)) instead of filling nex-protocols-common-go's callbacks: those
+callbacks do not carry the caller, and every core read needs the caller's account as the viewer.
+Visibility is then the core's: there is no second permission check in the adapter for reads.
+Where it differs from the table above, deliberately:
+
+| Point | As built | Why |
+| --- | --- | --- |
+| object name | the core name is the id (an empty name at prepare); the NEX `Name` is `meta_json.name` | NEX names repeat within an owner (every ghost is "ghost"); a core name is unique per owner and collection and would replace |
+| collection | the data type in decimal (`"17"`); `meta_json.data_type` too | every DataStore search adds `meta_range_json {"data_type":{}}`, which leaves the title's other objects (`ranking_common`) out |
+| persistence slot | `meta_json.persistence_slot`, always present (65535 = none); a new object in a slot deletes the owner's previous one, as the local stores did | lets the read API ask for "no slot" (highlights) with `meta_filter_json` |
+| period | kept in `meta_json.period` and returned as `ExpireTime`; **no core expiry** is set | the local store never expired objects, and NEX periods are refreshed on reference, which nothing here does: a core expiry would silently delete players' ghosts after 90 days |
+| rating init | the post's `RatingInitParams` ride in `meta_json.rating_init` and become `InitRating` at `CompleteUpload` (a pending upload holds no slots); `RateObject` sends the slot's policy too, so a slot is never missing | |
+| owner PID | `meta_json.owner_pid`, so a read needs no reverse lookup | as rankings' info blob |
+| `DelPermission` | checked adapter-side (owner, public, friends from nn-friends, recipients) before `UpdateObjectMeta` / `DeleteObjects`; the core's write rule applies on top | |
+| sort by name / data type / referred count | `id` | the core name is the id; data type and referred count cannot be sorted (MK8 never increments the count) |
+| `SearchTypeOwnPending/Rejected` | the owner's objects, no status filter | as the local store |
+| no account link | reads are anonymous (public objects only); writes and ratings are `DataStore::PermissionDenied` | no pending rows: a DataStore write is answered with a data id or URL the console uses at once |
+| core down | `Core::SystemError`, nothing kept locally | |
+
+Errors: `NotFound` -> `DataStore::NotFound`, `InvalidArgument`/`AlreadyExists` ->
+`InvalidArgument`, `PermissionDenied` -> `PermissionDenied` (a self-rating -> `OperationNotAllowed`),
+`ResourceExhausted` -> `OverCapacity`, `FailedPrecondition` (upload size mismatch) ->
+`OperationNotAllowed`, a locked rating -> `OperationNotAllowed`, anything else -> `Core::SystemError`.
+
+#### Wii U reachability of the bodies (decided 2026-11-05: direct, no proxy, no new redirect)
+
+The console uploads to `put_url` (an S3 POST policy) and downloads from `get_url`, both signed by
+title-storage for `TITLE_STORAGE_S3_PUBLIC_URL`, which in production is
+**`http://title-storage.openpak.org`** (path style, `/title-storage/<id>/<random>`). On the box,
+Traefik's `web` entrypoint (port 80) routes `Host(title-storage.openpak.org) &&
+PathPrefix(/title-storage/)` to `openpak-minio:9000` (router `title-storage-ds-web`, the same
+pattern as `mk8d-ds.openpak.org` for the Switch's MK8D DataStore). Public DNS answers the name
+with the box address.
+
+| Console path | Resolves to | TLS |
+| --- | --- | --- |
+| Aroma + Inkay-openpak | the PPC DNS hook answers every name under the bundled family `.openpak.org` with `OPENPAK_SERVER_IP` (`common/redirect_list.cpp`, `redirect_bundled()`); the signed list only adds families | none: plain HTTP on port 80 |
+| stock console on nn-sssl-dns | `*.openpak.org` is answered with the box | none |
+
+So no entry in the signed redirect list is needed and no console-side change: the name is already
+inside the compiled-in `.openpak.org` family, and plain HTTP avoids the certificate question
+(the Wii U's CA store would not trust the public certificate; Inkay's NoSSL would). A proxy through
+an existing title host was not needed: Mario Kart 8 has no console-facing HTTP host (NEX is
+UDP), and any host the server could proxy through would be another `*.openpak.org` name with the
+same reachability. Probed 2026-11-05: `http://title-storage.openpak.org/title-storage/` from
+outside answers MinIO's 403 (the route is live). Not yet proven: a retail Wii U accepting an
+`http://` DataStore URL (Pretendo hands out HTTPS); if a console refuses it, an HTTPS router for
+the same name on 443 works for Inkay consoles (NoSSL) without any other change.
+
+#### Mario Kart TV (`mk8.mktv_consent`, `mk8.mktv_videos`): stay local
+
+Both are the title's own feature state, class 1: a player's opt-in to the OpenPak YouTube channel
+and the worker's per-highlight upload status and YouTube id. They are not DataStore objects, have
+no cross-network meaning and are read only by this title, so they stay in `mk8wiiu`. Erasure
+already covers them by the PID-column rule (`docs/erasure.md`: "MKTV consent and videos"). What
+moved is their reads of DataStore objects: with the flag on, the YouTube worker finds a
+highlight's owner with `Store.Owner` (a public object in the core; a private or missing one is
+`unknown_object`), and the read API (`MK8_API_ADDR`) lists highlights and ghosts, the per-course
+ghost counts, thumbnails (the oldest public object referring to a highlight), ratings and bodies
+(through `get_url`) from title-storage as an anonymous viewer, joining only the YouTube id from
+`mk8.mktv_videos`.
 
 ### Messaging (0x17) and MessageDelivery (0x1B) -> chat: NOT BUILT, gaps
 
@@ -149,8 +216,8 @@ Super Mario Bros. 35.
 | D5 **BUILT** (title-storage v0.7.0, card #146) | title-storage | `UpdateObjectMeta(network, id, writer, setter, info?, meta_json?, meta_merge_json, name?, collection?, visibility + recipients, expires_unix_ms?, condition)`: metadata only, keeps the body (inline or blob) and the ratings; changing the data type moves the object to another collection. `PutObject` is unchanged (a replacement; over a blob-backed object it drops the blob) |
 | M1-M5 | chat | a "title message" kind: `SendTitleMessage(title, network, from, to_account or to_room, subject, body bytes, lifetime_s, flags, parent_id)`, `ListTitleMessages(title, account, range)`, `DeleteTitleMessages(ids)`; not friendship-gated (the console's own block list applies), not shown in the social chat UI |
 
-Until those land, `datastore` and `messaging` stay local in every title, and the erasure
-endpoint keeps covering them by rule (`docs/erasure.md`).
+Until a title is flipped, its DataStore stays local, and `messaging` stays local everywhere until
+M1-M5 land; the erasure endpoint keeps covering local tables by rule (`docs/erasure.md`).
 
 ## Pilots
 
@@ -158,9 +225,10 @@ endpoint keeps covering them by rule (`docs/erasure.md`).
 | --- | --- | --- | --- |
 | Wii U | Mario Kart 8 (`openpak-mario-kart-8`, db `mk8wiiu`) | rankings | `NEX_CORE_STORAGE=rankings` in production since v1.9.0 |
 | Switch | (switch-nex) | rankings | already core-backed since switch-nex v0.12.0/v0.13.0 (card #63): MK8D, Splatoon 2, Mario Tennis Aces and every Ranking/Ranking2 title submit to leaderboards; no flag needed |
-| Switch | Super Mario Maker 2 (switch-nex) | datastore | core side ready (D1-D5 built); waits on the adapter |
+| Wii U | Mario Kart 8 | datastore | `NEX_CORE_STORAGE=rankings,datastore` (nex v1.11.0, card openpak/prds#147) |
+| Switch | Super Mario Maker 2 (switch-nex) | datastore | core side ready (D1-D5 built); waits on a switch-nex adapter |
 
-**DataStore after D5 (2026-11-05): every core gap is closed** (D1-D5 live in title-storage v0.7.0); what is left is the nex adapter itself (step 3 below). A title's DataStore hooks
+**DataStore after D5 (2026-11-05): every core gap is closed** (D1-D5 live in title-storage v0.7.0) and the nex adapter is built (v1.11.0); another title moves with a wiring release (its DataStore registration takes `NEX_CORE_STORAGE=datastore` as MK8's does) and an env flip. A title's DataStore hooks
 share one object store, so a title cannot keep searches or ratings over local tables while its
 objects live in the core; the whole hook set moves at once. What each DataStore title registers
 (title code under `titles/`), and therefore what it waits on:
@@ -178,9 +246,8 @@ D2 (recipients) turns out to be needed by every common-DataStore title, not only
 people" uploads: each title stores `Permission.RecipientIDs` and `DelPermission.RecipientIDs` and
 returns them in every meta (Pokken also enforces them).
 
-**DataStore pilot = Mario Kart 8 (Wii U), state after title-storage v0.7.0 (2026-11-05).** D1-D5
-are live; `datastore` in `NEX_CORE_STORAGE` stays a reserved name and nothing was flipped. What
-the pilot still needs, in order:
+**DataStore pilot = Mario Kart 8 (Wii U), flipped 2026-11-05 (nex v1.11.0, card openpak/prds#147).**
+What the pilot needed, in order:
 
 1. ~~**D2 recipients in title-storage**~~ **BUILT** (v0.6.0, card #135): `Permission.RecipientIDs`
    = `recipients` (+ `recipients_include_friends` for permission 4), `SearchTypeReceived` =
@@ -191,7 +258,7 @@ the pilot still needs, in order:
    `UpdateObjectDataTypeByDataIDWithPassword` are `UpdateObjectMeta` (`info` / `expires_unix_ms`
    and `meta_merge_json` / `collection`), which keeps the uploaded ghost or MKTV video and its
    ratings.
-3. **The nex adapter** (`internal/coredatastore`, the `datastore` flag): the whole MK8 hook set
+3. ~~**The nex adapter**~~ **BUILT** (v1.11.0; "The adapter as built" above) (`internal/coredatastore`, the `datastore` flag): the whole MK8 hook set
    from `titles/mario-kart-8/datastore.go` and `search.go` onto the calls in the table above
    (PID <-> account through the Resolution cache; collection = data type; `meta_json` carries
    period, flag, tags, refer data id, persistence slot and the PIDs the wire needs; `info` = meta
@@ -200,21 +267,28 @@ the pilot still needs, in order:
    `attachRatings`). `SearchTypePublicExcludeOwnAndFriends` is `all_owners` + `exclude_owners`
    = self + friends (accounts from the friend graph). Fallback rules as rankings: no account link
    or core down = a NEX error, never stale local data.
-4. **Console reachability of the blob host**: Wii U uploads and downloads go to
-   `title-storage.openpak.org` (D1 presigned URLs); check the Wii U redirect/DNS list carries it
-   before the flip.
-5. **MK8's read API** (`MK8_API_ADDR`, the MKTV site): ghosts and highlights read from the core
-   once flipped (as rankings already do).
-6. **Before the flip**: re-count `mk8wiiu` DataStore rows (0 on 2026-11-05); any rows then need a
-   copy into title-storage first, as the rankings pilot did with `corestore.pending_*`.
+4. ~~**Console reachability of the blob host**~~ **DONE**: `http://title-storage.openpak.org` is
+   inside the bundled `.openpak.org` family and nn-sssl-dns's `*.openpak.org`; no signed-list entry
+   and no proxy needed ("Wii U reachability of the bodies" above).
+5. ~~**MK8's read API**~~ **DONE**: ghosts, highlights, thumbnails, ghost counts and bodies from
+   the core; MKTV consent/videos stay local ("Mario Kart TV" above).
+6. ~~**Before the flip**~~ **DONE** (recount 2026-11-05, before the flip): `mk8.datastore_objects` 0,
+   `mk8.datastore_ratings` 0, `mk8.mktv_consent` 0, `mk8.mktv_videos` 0, `corestore.pending_*` 0;
+   title-storage `mario-kart-8` held 1 object (`ranking_common`, the rankings pilot's row) and 0
+   DataStore objects. Nothing to move (a DataStore object would need its body too: MK8 had no
+   bucket configured, `MK8_S3_*` unset, so no body ever existed). The empty local tables stay and
+   are no longer read.
 
 Mario Kart 8 quadlet (on the box, `~/.config/containers/systemd/openpak-mario-kart-8.container`;
-the Wii U/3DS title quadlets are not tracked in any repository, a dated `.before-core-rankings`
-copy is kept beside it):
+the Wii U/3DS title quadlets are not tracked in any repository, dated `.before-core-rankings` and
+`.before-core-datastore-20261105` copies are kept beside it):
 
 ```
-Environment=NEX_CORE_STORAGE=rankings NEX_LEADERBOARDS_ADDR=openpak-leaderboards:20211 NEX_TITLE_STORAGE_ADDR=openpak-title-storage:20231
+Environment=NEX_CORE_STORAGE=rankings,datastore NEX_LEADERBOARDS_ADDR=openpak-leaderboards:20211 NEX_TITLE_STORAGE_ADDR=openpak-title-storage:20231
 ```
+
+`datastore` was added 2026-11-05 (nex v1.11.0). At start the title sets its title-storage
+`max_object_bytes` to 8 MiB (the read API's body ceiling).
 
 Local rows written before a flip are not read any more, so move them first: copy them into
 `corestore.pending_*` (same columns) and the start-up drain files them in the core. For Mario
@@ -228,7 +302,10 @@ INSERT INTO corestore.pending_scores (owner_pid, unique_id, category, score, ord
 ```
 
 Rollback: remove that line and restart the unit. Scores written while flipped stay in the core
-(the local tables were empty); nothing is lost, the title just stops seeing them.
+(the local tables were empty); nothing is lost, the title just stops seeing them. DataStore alone:
+take the word `datastore` out of `NEX_CORE_STORAGE` (keep `rankings`) and restart
+`openpak-mario-kart-8`; objects, bodies and ratings written while flipped stay in title-storage and
+the bucket, and the title goes back to its (empty) local tables.
 
 ## Rollout order (rankings, after the pilot has been green for a day)
 

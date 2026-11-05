@@ -19,20 +19,27 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TitleStorage_SetVariables_FullMethodName    = "/openpak.titlestorage.v1.TitleStorage/SetVariables"
-	TitleStorage_ListVariables_FullMethodName   = "/openpak.titlestorage.v1.TitleStorage/ListVariables"
-	TitleStorage_AddVariable_FullMethodName     = "/openpak.titlestorage.v1.TitleStorage/AddVariable"
-	TitleStorage_TrySetVariable_FullMethodName  = "/openpak.titlestorage.v1.TitleStorage/TrySetVariable"
-	TitleStorage_DeleteVariables_FullMethodName = "/openpak.titlestorage.v1.TitleStorage/DeleteVariables"
-	TitleStorage_PutObject_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/PutObject"
-	TitleStorage_GetObject_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/GetObject"
-	TitleStorage_GetObjectByID_FullMethodName   = "/openpak.titlestorage.v1.TitleStorage/GetObjectByID"
-	TitleStorage_ListObjects_FullMethodName     = "/openpak.titlestorage.v1.TitleStorage/ListObjects"
-	TitleStorage_DeleteObjects_FullMethodName   = "/openpak.titlestorage.v1.TitleStorage/DeleteObjects"
-	TitleStorage_Usage_FullMethodName           = "/openpak.titlestorage.v1.TitleStorage/Usage"
-	TitleStorage_MapTitle_FullMethodName        = "/openpak.titlestorage.v1.TitleStorage/MapTitle"
-	TitleStorage_UpsertTitle_FullMethodName     = "/openpak.titlestorage.v1.TitleStorage/UpsertTitle"
-	TitleStorage_ListTitles_FullMethodName      = "/openpak.titlestorage.v1.TitleStorage/ListTitles"
+	TitleStorage_SetVariables_FullMethodName     = "/openpak.titlestorage.v1.TitleStorage/SetVariables"
+	TitleStorage_ListVariables_FullMethodName    = "/openpak.titlestorage.v1.TitleStorage/ListVariables"
+	TitleStorage_AddVariable_FullMethodName      = "/openpak.titlestorage.v1.TitleStorage/AddVariable"
+	TitleStorage_TrySetVariable_FullMethodName   = "/openpak.titlestorage.v1.TitleStorage/TrySetVariable"
+	TitleStorage_DeleteVariables_FullMethodName  = "/openpak.titlestorage.v1.TitleStorage/DeleteVariables"
+	TitleStorage_PutObject_FullMethodName        = "/openpak.titlestorage.v1.TitleStorage/PutObject"
+	TitleStorage_GetObject_FullMethodName        = "/openpak.titlestorage.v1.TitleStorage/GetObject"
+	TitleStorage_GetObjectByID_FullMethodName    = "/openpak.titlestorage.v1.TitleStorage/GetObjectByID"
+	TitleStorage_ListObjects_FullMethodName      = "/openpak.titlestorage.v1.TitleStorage/ListObjects"
+	TitleStorage_DeleteObjects_FullMethodName    = "/openpak.titlestorage.v1.TitleStorage/DeleteObjects"
+	TitleStorage_UpdateObjectMeta_FullMethodName = "/openpak.titlestorage.v1.TitleStorage/UpdateObjectMeta"
+	TitleStorage_PrepareUpload_FullMethodName    = "/openpak.titlestorage.v1.TitleStorage/PrepareUpload"
+	TitleStorage_CompleteUpload_FullMethodName   = "/openpak.titlestorage.v1.TitleStorage/CompleteUpload"
+	TitleStorage_InitRating_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/InitRating"
+	TitleStorage_RateObject_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/RateObject"
+	TitleStorage_GetRatings_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/GetRatings"
+	TitleStorage_ResetRatings_FullMethodName     = "/openpak.titlestorage.v1.TitleStorage/ResetRatings"
+	TitleStorage_Usage_FullMethodName            = "/openpak.titlestorage.v1.TitleStorage/Usage"
+	TitleStorage_MapTitle_FullMethodName         = "/openpak.titlestorage.v1.TitleStorage/MapTitle"
+	TitleStorage_UpsertTitle_FullMethodName      = "/openpak.titlestorage.v1.TitleStorage/UpsertTitle"
+	TitleStorage_ListTitles_FullMethodName       = "/openpak.titlestorage.v1.TitleStorage/ListTitles"
 )
 
 // TitleStorageClient is the client API for TitleStorage service.
@@ -57,7 +64,9 @@ const (
 // shows each network the rows that network wrote itself.
 //
 // Reads take a viewer (a core account id): private rows are visible to their owner only,
-// friends rows to the owner's friends (the account core's friend list), public rows to anyone.
+// friends rows to the owner's friends (the account core's friend list), public rows to anyone,
+// recipients objects (v0.6.0) to their owner and the accounts named in recipients (and, with
+// recipients_include_friends, the owner's friends).
 // Virtual owners are always readable and writable by every account. An empty viewer is an
 // anonymous reader: public rows only. Writes take a writer: it must be the owner, or a
 // virtual owner, or an account the account core lets the writer interact with.
@@ -75,6 +84,35 @@ type TitleStorageClient interface {
 	GetObjectByID(ctx context.Context, in *GetObjectByIDRequest, opts ...grpc.CallOption) (*ObjectResponse, error)
 	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
 	DeleteObjects(ctx context.Context, in *DeleteObjectsRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	// UpdateObjectMeta (v0.7.0) changes an object's metadata only: info, meta_json (replace and/or
+	// merge), name, collection, visibility and recipients, expiry, setter. It never touches the body
+	// (inline or blob), the size, the id or the ratings. PutObject is the other way round: it
+	// replaces the whole object, and over a blob-backed object it drops the blob.
+	UpdateObjectMeta(ctx context.Context, in *UpdateObjectMetaRequest, opts ...grpc.CallOption) (*ObjectResponse, error)
+	// Blob tier: a body that should not travel inline (a video, a course with replays) goes to S3
+	// directly from the console. PrepareUpload checks the quota and the size cap, reserves the
+	// object id and returns a short-lived presigned request; the console sends the bytes; the
+	// adapter calls CompleteUpload, which checks the size (and the digest when one was given) and
+	// makes the object visible. Reads of a blob-backed object carry get_url (presigned) instead of
+	// a body. An upload not completed within the upload lifetime expires and its bytes are deleted.
+	PrepareUpload(ctx context.Context, in *PrepareUploadRequest, opts ...grpc.CallOption) (*PrepareUploadResponse, error)
+	CompleteUpload(ctx context.Context, in *CompleteUploadRequest, opts ...grpc.CallOption) (*ObjectResponse, error)
+	// Ratings (v0.5.0): numeric rating slots on an object (NEX DataStore ratings, likes, stars).
+	// A slot carries its policy (initial value, range, lock, flags) and a running total and count;
+	// every rater has one row per (object, slot) holding what it contributed, so a lock can be
+	// checked and an erased rater's contribution taken back out. Deleting an object deletes its
+	// ratings.
+	//
+	// InitRating creates a slot with its policy (a slot that exists is kept as it is: the first
+	// policy wins). The writer follows the write rule for the object's owner.
+	InitRating(ctx context.Context, in *InitRatingRequest, opts ...grpc.CallOption) (*RatingResponse, error)
+	// RateObject adds the rater's value to the slot (or, on a modifiable slot, replaces the rater's
+	// previous value). A slot that does not exist yet is created with the request's policy; without
+	// one it is InvalidArgument. A locked rater gets locked=true and the slot unchanged.
+	RateObject(ctx context.Context, in *RateObjectRequest, opts ...grpc.CallOption) (*RatingResponse, error)
+	GetRatings(ctx context.Context, in *GetRatingsRequest, opts ...grpc.CallOption) (*GetRatingsResponse, error)
+	// ResetRatings puts slots back to their initial value with no ratings (every rater's row goes).
+	ResetRatings(ctx context.Context, in *ResetRatingsRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	// Usage reports what one owner holds in one title against the quota.
 	Usage(ctx context.Context, in *UsageRequest, opts ...grpc.CallOption) (*UsageResponse, error)
 	// Operator calls.
@@ -191,6 +229,76 @@ func (c *titleStorageClient) DeleteObjects(ctx context.Context, in *DeleteObject
 	return out, nil
 }
 
+func (c *titleStorageClient) UpdateObjectMeta(ctx context.Context, in *UpdateObjectMetaRequest, opts ...grpc.CallOption) (*ObjectResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ObjectResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_UpdateObjectMeta_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) PrepareUpload(ctx context.Context, in *PrepareUploadRequest, opts ...grpc.CallOption) (*PrepareUploadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareUploadResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_PrepareUpload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) CompleteUpload(ctx context.Context, in *CompleteUploadRequest, opts ...grpc.CallOption) (*ObjectResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ObjectResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_CompleteUpload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) InitRating(ctx context.Context, in *InitRatingRequest, opts ...grpc.CallOption) (*RatingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RatingResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_InitRating_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) RateObject(ctx context.Context, in *RateObjectRequest, opts ...grpc.CallOption) (*RatingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RatingResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_RateObject_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) GetRatings(ctx context.Context, in *GetRatingsRequest, opts ...grpc.CallOption) (*GetRatingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRatingsResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_GetRatings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *titleStorageClient) ResetRatings(ctx context.Context, in *ResetRatingsRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteResponse)
+	err := c.cc.Invoke(ctx, TitleStorage_ResetRatings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *titleStorageClient) Usage(ctx context.Context, in *UsageRequest, opts ...grpc.CallOption) (*UsageResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UsageResponse)
@@ -253,7 +361,9 @@ func (c *titleStorageClient) ListTitles(ctx context.Context, in *ListTitlesReque
 // shows each network the rows that network wrote itself.
 //
 // Reads take a viewer (a core account id): private rows are visible to their owner only,
-// friends rows to the owner's friends (the account core's friend list), public rows to anyone.
+// friends rows to the owner's friends (the account core's friend list), public rows to anyone,
+// recipients objects (v0.6.0) to their owner and the accounts named in recipients (and, with
+// recipients_include_friends, the owner's friends).
 // Virtual owners are always readable and writable by every account. An empty viewer is an
 // anonymous reader: public rows only. Writes take a writer: it must be the owner, or a
 // virtual owner, or an account the account core lets the writer interact with.
@@ -271,6 +381,35 @@ type TitleStorageServer interface {
 	GetObjectByID(context.Context, *GetObjectByIDRequest) (*ObjectResponse, error)
 	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
 	DeleteObjects(context.Context, *DeleteObjectsRequest) (*DeleteResponse, error)
+	// UpdateObjectMeta (v0.7.0) changes an object's metadata only: info, meta_json (replace and/or
+	// merge), name, collection, visibility and recipients, expiry, setter. It never touches the body
+	// (inline or blob), the size, the id or the ratings. PutObject is the other way round: it
+	// replaces the whole object, and over a blob-backed object it drops the blob.
+	UpdateObjectMeta(context.Context, *UpdateObjectMetaRequest) (*ObjectResponse, error)
+	// Blob tier: a body that should not travel inline (a video, a course with replays) goes to S3
+	// directly from the console. PrepareUpload checks the quota and the size cap, reserves the
+	// object id and returns a short-lived presigned request; the console sends the bytes; the
+	// adapter calls CompleteUpload, which checks the size (and the digest when one was given) and
+	// makes the object visible. Reads of a blob-backed object carry get_url (presigned) instead of
+	// a body. An upload not completed within the upload lifetime expires and its bytes are deleted.
+	PrepareUpload(context.Context, *PrepareUploadRequest) (*PrepareUploadResponse, error)
+	CompleteUpload(context.Context, *CompleteUploadRequest) (*ObjectResponse, error)
+	// Ratings (v0.5.0): numeric rating slots on an object (NEX DataStore ratings, likes, stars).
+	// A slot carries its policy (initial value, range, lock, flags) and a running total and count;
+	// every rater has one row per (object, slot) holding what it contributed, so a lock can be
+	// checked and an erased rater's contribution taken back out. Deleting an object deletes its
+	// ratings.
+	//
+	// InitRating creates a slot with its policy (a slot that exists is kept as it is: the first
+	// policy wins). The writer follows the write rule for the object's owner.
+	InitRating(context.Context, *InitRatingRequest) (*RatingResponse, error)
+	// RateObject adds the rater's value to the slot (or, on a modifiable slot, replaces the rater's
+	// previous value). A slot that does not exist yet is created with the request's policy; without
+	// one it is InvalidArgument. A locked rater gets locked=true and the slot unchanged.
+	RateObject(context.Context, *RateObjectRequest) (*RatingResponse, error)
+	GetRatings(context.Context, *GetRatingsRequest) (*GetRatingsResponse, error)
+	// ResetRatings puts slots back to their initial value with no ratings (every rater's row goes).
+	ResetRatings(context.Context, *ResetRatingsRequest) (*DeleteResponse, error)
 	// Usage reports what one owner holds in one title against the quota.
 	Usage(context.Context, *UsageRequest) (*UsageResponse, error)
 	// Operator calls.
@@ -316,6 +455,27 @@ func (UnimplementedTitleStorageServer) ListObjects(context.Context, *ListObjects
 }
 func (UnimplementedTitleStorageServer) DeleteObjects(context.Context, *DeleteObjectsRequest) (*DeleteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteObjects not implemented")
+}
+func (UnimplementedTitleStorageServer) UpdateObjectMeta(context.Context, *UpdateObjectMetaRequest) (*ObjectResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateObjectMeta not implemented")
+}
+func (UnimplementedTitleStorageServer) PrepareUpload(context.Context, *PrepareUploadRequest) (*PrepareUploadResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrepareUpload not implemented")
+}
+func (UnimplementedTitleStorageServer) CompleteUpload(context.Context, *CompleteUploadRequest) (*ObjectResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteUpload not implemented")
+}
+func (UnimplementedTitleStorageServer) InitRating(context.Context, *InitRatingRequest) (*RatingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method InitRating not implemented")
+}
+func (UnimplementedTitleStorageServer) RateObject(context.Context, *RateObjectRequest) (*RatingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RateObject not implemented")
+}
+func (UnimplementedTitleStorageServer) GetRatings(context.Context, *GetRatingsRequest) (*GetRatingsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRatings not implemented")
+}
+func (UnimplementedTitleStorageServer) ResetRatings(context.Context, *ResetRatingsRequest) (*DeleteResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResetRatings not implemented")
 }
 func (UnimplementedTitleStorageServer) Usage(context.Context, *UsageRequest) (*UsageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Usage not implemented")
@@ -530,6 +690,132 @@ func _TitleStorage_DeleteObjects_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TitleStorage_UpdateObjectMeta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateObjectMetaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).UpdateObjectMeta(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_UpdateObjectMeta_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).UpdateObjectMeta(ctx, req.(*UpdateObjectMetaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_PrepareUpload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareUploadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).PrepareUpload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_PrepareUpload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).PrepareUpload(ctx, req.(*PrepareUploadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_CompleteUpload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteUploadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).CompleteUpload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_CompleteUpload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).CompleteUpload(ctx, req.(*CompleteUploadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_InitRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitRatingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).InitRating(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_InitRating_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).InitRating(ctx, req.(*InitRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_RateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RateObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).RateObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_RateObject_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).RateObject(ctx, req.(*RateObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_GetRatings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRatingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).GetRatings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_GetRatings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).GetRatings(ctx, req.(*GetRatingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TitleStorage_ResetRatings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetRatingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TitleStorageServer).ResetRatings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TitleStorage_ResetRatings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TitleStorageServer).ResetRatings(ctx, req.(*ResetRatingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TitleStorage_Usage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UsageRequest)
 	if err := dec(in); err != nil {
@@ -648,6 +934,34 @@ var TitleStorage_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteObjects",
 			Handler:    _TitleStorage_DeleteObjects_Handler,
+		},
+		{
+			MethodName: "UpdateObjectMeta",
+			Handler:    _TitleStorage_UpdateObjectMeta_Handler,
+		},
+		{
+			MethodName: "PrepareUpload",
+			Handler:    _TitleStorage_PrepareUpload_Handler,
+		},
+		{
+			MethodName: "CompleteUpload",
+			Handler:    _TitleStorage_CompleteUpload_Handler,
+		},
+		{
+			MethodName: "InitRating",
+			Handler:    _TitleStorage_InitRating_Handler,
+		},
+		{
+			MethodName: "RateObject",
+			Handler:    _TitleStorage_RateObject_Handler,
+		},
+		{
+			MethodName: "GetRatings",
+			Handler:    _TitleStorage_GetRatings_Handler,
+		},
+		{
+			MethodName: "ResetRatings",
+			Handler:    _TitleStorage_ResetRatings_Handler,
 		},
 		{
 			MethodName: "Usage",

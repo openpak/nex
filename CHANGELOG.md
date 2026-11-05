@@ -6,6 +6,26 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.11.0 — 2026-11-05
+- **DataStore can live in the core** (card openpak/prds#147, #131 phase 8): `NEX_CORE_STORAGE=datastore` (default off) is built. `internal/coredatastore`
+  serves the DataStore methods (GetMeta(s), GetMetasMultipleParam, SearchObject, PrepareGet/PreparePost/CompletePost(s), PostMetaBinary, ChangeMeta,
+  DeleteObject, RateObject(s)) over title-storage v0.7.0: object id = data id, owner = the PID's account, collection = data type, meta binary = info, the
+  rest of the meta (name, permissions and recipient PIDs, period, flag, status, tags, refer id, persistence slot, owner PID) in `meta_json`; permissions
+  are core visibility (public / friends / recipients / private / recipients + friends); bodies through the blob tier (S3 POST policy and presigned GET
+  on `http://title-storage.openpak.org`); ratings through `InitRating`/`RateObject` and `include_ratings`; ChangeMeta through `UpdateObjectMeta` (body
+  and ratings kept); SearchObject through `ListObjects` (scope, exclusions, data types, tags, refer id, time bounds, rating sorts). No DataStore row is
+  kept locally; no account link = anonymous reads and refused writes; core down = `Core::SystemError`. Period is kept as metadata, never a core expiry.
+  `NewCoreDataStore` refuses to start without `NEX_TITLE_STORAGE_ADDR`/key or nn-account. Design and deviations: docs/core-backed-storage.md.
+- **Mario Kart 8 wiring:** with the flag on, its DataStore is the core adapter, its read API (`MK8_API_ADDR`) reads highlights, ghosts, ghost counts,
+  thumbnails, ratings and bodies from title-storage, and the MKTV YouTube worker looks up a highlight's owner there. `mk8.mktv_consent` and
+  `mk8.mktv_videos` stay local (the feature's own consent and upload state, erased by PID). The title's object cap in title-storage is 8 MiB.
+  The read API's Rankings/Courses work with either flag alone.
+- `internal/titlestoragepb` regenerated from title-storage v0.7.0.
+- Tests: a fake title-storage with visibility, blob tier (a real HTTP bucket the test uploads to and downloads from), ratings and metadata updates;
+  the full upload/download/rate/change-meta/search/delete round trip, every permission, no link and core down, upload mismatch, persistence slots,
+  meta-only posts, update permission, every search translation and the read API; `TestLiveRoundTrip` runs the same round trip against a real
+  title-storage when `NEX_LIVE_TITLE_STORAGE_ADDR` is set.
+
 ## v1.10.0 — 2026-11-05
 - `internal/coreranking` uses the leaderboards v0.3.0 API (card openpak/prds#131, gaps L1-L3) and drops its workarounds: group bytes are stored in the entry's
   `groups` and the Ranking group filter is the core's `groups_filter` (no more reading up to 10 000 rows and filtering in the adapter); `UpdateModeDeleteOld`

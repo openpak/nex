@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/openpak/nex/internal/coredatastore"
 	"github.com/openpak/nex/internal/coreid"
 	"github.com/openpak/nex/internal/coreranking"
 	lbpb "github.com/openpak/nex/internal/leaderboardspb"
@@ -24,7 +25,7 @@ import (
 // container's environment names the store.
 const (
 	CoreRankingsStore  = "rankings"
-	CoreDataStoreStore = "datastore" // not built yet: core gaps (docs/core-backed-storage.md)
+	CoreDataStoreStore = "datastore"
 	CoreMessagingStore = "messaging" // not built yet: core gaps
 )
 
@@ -106,4 +107,39 @@ func coreConn(addrVar, keyVar, sharedKeyVar string) (*grpc.ClientConn, error) {
 		grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, inv grpc.UnaryInvoker, o ...grpc.CallOption) error {
 			return inv(metadata.AppendToOutgoingContext(ctx, "x-internal-key", key), method, req, reply, cc, o...)
 		}))
+}
+
+// NewCoreDataStore builds the core-backed DataStore of a title (NEX_CORE_STORAGE=datastore):
+// objects, bodies and ratings in title-storage. It needs NEX_TITLE_STORAGE_ADDR (key
+// NEX_TITLE_STORAGE_KEY or TITLE_STORAGE_INTERNAL_KEY) and nn-account (PID <-> account); a
+// missing setting is an error. maxObjectBytes raises the title's per-object cap (0 keeps the
+// service default); friends answers SearchTypePublicExcludeOwnAndFriends.
+func NewCoreDataStore(cfg Config, t CoreTitle, maxObjectBytes uint32, friends func(pid uint32) []uint32) (*coredatastore.Store, error) {
+	tsConn, err := coreConn("NEX_TITLE_STORAGE_ADDR", "NEX_TITLE_STORAGE_KEY", "TITLE_STORAGE_INTERNAL_KEY")
+	if err != nil {
+		return nil, err
+	}
+	if cfg.AccountGRPCAddr == "" {
+		return nil, fmt.Errorf("core datastore: NEX_ACCOUNT_GRPC_ADDR is required (PID to account)")
+	}
+	res, err := coreid.DialResolution(cfg.AccountGRPCAddr, cfg.AccountGRPCKey, t.Network)
+	if err != nil {
+		return nil, err
+	}
+	s := &coredatastore.Store{
+		Cfg:     coredatastore.Config{Title: t.Key, Name: t.Name, Network: t.Network, MaxObjectBytes: maxObjectBytes},
+		TS:      tspb.NewTitleStorageClient(tsConn),
+		IDs:     &coreid.Cache{L: res},
+		Friends: friends,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := s.Register(ctx); err != nil {
+		// The mapping is durable in title-storage once made (rankings registers the same
+		// title), so a core that is down at start costs the DataStore calls, not the title.
+		log.Printf("[%s] core datastore: register: %v (DataStore calls fail until title-storage answers)", t.Key, err)
+	} else {
+		log.Printf("[%s] core datastore on: title-storage, network %s", t.Key, t.Network)
+	}
+	return s, nil
 }

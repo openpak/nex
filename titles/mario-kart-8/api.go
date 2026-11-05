@@ -37,6 +37,8 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	"github.com/lib/pq"
 	"github.com/minio/minio-go/v7"
+
+	"github.com/openpak/nex/internal/coredatastore"
 )
 
 const (
@@ -305,7 +307,7 @@ func (a *apiServer) body(w http.ResponseWriter, r *http.Request) {
 	}
 	rc, err := a.bodies(r.Context(), id)
 	if err != nil {
-		if minio.ToErrorResponse(err).Code == "NoSuchKey" {
+		if minio.ToErrorResponse(err).Code == "NoSuchKey" || errors.Is(err, coredatastore.ErrNoBody) {
 			writeAPIError(w, errAPINotFound)
 			return
 		}
@@ -716,14 +718,16 @@ func (s *Server) startAPI() {
 		}
 	}
 	var bodies apiBodies
-	if client, bucket, err := s3Client(); err == nil && client != nil {
+	if s.ds != nil {
+		bodies = s.ds.PublicBody
+	} else if client, bucket, err := s3Client(); err == nil && client != nil {
 		bodies = func(ctx context.Context, id uint64) (io.ReadCloser, error) {
 			return client.GetObject(ctx, bucket, fmt.Sprintf("mk8/objects/%d.bin", id), minio.GetObjectOptions{})
 		}
 	}
 	var store apiStore = &pgAPI{db: s.db, mktvType: mktv}
-	if s.core != nil {
-		store = coreAPI{pgAPI: store.(*pgAPI), core: s.core}
+	if s.core != nil || s.ds != nil {
+		store = coreAPI{pgAPI: store.(*pgAPI), core: s.core, ds: s.ds}
 	}
 	srv := &http.Server{Addr: addr, Handler: newAPI(store, bodies), ReadHeaderTimeout: 5 * time.Second}
 	go func() {
