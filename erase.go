@@ -231,7 +231,7 @@ func (e *Eraser) Handler() http.HandlerFunc {
 // NewEraserFromEnv builds the title's eraser from its environment: ACCOUNT_ERASE_KEY, the core and
 // nn-account settings above, every database URL the container carries and every S3 bucket.
 func NewEraserFromEnv(title string, dbURLs ...string) *Eraser {
-	urls := append(append([]string(nil), dbURLs...), databaseURLsFromEnv()...)
+	urls := ownDatabaseURLs(dbURLs)
 	e := &Eraser{Title: title, Key: os.Getenv("ACCOUNT_ERASE_KEY"), S3: s3TargetsFromEnv()}
 	if e.Key != "" {
 		e.PIDs = NewPIDSourceFromEnv()
@@ -249,6 +249,29 @@ func NewEraserFromEnv(title string, dbURLs ...string) *Eraser {
 // mountErase adds the route to a health mux.
 func mountErase(mux *http.ServeMux, e *Eraser) {
 	mux.HandleFunc("DELETE /internal/accounts/{account_id}/data", e.Handler())
+}
+
+// ownDatabaseURLs is the set of databases one title container erases from: the title's own URL
+// (the host's configured one, else NEX_DATABASE_URL, else DATABASE_URL). Only a title that names none
+// falls back to scanning the environment. The production containers load the shared deploy .env, which
+// carries every other service's URL (account, website, demonware on loopback, ...): scanning that
+// reached databases that are not the title's, with no sslmode, and failed every erasure with 502.
+func ownDatabaseURLs(configured []string) []string {
+	var out []string
+	for _, u := range configured {
+		if u = strings.TrimSpace(os.ExpandEnv(u)); u != "" {
+			out = append(out, u)
+		}
+	}
+	if len(out) > 0 {
+		return out
+	}
+	for _, k := range []string{"NEX_DATABASE_URL", "DATABASE_URL"} {
+		if u := strings.TrimSpace(os.ExpandEnv(os.Getenv(k))); u != "" {
+			return []string{u}
+		}
+	}
+	return databaseURLsFromEnv()
 }
 
 var dbEnvName = regexp.MustCompile(`(^|_)(DATABASE_URL|POSTGRES_URI|POSTGRES_URL|DB_URL)$`)

@@ -296,3 +296,23 @@ func TestDatabaseURLsFromEnv(t *testing.T) {
 		t.Fatalf("urls %v", got)
 	}
 }
+
+func TestOwnDatabaseURLs(t *testing.T) {
+	t.Setenv("NEX_DATABASE_URL", "")
+	t.Setenv("DATABASE_URL", "")
+	t.Setenv("ACCOUNT_DATABASE_URL", "postgres://account/x")
+	t.Setenv("WEBSITE_DATABASE_URL", "postgres://website/y")
+	// the configured URL wins; blanks are ignored; the rest of the environment is not scanned
+	if got := ownDatabaseURLs([]string{"", "postgres://own/t"}); len(got) != 1 || got[0] != "postgres://own/t" {
+		t.Fatalf("configured: %v", got)
+	}
+	t.Setenv("NEX_DATABASE_URL", "postgres://nex/t")
+	if got := ownDatabaseURLs([]string{""}); len(got) != 1 || got[0] != "postgres://nex/t" {
+		t.Fatalf("NEX_DATABASE_URL: %v", got)
+	}
+	t.Setenv("NEX_DATABASE_URL", "")
+	t.Setenv("DATABASE_URL", "postgres://mhgu/t")
+	if got := ownDatabaseURLs(nil); len(got) != 1 || got[0] != "postgres://mhgu/t" {
+		t.Fatalf("DATABASE_URL: %v", got)
+	}
+}

@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.8.3 — 2026-11-05
+- **Account erasure no longer fails in production** (openpak/prds#120): the erase route scanned every `*_DATABASE_URL` in the environment, and the production containers load the shared deploy `.env` with every other service's URL (account, website, demonware on loopback, no `sslmode`). The first such URL made every title answer 502 ("SSL is not enabled on the server" or a refused connection on 127.0.0.1:5432), found by the end-to-end erasure test. A title now erases only from its own database: the configured URL, else `NEX_DATABASE_URL`, else `DATABASE_URL`; the environment scan is only the last resort. Test: `TestOwnDatabaseURLs`.
+
 ## v1.8.2 — 2026-11-04
 - **Fix Wii U error 106-0502 (Mario Kart 8) and the same bug in Mario vs. Donkey Kong: Tipping Stars:** the login response named the secure
   server with `prudp:` instead of `prudps:`. The console still connected to the secure port but sent an empty CONNECT with no Kerberos
