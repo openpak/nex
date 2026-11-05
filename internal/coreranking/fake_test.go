@@ -74,9 +74,10 @@ func (f *fakeLB) Submit(_ context.Context, r *lbpb.SubmitRequest, _ ...grpc.Call
 	f.clock++
 	cur, had := f.entries[k][r.GetAccount()]
 	asc := p.GetOrder() == "asc"
-	better := !had || (asc && r.GetScore() < cur.GetScore()) || (!asc && r.GetScore() > cur.GetScore())
+	better := !had || r.GetAggregationOverride() == "latest" ||
+		(asc && r.GetScore() < cur.GetScore()) || (!asc && r.GetScore() > cur.GetScore())
 	if better {
-		f.entries[k][r.GetAccount()] = &lbpb.Entry{Account: r.GetAccount(), Score: r.GetScore(), Info: r.GetInfo(),
+		f.entries[k][r.GetAccount()] = &lbpb.Entry{Account: r.GetAccount(), Score: r.GetScore(), Info: r.GetInfo(), Groups: r.GetGroups(),
 			Network: r.GetRef().GetNetwork(), UpdatedUnixMs: time.Unix(1700000000+f.clock, 0).UnixMilli()}
 	}
 	return &lbpb.SubmitResponse{Changed: better}, nil
@@ -100,7 +101,7 @@ func (f *fakeLB) Delete(_ context.Context, r *lbpb.DeleteRequest, _ ...grpc.Call
 }
 
 // ranked is a board best first with rank and position filled in.
-func (f *fakeLB) ranked(ref *lbpb.BoardRef) ([]*lbpb.Entry, error) {
+func (f *fakeLB) ranked(ref *lbpb.BoardRef, gf *lbpb.GroupsFilter) ([]*lbpb.Entry, error) {
 	k := key(ref)
 	p, ok := f.boards[k]
 	if !ok {
@@ -108,6 +109,12 @@ func (f *fakeLB) ranked(ref *lbpb.BoardRef) ([]*lbpb.Entry, error) {
 	}
 	var out []*lbpb.Entry
 	for _, e := range f.entries[k] {
+		if gf != nil && gf.GetGroupIndex() >= 0 {
+			g := e.GetGroups()
+			if int(gf.GetGroupIndex()) >= len(g) || uint32(g[gf.GetGroupIndex()]) != gf.GetGroupValue() {
+				continue
+			}
+		}
 		out = append(out, proto.Clone(e).(*lbpb.Entry))
 	}
 	asc := p.GetOrder() == "asc"
@@ -136,7 +143,7 @@ func (f *fakeLB) Range(_ context.Context, r *lbpb.RangeRequest, _ ...grpc.CallOp
 	if err := f.hit("Range"); err != nil {
 		return nil, err
 	}
-	all, err := f.ranked(r.GetRef())
+	all, err := f.ranked(r.GetRef(), r.GetGroupsFilter())
 	if err != nil {
 		return nil, err
 	}
@@ -155,11 +162,11 @@ func (f *fakeLB) ByAccounts(_ context.Context, r *lbpb.ByAccountsRequest, _ ...g
 	if err := f.hit("ByAccounts"); err != nil {
 		return nil, err
 	}
-	return f.byAccounts(r.GetRef(), r.GetAccounts())
+	return f.byAccounts(r.GetRef(), r.GetAccounts(), r.GetGroupsFilter())
 }
 
-func (f *fakeLB) byAccounts(ref *lbpb.BoardRef, accounts []string) (*lbpb.RangeResponse, error) {
-	all, err := f.ranked(ref)
+func (f *fakeLB) byAccounts(ref *lbpb.BoardRef, accounts []string, gf *lbpb.GroupsFilter) (*lbpb.RangeResponse, error) {
+	all, err := f.ranked(ref, gf)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +193,7 @@ func (f *fakeLB) FriendRanks(_ context.Context, r *lbpb.FriendRanksRequest, _ ..
 	if r.GetIncludeSelf() {
 		accts = append(accts, r.GetAccount())
 	}
-	resp, err := f.byAccounts(r.GetRef(), accts)
+	resp, err := f.byAccounts(r.GetRef(), accts, r.GetGroupsFilter())
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +204,7 @@ func (f *fakeLB) FriendRanks(_ context.Context, r *lbpb.FriendRanksRequest, _ ..
 func (f *fakeLB) Total(_ context.Context, r *lbpb.TotalRequest, _ ...grpc.CallOption) (*lbpb.TotalResponse, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	all, err := f.ranked(r.GetRef())
+	all, err := f.ranked(r.GetRef(), r.GetGroupsFilter())
 	if err != nil {
 		return nil, err
 	}

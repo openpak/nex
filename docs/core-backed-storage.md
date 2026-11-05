@@ -68,7 +68,7 @@ hooks. One leaderboards title per NEX title: neutral key = native id = the `NEX_
 
 | NEX call (hook) | Core call | Notes / gap | Latency |
 | --- | --- | --- | --- |
-| UploadScore (`InsertRankingByPIDAndRankingScoreData`) | `Submit(ref{wiiu, title, board=category}, account, sub 0, score, info, create_policy{order, best, cross_network false})` | info = pid, unique id, param, OrderBy, groups (score-bound: replaced only with a better score). `UpdateModeDeleteOld` = `Delete` then `Submit` (two calls, not atomic) | 1 Resolution (cached) + 1 (2 for delete-old) |
+| UploadScore (`InsertRankingByPIDAndRankingScoreData`) | `Submit(ref{wiiu, title, board=category}, account, sub 0, score, info, groups, create_policy{order, best, cross_network false})` | info = pid, unique id, param, OrderBy; `groups` = the entry's groups bytes (both score-bound: replaced only with a better score). `UpdateModeDeleteOld` = the same `Submit` with `aggregation_override: "latest"` (one atomic call; gap L3 BUILT, leaderboards v0.3.0) | 1 Resolution (cached) + 1 |
 | UploadCommonData | title-storage `PutObject(collection ranking_common, name = unique id, owner = account, public)` | | 1 |
 | GetCommonData(unique id) | `GetObject(owner "", ranking_common, name)` | missing = `Ranking::NotFound` (as the local MK8 store) | 1 |
 | GetRanking mode Range | `Range(start = offset+1, limit = length)` + `ListObjects` for the page's common data | | 2 |
@@ -76,9 +76,9 @@ hooks. One leaderboards title per NEX title: neutral key = native id = the `NEX_
 | mode FriendRange / FriendNear | `FriendRanks(self, include_self)` (the account core's friend graph, the same one nn-friends serves) | ranks renumbered among friends | 2 |
 | mode User | `ByAccounts([self])` | | 2 |
 | `RankingOrderParam.OrderCalculation` | entry `rank` (1224) or `position` (1234) | | 0 |
-| `RankingOrderParam.GroupIndex/GroupNum` | **gap L1**: no filter in leaderboards; the adapter pages the whole board (cap 10 000) and filters | correct, but O(board) per filtered read | up to 100 Range calls |
+| `RankingOrderParam.GroupIndex/GroupNum` | `groups_filter {group_index, group_value}` on `Range`/`ByAccounts`/`FriendRanks` (gap L1 BUILT, leaderboards v0.3.0); ranks are among the matching entries | the core filters, no board scan | same calls as an unfiltered read |
 | `TimeScope` | ignored | as every local store here | |
-| multiple unique ids per player per category | **gap L2**: `sub` is int32, the NEX unique id is u64; the adapter keeps one score per player per category (sub 0) | MK8 already stored one per player; the scoreboard titles stored one per unique id | |
+| multiple unique ids per player per category | **gap L2, decided: policy, no schema change**: one score per player per category (sub 0), which is what `UpdateModeNormal` means; the core's `(account, sub)` key with an int32 `sub` could hold more, but a u64 unique id cannot fit it and no title needs it | MK8 already stored one per player | |
 
 The rankings contract (`RANKINGS_ADDR`, read by the website) is served from the core when the
 flag is on (`Store` implements `rankingsapi.Source`, rows carry `account_id` and `pid`), so the
@@ -138,9 +138,9 @@ Super Mario Bros. 35.
 
 | Id | Core | Proposed change (additive unless noted) |
 | --- | --- | --- |
-| L1 | leaderboards | `RangeRequest`/`TotalRequest`: optional `bytes groups_filter` match (`int32 group_index`, `uint32 group_value`) against a new optional `Entry.groups bytes` set on `SubmitRequest.groups`; index on `(title, board, get_byte(groups, i))` not required at today's sizes |
-| L2 | leaderboards | allow `int64 sub` or a `string sub_key` so one account can hold several NEX unique ids on one board; or accept "one score per player per category" as policy for NEX (recommendation: accept, it is UpdateModeNormal's meaning) |
-| L3 | leaderboards | optional `SubmitRequest.aggregation_override` ("latest") so DeleteOld is one atomic call instead of Delete + Submit |
+| L1 **BUILT** (v0.3.0, nex v1.10.0) | leaderboards | `RangeRequest`/`TotalRequest`: optional `bytes groups_filter` match (`int32 group_index`, `uint32 group_value`) against a new optional `Entry.groups bytes` set on `SubmitRequest.groups`; index on `(title, board, get_byte(groups, i))` not required at today's sizes |
+| L2 **DECIDED: policy** (nex v1.10.0) | leaderboards | allow `int64 sub` or a `string sub_key` so one account can hold several NEX unique ids on one board; or accept "one score per player per category" as policy for NEX (recommendation: accept, it is UpdateModeNormal's meaning) |
+| L3 **BUILT** (v0.3.0, nex v1.10.0) | leaderboards | optional `SubmitRequest.aggregation_override` ("latest") so DeleteOld is one atomic call instead of Delete + Submit |
 | D1 | title-storage | blob tier: `PrepareUpload(ref, owner, collection, name, size) -> {id, put_url, headers}`, `CompleteUpload(id)`, `GetObjectByID(...).get_url` (presigned, S3 behind it); body stays inline for small objects |
 | D2 | title-storage | `Visibility VISIBILITY_RECIPIENTS` + `repeated string recipients` on `PutObjectRequest`/`Object`, readable by owner + recipients (+ friends for NEX permission 4 via a second flag) |
 | D3 | title-storage | `ListObjectsRequest`: `int64 created_after_ms/created_before_ms`, `string sort = "rating:<slot>"`, `meta_range_json` (numeric `>=`/`<=` on meta keys) |

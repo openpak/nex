@@ -101,6 +101,9 @@ func TestBestScoreKeptAndInfoTravelsWithIt(t *testing.T) {
 		t.Fatalf("board policy %+v", p)
 	}
 	must(t, s.Insert(10, score(3, 99000, constants.UpdateModeDeleteOld), 557)) // delete-old: always lands
+	if lb.calls["Delete"] != 0 {
+		t.Fatalf("delete-old is one Submit with the override, not Delete + Submit: %d Delete calls", lb.calls["Delete"])
+	}
 	l, _, _ = s.Global(3, order(0, 10))
 	if l[0].Score != 99000 || l[0].UniqueID != 557 {
 		t.Fatalf("delete-old not applied: %+v", l[0])
@@ -254,9 +257,18 @@ func TestContractSource(t *testing.T) {
 
 func TestInfoRoundTrip(t *testing.T) {
 	in := info{PID: 1 << 40, UID: 7, Param: 1<<63 + 5, OrderBy: 1, Groups: []byte{3, 4}}
-	out, ok := decodeInfo(in.encode())
-	if !ok || out.PID != in.PID || out.UID != 7 || out.Param != in.Param || out.OrderBy != 1 || string(out.Groups) != "\x03\x04" {
+	enc := in.encode()
+	if len(enc) != 26 {
+		t.Fatalf("groups belong in the entry's groups column, not the info blob: %d bytes", len(enc))
+	}
+	out, ok := decodeInfo(enc)
+	if !ok || out.PID != in.PID || out.UID != 7 || out.Param != in.Param || out.OrderBy != 1 || len(out.Groups) != 0 {
 		t.Fatalf("%+v", out)
+	}
+	// A row written before leaderboards v0.3.0 carries its groups after the fixed part.
+	out, ok = decodeInfo(append(append([]byte(nil), enc...), 3, 4))
+	if !ok || string(out.Groups) != "\x03\x04" {
+		t.Fatalf("legacy tail: %+v", out)
 	}
 	if _, ok := decodeInfo([]byte{2}); ok {
 		t.Fatal("foreign info decoded")
@@ -311,4 +323,33 @@ func TestPendingRowsDrainOnceLinked(t *testing.T) {
 		t.Fatalf("after drain: %d %v", total, l)
 	}
 	_, _ = db.Exec(`DROP SCHEMA corestore CASCADE`)
+}
+
+// The group bytes travel in the entry's groups field and the filter is the core's: the adapter
+// pages nothing (one Range per read, no board scan) and a row written before v0.3.0, whose
+// groups sit in the info tail, still shows its groups to the console.
+func TestGroupsAreCoreSideAndLegacyRowsStillRead(t *testing.T) {
+	s, lb, _, _ := newStore(1, 2, 3)
+	must(t, s.Insert(1, score(1, 100, constants.UpdateModeNormal, 0, 5), 1))
+	must(t, s.Insert(2, score(1, 200, constants.UpdateModeNormal, 1, 5), 2))
+	must(t, s.Insert(3, score(1, 300, constants.UpdateModeNormal, 1, 5), 3))
+	if g := lb.entries["mario-kart-8/1"][acct(2)].GetGroups(); len(g) == 0 || g[0] != 1 {
+		t.Fatalf("groups not sent to the core: %v", g)
+	}
+	o := order(0, 10)
+	o.GroupIndex, o.GroupNum = 0, 1
+	before := lb.calls["Range"]
+	l, total, err := s.Global(1, o)
+	must(t, err)
+	if total != 2 || !eq(pids(l), []uint64{2, 3}) || lb.calls["Range"] != before+1 {
+		t.Fatalf("filtered read: %d %v, %d Range calls", total, pids(l), lb.calls["Range"]-before)
+	}
+	// Legacy row: groups only inside info.
+	legacy := lb.entries["mario-kart-8/1"][acct(1)]
+	legacy.Groups = nil
+	legacy.Info = append(info{PID: 1, UID: 1, Param: 5}.encode(), 0, 9)
+	l, _, _ = s.Global(1, order(0, 10))
+	if len(l) != 3 || l[0].PrincipalID != 1 || len(l[0].Groups) != 2 || l[0].Groups[1] != 9 {
+		t.Fatalf("legacy groups not shown: %+v", l)
+	}
 }

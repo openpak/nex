@@ -9,9 +9,11 @@
 //   - PID         -> account (nn-account Resolution, cached); entry sub 0: one score per player
 //     per category, which is what UpdateModeNormal means
 //   - score       -> entry score; UpdateModeNormal keeps the better one (aggregation "best"),
-//     UpdateModeDeleteOld deletes the entry first, so the new one always lands
-//   - pid, unique id, param, groups -> the entry's info blob (score-bound: it is replaced
-//     only when the score is, exactly like a local row)
+//     UpdateModeDeleteOld is one Submit with aggregation_override "latest", so the new one
+//     always lands (leaderboards v0.3.0, gap L3)
+//   - groups      -> the entry's groups bytes, filtered by the core (GroupsFilter, gap L1)
+//   - pid, unique id, param -> the entry's info blob (score-bound: it is replaced only when
+//     the score is, exactly like a local row)
 //   - common data -> title-storage object (collection "ranking_common", name = unique id,
 //     owner = account, public)
 //
@@ -47,9 +49,6 @@ import (
 
 // CommonCollection is the title-storage collection of ranking common data.
 const CommonCollection = "ranking_common"
-
-// scanLimit bounds a board read that has to filter adapter-side (group filter).
-const scanLimit = 10000
 
 // Config is a title's place in the core.
 type Config struct {
@@ -149,23 +148,24 @@ func sysErr(err error) error { return nex.NewError(nex.ResultCodes.Core.SystemEr
 
 // ---- the info blob ----
 
-// info is what a NEX rank row carries beside the score.
+// info is what a NEX rank row carries beside the score. Groups lives in the entry's own groups
+// column since leaderboards v0.3.0; the info blob only ever carried it before that, and a row
+// written then is read back through the legacy tail (decodeInfo).
 type info struct {
 	PID, UID, Param uint64
 	OrderBy         uint8
-	Groups          []byte
+	Groups          []byte // legacy: bytes after the fixed part, rows written before v0.3.0
 }
 
 const infoVersion = 1
 
 func (i info) encode() []byte {
-	b := make([]byte, 0, 26+len(i.Groups))
+	b := make([]byte, 0, 26)
 	b = append(b, infoVersion)
 	b = binary.LittleEndian.AppendUint64(b, i.PID)
 	b = binary.LittleEndian.AppendUint64(b, i.UID)
 	b = binary.LittleEndian.AppendUint64(b, i.Param)
-	b = append(b, i.OrderBy)
-	return append(b, i.Groups...)
+	return append(b, i.OrderBy)
 }
 
 func decodeInfo(b []byte) (info, bool) {
@@ -201,14 +201,13 @@ func (s *Store) submit(ctx context.Context, pid uint64, d rankingtypes.RankingSc
 	}
 	cat := uint32(d.Category)
 	ref := s.ref(cat)
+	override := ""
 	if d.UpdateMode == constants.UpdateModeDeleteOld {
-		if _, err := s.LB.Delete(ctx, &lbpb.DeleteRequest{Ref: ref, Account: acct}); err != nil && status.Code(err) != codes.NotFound {
-			return err
-		}
+		override = "latest" // replaces the entry in this one call, whatever the score
 	}
-	in := info{PID: pid, UID: uid, Param: uint64(d.Param), OrderBy: uint8(d.OrderBy), Groups: []byte(d.Groups)}
+	in := info{PID: pid, UID: uid, Param: uint64(d.Param), OrderBy: uint8(d.OrderBy)}
 	_, err = s.LB.Submit(ctx, &lbpb.SubmitRequest{Ref: ref, Account: acct, Score: int64(uint32(d.Score)),
-		Info: in.encode(), CreatePolicy: s.policy(cat, d.OrderBy)})
+		Info: in.encode(), Groups: []byte(d.Groups), AggregationOverride: override, CreatePolicy: s.policy(cat, d.OrderBy)})
 	return err
 }
 
@@ -280,6 +279,9 @@ func (s *Store) rows(ctx context.Context, es []*lbpb.Entry) []row {
 			}
 			in = info{PID: p}
 		}
+		if len(e.GetGroups()) > 0 {
+			in.Groups = e.GetGroups()
+		}
 		r.in = in
 		out = append(out, r)
 	}
@@ -288,25 +290,12 @@ func (s *Store) rows(ctx context.Context, es []*lbpb.Entry) []row {
 
 func notFound(err error) bool { return status.Code(err) == codes.NotFound }
 
-func groupFilter(o rankingtypes.RankingOrderParam) (idx int, num byte, on bool) {
+// groupFilter is the core's filter for the request's group, nil when the request has none.
+func groupFilter(o rankingtypes.RankingOrderParam) *lbpb.GroupsFilter {
 	if o.GroupIndex == constants.FilterGroupIndexNone {
-		return 0, 0, false
+		return nil
 	}
-	return int(o.GroupIndex), byte(o.GroupNum), true
-}
-
-func keep(rs []row, o rankingtypes.RankingOrderParam) []row {
-	idx, num, on := groupFilter(o)
-	if !on {
-		return rs
-	}
-	out := rs[:0:0]
-	for _, r := range rs {
-		if len(r.in.Groups) > idx && r.in.Groups[idx] == num {
-			out = append(out, r)
-		}
-	}
-	return out
+	return &lbpb.GroupsFilter{GroupIndex: int32(o.GroupIndex), GroupValue: uint32(byte(o.GroupNum))}
 }
 
 // renumber gives a filtered list its own ranks, ties sharing one in competition order.
@@ -331,22 +320,6 @@ func length(o rankingtypes.RankingOrderParam) int {
 func window(rs []row, offset, n int) []row {
 	lo := min(max(offset, 0), len(rs))
 	return rs[lo:min(lo+n, len(rs))]
-}
-
-// all reads a whole board best first (capped), for reads that filter adapter-side.
-func (s *Store) all(ctx context.Context, ref *lbpb.BoardRef) ([]*lbpb.Entry, error) {
-	var out []*lbpb.Entry
-	for len(out) < scanLimit {
-		r, err := s.LB.Range(ctx, &lbpb.RangeRequest{Ref: ref, Start: int64(len(out) + 1), Limit: 100})
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, r.GetEntries()...)
-		if len(r.GetEntries()) < 100 {
-			break
-		}
-	}
-	return out, nil
 }
 
 type mode int
@@ -377,7 +350,7 @@ func (s *Store) read(m mode, pid types.PID, category types.UInt32, o rankingtype
 func (s *Store) page(ctx context.Context, m mode, pid uint64, category uint32, o rankingtypes.RankingOrderParam) ([]row, int, error) {
 	ref := s.ref(category)
 	n := length(o)
-	_, _, filtered := groupFilter(o)
+	gf := groupFilter(o)
 	self := ""
 	if m != modeGlobal {
 		a, err := s.IDs.Account(ctx, pid)
@@ -388,43 +361,26 @@ func (s *Store) page(ctx context.Context, m mode, pid uint64, category uint32, o
 	}
 	switch m {
 	case modeFriends, modeNearbyFriends:
-		r, err := s.LB.FriendRanks(ctx, &lbpb.FriendRanksRequest{Ref: ref, Account: self, IncludeSelf: true, Limit: 100})
+		r, err := s.LB.FriendRanks(ctx, &lbpb.FriendRanksRequest{Ref: ref, Account: self, IncludeSelf: true, Limit: 100, GroupsFilter: gf})
 		if err != nil {
 			return nil, 0, err
 		}
-		rs := keep(s.rows(ctx, r.GetEntries()), o)
+		rs := s.rows(ctx, r.GetEntries())
 		renumber(rs)
 		if m == modeFriends {
 			return window(rs, int(o.Offset), n), len(rs), nil
 		}
 		return around(rs, self, n), len(rs), nil
 	case modeOwn:
-		if filtered {
-			rs, err := s.filteredBoard(ctx, ref, o)
-			if err != nil {
-				return nil, 0, err
-			}
-			return around(rs, self, 1), len(rs), nil
-		}
-		r, err := s.LB.ByAccounts(ctx, &lbpb.ByAccountsRequest{Ref: ref, Accounts: []string{self}})
+		r, err := s.LB.ByAccounts(ctx, &lbpb.ByAccountsRequest{Ref: ref, Accounts: []string{self}, GroupsFilter: gf})
 		if err != nil {
 			return nil, 0, err
 		}
 		return s.rows(ctx, r.GetEntries()), int(r.GetTotal()), nil
 	}
-	if filtered {
-		rs, err := s.filteredBoard(ctx, ref, o)
-		if err != nil {
-			return nil, 0, err
-		}
-		if m == modeNearby {
-			return around(rs, self, n), len(rs), nil
-		}
-		return window(rs, int(o.Offset), n), len(rs), nil
-	}
 	start := int64(o.Offset) + 1
 	if m == modeNearby {
-		me, err := s.LB.ByAccounts(ctx, &lbpb.ByAccountsRequest{Ref: ref, Accounts: []string{self}})
+		me, err := s.LB.ByAccounts(ctx, &lbpb.ByAccountsRequest{Ref: ref, Accounts: []string{self}, GroupsFilter: gf})
 		if err != nil {
 			return nil, 0, err
 		}
@@ -433,21 +389,11 @@ func (s *Store) page(ctx context.Context, m mode, pid uint64, category uint32, o
 		}
 		start = max(me.GetEntries()[0].GetPosition()-int64(n/2), 1)
 	}
-	r, err := s.LB.Range(ctx, &lbpb.RangeRequest{Ref: ref, Start: start, Limit: int64(n)})
+	r, err := s.LB.Range(ctx, &lbpb.RangeRequest{Ref: ref, Start: start, Limit: int64(n), GroupsFilter: gf})
 	if err != nil {
 		return nil, 0, err
 	}
 	return s.rows(ctx, r.GetEntries()), int(r.GetTotal()), nil
-}
-
-func (s *Store) filteredBoard(ctx context.Context, ref *lbpb.BoardRef, o rankingtypes.RankingOrderParam) ([]row, error) {
-	es, err := s.all(ctx, ref)
-	if err != nil {
-		return nil, err
-	}
-	rs := keep(s.rows(ctx, es), o)
-	renumber(rs)
-	return rs, nil
 }
 
 // around is the window of n rows centred on account, empty when the account is not listed.

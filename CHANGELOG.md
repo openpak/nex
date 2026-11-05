@@ -6,6 +6,13 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.10.0 — 2026-11-05
+- `internal/coreranking` uses the leaderboards v0.3.0 API (card openpak/prds#131, gaps L1-L3) and drops its workarounds: group bytes are stored in the entry's
+  `groups` and the Ranking group filter is the core's `groups_filter` (no more reading up to 10 000 rows and filtering in the adapter); `UpdateModeDeleteOld`
+  is one `Submit` with `aggregation_override: "latest"` instead of `Delete` + `Submit`; the info blob no longer carries groups (rows written by v1.9.0 are still
+  read through their info tail). Gap L2 is decided as policy: one score per player per category. Flag semantics and the `corestore.pending_*` drain are
+  unchanged. Needs leaderboards >= v0.3.0.
+
 ## v1.9.0 — 2026-11-05
 - **Rankings can live in the core** (card openpak/prds#131, phase 8): per-title flag `NEX_CORE_STORAGE=rankings` (default off). The Ranking protocol's
   eight storage hooks are served by `internal/coreranking`: scores in the leaderboards service (board = category, one score per player per category,
