@@ -6,6 +6,16 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.13.0 - 2026-11-05
+- **Terraria (Wii U): write-through mirror into the matchmaking core** (card openpak/prds#145, phase 2 of
+  prds/repos/terraria-unified-plan.md): `TERRARIA_CORE_MIRROR=1` (default off) copies the title's gatherings into
+  `matchmaking.sessions` under the neutral key `terraria` (network `wiiu`, kind room, unique key `g:<gathering id>`) with the
+  searchable attributes `compat` (assigned by the server, default `old-gen-1.2.4`, override `TERRARIA_COMPAT_GROUP`), `console`,
+  `game_mode` and `attr0..5`; members join and leave with the gathering, the session ends with it, heartbeats every minute.
+  The Pretendo NEX layer is untouched and still answers the console from its own tables. Needs `NEX_MATCHMAKING_ADDR` and
+  `NEX_MATCHMAKING_KEY` (or `MATCHMAKING_INTERNAL_KEY`) plus nn-account. Rollback: unset the flag and restart; the core
+  sessions expire with their TTL. New `internal/coremirror`, `internal/matchmakingpb`, `StartCoreMirror`.
+
 ## v1.12.0 - 2026-11-05
 - **Messages can live in the core** (card openpak/prds#138, #131 phase 8): `NEX_CORE_STORAGE=messaging` (default off) is built.
   `internal/coremessaging` stores MessageDelivery/Messaging messages as chat v0.3.0 title messages (`SendTitleMessage`,

@@ -9,6 +9,7 @@
 package terraria
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ func Run(cfg nexhost.Config) error {
 	setenv("PN_TERRARIA_SECURE_SERVER_HOST", cfg.SecureHost)
 	setenv("PN_TERRARIA_SECURE_SERVER_PORT", strconv.Itoa(cfg.SecurePort()))
 	initialize()
+	startCoreMirror(cfg)
 	nexhost.ServeRankings(nexhost.ScoresRankings(globals.Postgres, nil))
 	run()
 	return nil
@@ -60,4 +62,21 @@ func portOf(addr string) string {
 		return addr[i+1:]
 	}
 	return ""
+}
+
+// startCoreMirror copies the title's gatherings into the shared matchmaking core under the neutral
+// title key "terraria", with the compatibility group assigned by the server. Off unless
+// TERRARIA_CORE_MIRROR=1; rollback is unsetting it (the NEX layer never depended on it). A failed
+// start is logged and the title keeps serving from its own tables.
+func startCoreMirror(cfg nexhost.Config) {
+	if os.Getenv("TERRARIA_CORE_MIRROR") != "1" {
+		return
+	}
+	group := os.Getenv("TERRARIA_COMPAT_GROUP")
+	if group == "" {
+		group = "old-gen-1.2.4"
+	}
+	if err := nexhost.StartCoreMirror(cfg, globals.Postgres, nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu"}); err != nil {
+		log.Printf("[terraria] core mirror not started: %v", err)
+	}
 }
