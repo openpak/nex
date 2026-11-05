@@ -97,7 +97,7 @@ scores and a 256-byte metadata blob; they map onto leaderboards (board `t<id>s<s
 column) but need their own adapter. Splatoon's Splatfest scores (`ranking_splatoon.user_scores`)
 likewise.
 
-### DataStore (0x73) -> title-storage: NOT BUILT, gaps
+### DataStore (0x73) -> title-storage: NOT BUILT, gaps (D1 closed in title-storage v0.3.0)
 
 The common DataStore protocol leaves storage to ~15 callbacks (`InitializeObjectByPreparePostParam`,
 `GetObjectInfoByDataID`, `UpdateObjectUploadCompletedByDataID`, `GetObjectInfosByDataStoreSearchParam`,
@@ -107,7 +107,7 @@ MHGU, plus the Switch titles (served by switch-nex in production).
 
 | NEX call | Core call | Gap |
 | --- | --- | --- |
-| PreparePostObject -> data id | `PutObject` (empty body, `meta_json.upload_completed=false`), `id` = data id | fits. **D1**: the console uploads the body with a presigned S3 URL; title-storage has no upload URL, its body is inline `bytea` capped by `max_object_bytes` (4 MiB default). Either the adapter copies the S3 object into `PutObject.body` on CompletePostObject (double storage, ~4 MiB cap, Super Smash Bros. replays and SMM courses fit, MK8 MKTV video does not) or title-storage grows a blob tier with presigned PUT/GET |
+| PreparePostObject -> data id | `PutObject` (empty body, `meta_json.upload_completed=false`), `id` = data id | **D1 BUILT** (title-storage v0.3.0): PreparePostObject -> `PrepareUpload(ref, owner, writer, collection = data type, name, size, post_form = true)`: `id` is the data id, `put_url` + `form_fields` are the `DataStoreReqPostInfo` (an S3 POST policy pinned to the exact size, bucket `title-storage` on MinIO, public host `title-storage.openpak.org`); CompletePostObject -> `CompleteUpload(id, writer)` (size checked against the bucket; `FailedPrecondition` = the console's upload did not match); PrepareGetObject / GetMeta -> `GetObjectByID(...).get_url` (presigned GET, 15 min). Quota and `max_object_bytes` are checked at prepare (raise `max_object_bytes` per title with `UpsertTitle` for MK8 MKTV video); abandoned uploads expire after an hour; deletes and erasure remove the bytes |
 | GetMeta / GetObjectInfoByDataID | `GetObjectByID(network, viewer, id)` | fits (meta binary <= 1024 B in `info`, name, data type as `collection`, tags/period/flags/refer id in `meta_json`) |
 | permission 0 public / 1 friends / 3 private | visibility public / friends / private | fits |
 | permission 2 "specified recipients" (and 4, friends + recipients), delete permission recipients | **D2**: no recipient list in title-storage. Adapter-side check means storing them private and reading as the owner, which is a workaround the owner asked not to build silently |
@@ -141,7 +141,7 @@ Super Mario Bros. 35.
 | L1 **BUILT** (v0.3.0, nex v1.10.0) | leaderboards | `RangeRequest`/`TotalRequest`: optional `bytes groups_filter` match (`int32 group_index`, `uint32 group_value`) against a new optional `Entry.groups bytes` set on `SubmitRequest.groups`; index on `(title, board, get_byte(groups, i))` not required at today's sizes |
 | L2 **DECIDED: policy** (nex v1.10.0) | leaderboards | allow `int64 sub` or a `string sub_key` so one account can hold several NEX unique ids on one board; or accept "one score per player per category" as policy for NEX (recommendation: accept, it is UpdateModeNormal's meaning) |
 | L3 **BUILT** (v0.3.0, nex v1.10.0) | leaderboards | optional `SubmitRequest.aggregation_override` ("latest") so DeleteOld is one atomic call instead of Delete + Submit |
-| D1 | title-storage | blob tier: `PrepareUpload(ref, owner, collection, name, size) -> {id, put_url, headers}`, `CompleteUpload(id)`, `GetObjectByID(...).get_url` (presigned, S3 behind it); body stays inline for small objects |
+| D1 **BUILT** (title-storage v0.3.0, card #134) | title-storage | blob tier: `PrepareUpload(ref, owner, writer, collection, name, size, sha256, ..., post_form) -> {id, method, put_url, headers, form_fields, expires_unix_ms}`, `CompleteUpload(id, writer)`, `get_url` on every read of a blob-backed object (presigned, MinIO bucket `title-storage` behind it); body stays inline for small objects |
 | D2 | title-storage | `Visibility VISIBILITY_RECIPIENTS` + `repeated string recipients` on `PutObjectRequest`/`Object`, readable by owner + recipients (+ friends for NEX permission 4 via a second flag) |
 | D3 | title-storage | `ListObjectsRequest`: `int64 created_after_ms/created_before_ms`, `string sort = "rating:<slot>"`, `meta_range_json` (numeric `>=`/`<=` on meta keys) |
 | D4 | title-storage | `ratings` sibling table: `RateObject(id, slot, rater, value, lock_policy, min, max) -> total, count`, `GetRatings(ids, slots)` |
@@ -156,7 +156,27 @@ endpoint keeps covering them by rule (`docs/erasure.md`).
 | --- | --- | --- | --- |
 | Wii U | Mario Kart 8 (`openpak-mario-kart-8`, db `mk8wiiu`) | rankings | `NEX_CORE_STORAGE=rankings` in production since v1.9.0 |
 | Switch | (switch-nex) | rankings | already core-backed since switch-nex v0.12.0/v0.13.0 (card #63): MK8D, Splatoon 2, Mario Tennis Aces and every Ranking/Ranking2 title submit to leaderboards; no flag needed |
-| Switch | Super Mario Maker 2 (switch-nex) | datastore | blocked on D1-D4 |
+| Switch | Super Mario Maker 2 (switch-nex) | datastore | blocked on D2-D4 (D1 built) |
+
+**DataStore after D1 (2026-11-05): no pilot can run on D1 alone.** A title's DataStore hooks
+share one object store, so a title cannot keep searches or ratings over local tables while its
+objects live in the core; the whole hook set moves at once. What each DataStore title registers
+(title code under `titles/`), and therefore what it waits on:
+
+| Title | Hooks beyond upload/get/delete | Waits on |
+| --- | --- | --- |
+| Mario Kart 8 (`mk8wiiu`) | `GetObjectInfosByDataStoreSearchParam` (MKTV browsing, `searchQuery`), `RateObjectWithPassword` / `InitializeObjectRatingWithSlot` (`attachRatings` on every search and get), recipient lists (`RecipientIDs`) | D2, D3, D4 |
+| Mario Kart 7, Mario vs. Donkey Kong: Tipping Stars, Monster Hunter Generations Ultimate | the same common hook set: search, ratings, recipients | D2, D3, D4 |
+| Pokken Tournament | search, ratings, `verify_object_permission` with recipients | D2, D3, D4 |
+| Super Mario Maker (Wii U) | course queries sorted by stars/plays (`course_query.go`), ratings in 15 files, recipients | D2, D3 (rating sort), D4 |
+| Super Smash Bros. for Wii U / 3DS replays | title protocol: `PreparePostReplay` presigns into S3, but the replay list is in memory and `GetNextReplay` returns a fixed fake replay | not a pilot: the replay server is unimplemented upstream; once written it needs D1 only (plus a `ListObjects` pick) |
+| Super Mario Maker 2 (switch-nex) | everything above | D2, D3, D4 |
+
+D2 (recipients) turns out to be needed by every common-DataStore title, not only by "specified
+people" uploads: each title stores `Permission.RecipientIDs` and `DelPermission.RecipientIDs` and
+returns them in every meta (Pokken also enforces them). Recommended order: D3 + D4
+together, then D2, then Mario Kart 8 as the DataStore pilot (its rankings already run core-backed).
+`datastore` in `NEX_CORE_STORAGE` stays a reserved name until then; nothing was flipped.
 
 Mario Kart 8 quadlet (on the box, `~/.config/containers/systemd/openpak-mario-kart-8.container`;
 the Wii U/3DS title quadlets are not tracked in any repository, a dated `.before-core-rankings`
