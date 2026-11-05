@@ -191,6 +191,7 @@ func (s *Server) newPRUDPServer(secure bool) (*nex.PRUDPServer, *nex.PRUDPEndPoi
 	endpoint.AccountDetailsByPID = s.accountByPID
 	endpoint.AccountDetailsByUsername = s.accountByUsername
 	endpoint.OnError(func(err *nex.Error) { log.Printf("[mario-kart-8] %v", err) })
+	nexhost.LogRMC(endpoint, "mario-kart-8")
 	server.BindPRUDPEndPoint(endpoint)
 	if secure {
 		go nexhost.WatchBans("mario-kart-8", endpoint)

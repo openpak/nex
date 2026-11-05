@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.11.1 — 2026-11-05
+- **Mario Kart 8 request logs:** its own PRUDP server now writes the same one line per RMC request as every Host title (`nexhost.LogRMC`: title,
+  protocol, method, parameter size; never parameters), so DataStore calls on the core show in the logs; its read API (`MK8_API_ADDR`) logs one line
+  per request (method, route pattern, status, duration; never the path or query, which carry PIDs).
+
 ## v1.11.0 — 2026-11-05
 - **DataStore can live in the core** (card openpak/prds#147, #131 phase 8): `NEX_CORE_STORAGE=datastore` (default off) is built. `internal/coredatastore`
   serves the DataStore methods (GetMeta(s), GetMetasMultipleParam, SearchObject, PrepareGet/PreparePost/CompletePost(s), PostMetaBinary, ChangeMeta,

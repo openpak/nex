@@ -369,21 +369,26 @@ func New(cfg Config) (*Host, error) {
 	return h, nil
 }
 
+// LogRMC writes one line per RMC request on endpoint, always on: title, protocol, method and
+// parameter size. Never the parameters, which carry tickets and player data. Titles with their
+// own server (Mario Kart 8) call it on their endpoints; Host does for every Host title.
+func LogRMC(endpoint *nex.PRUDPEndPoint, title string) {
+	endpoint.OnData(func(packet nex.PacketInterface) {
+		if p, ok := packet.(nex.PRUDPPacketInterface); ok {
+			if rmc := p.RMCMessage(); rmc != nil {
+				log.Printf("[%s] rmc proto=%d method=0x%X params=%dB", title, rmc.ProtocolID, rmc.MethodID, len(rmc.Parameters))
+			}
+		}
+	})
+}
+
 func (h *Host) bindEndpoint(server *nex.PRUDPServer, streamID uint8) *nex.PRUDPEndPoint {
 	endpoint := nex.NewPRUDPEndPoint(streamID)
 	endpoint.AccountDetailsByPID = h.accountByPID
 	endpoint.AccountDetailsByUsername = h.accountByUsername
 	server.BindPRUDPEndPoint(endpoint)
 
-	// One line per RMC request, always on: title, protocol, method and parameter size. Never
-	// the parameters, which carry tickets and player data.
-	endpoint.OnData(func(packet nex.PacketInterface) {
-		if p, ok := packet.(nex.PRUDPPacketInterface); ok {
-			if rmc := p.RMCMessage(); rmc != nil {
-				log.Printf("[%s] rmc proto=%d method=0x%X params=%dB", h.Config.Title, rmc.ProtocolID, rmc.MethodID, len(rmc.Parameters))
-			}
-		}
-	})
+	LogRMC(endpoint, h.Config.Title)
 
 	// Packet-level tracing for online debugging (NEX_PACKET_LOG=1): every DATA packet's
 	// virtual ports, size and the first RMC bytes, so a stalled title shows exactly where

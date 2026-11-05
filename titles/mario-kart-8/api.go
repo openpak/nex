@@ -165,9 +165,28 @@ func newAPI(store apiStore, bodies apiBodies) http.Handler {
 	return a
 }
 
+// ServeHTTP writes one log line per request: method, route pattern (never the path or query,
+// which carry PIDs), status and duration.
 func (a *apiServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	a.mux.ServeHTTP(w, r)
+	start := time.Now()
+	rec := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+	a.mux.ServeHTTP(rec, r)
+	route := r.Pattern
+	if route == "" {
+		route = "(no route)"
+	}
+	log.Printf("[mario-kart-8] api %s %q %d %dms", r.Method, route, rec.status, time.Since(start).Milliseconds())
+}
+
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *statusWriter) WriteHeader(code int) {
+	w.status = code
+	w.ResponseWriter.WriteHeader(code)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
