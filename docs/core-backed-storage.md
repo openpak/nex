@@ -97,7 +97,7 @@ scores and a 256-byte metadata blob; they map onto leaderboards (board `t<id>s<s
 column) but need their own adapter. Splatoon's Splatfest scores (`ranking_splatoon.user_scores`)
 likewise.
 
-### DataStore (0x73) -> title-storage: NOT BUILT, gaps (D1, D3, D4 closed in title-storage v0.3.0-v0.5.0)
+### DataStore (0x73) -> title-storage: adapter NOT BUILT; every core gap closed (D1-D5, title-storage v0.3.0-v0.7.0)
 
 The common DataStore protocol leaves storage to ~15 callbacks (`InitializeObjectByPreparePostParam`,
 `GetObjectInfoByDataID`, `UpdateObjectUploadCompletedByDataID`, `GetObjectInfosByDataStoreSearchParam`,
@@ -110,7 +110,8 @@ MHGU, plus the Switch titles (served by switch-nex in production).
 | PreparePostObject -> data id | `PutObject` (empty body, `meta_json.upload_completed=false`), `id` = data id | **D1 BUILT** (title-storage v0.3.0): PreparePostObject -> `PrepareUpload(ref, owner, writer, collection = data type, name, size, post_form = true)`: `id` is the data id, `put_url` + `form_fields` are the `DataStoreReqPostInfo` (an S3 POST policy pinned to the exact size, bucket `title-storage` on MinIO, public host `title-storage.openpak.org`); CompletePostObject -> `CompleteUpload(id, writer)` (size checked against the bucket; `FailedPrecondition` = the console's upload did not match); PrepareGetObject / GetMeta -> `GetObjectByID(...).get_url` (presigned GET, 15 min). Quota and `max_object_bytes` are checked at prepare (raise `max_object_bytes` per title with `UpsertTitle` for MK8 MKTV video); abandoned uploads expire after an hour; deletes and erasure remove the bytes |
 | GetMeta / GetObjectInfoByDataID | `GetObjectByID(network, viewer, id)` | fits (meta binary <= 1024 B in `info`, name, data type as `collection`, tags/period/flags/refer id in `meta_json`) |
 | permission 0 public / 1 friends / 3 private | visibility public / friends / private | fits |
-| permission 2 "specified recipients" (and 4, friends + recipients), delete permission recipients | **D2**: no recipient list in title-storage. Adapter-side check means storing them private and reading as the owner, which is a workaround the owner asked not to build silently |
+| permission 2 "specified recipients" (and 4, friends + recipients), delete permission recipients | `PutObject` / `PrepareUpload` / `UpdateObjectMeta` with `visibility = VISIBILITY_RECIPIENTS`, `recipients` = `RecipientIDs` PIDs mapped to accounts, `recipients_include_friends` for 4; `ListObjects(all_owners, received=true)` | **D2 BUILT** (title-storage v0.6.0, card #135): readable by owner + recipients (+ the owner's friends with the flag) in every get, list, rate and rating read; for permissions 0/1/3 the list is stored and returned but grants nothing (the meta echoes `RecipientIDs`); `SearchTypeReceived` = `received`; erasure takes an account out of every list (`recipient_of`). `DelPermission` and its recipients stay in `meta_json`, checked adapter-side before `DeleteObjects` |
+| ChangeMeta (`UpdateObjectMetaBinary`, `UpdateObjectPeriod`, `UpdateObjectDataType`, permission changes) | `UpdateObjectMeta(network, id, writer, info?, meta_json?, meta_merge_json, name?, collection?, visibility + recipients, expires_unix_ms?, condition)` | **D5 BUILT** (title-storage v0.7.0, card #146): metadata only, the body (inline or blob) and the ratings stay; meta binary = `info`, tags/period/flags = `meta_merge_json`, data type = `collection`, period = `expires_unix_ms`; `condition.expect_updated_unix_ms` is the optimistic version check. `PutObject` stays a full replacement that drops an uploaded blob: never use it for ChangeMeta |
 | SearchObject (`DataStoreSearchParam`) | `ListObjects(all_owners / friends_of_viewer / owners, exclude_owners, collections, meta_filter_json, meta_range_json, created/updated bounds, sort, min_rating_count, include_ratings, offset, limit)` | **D3 BUILT** (title-storage v0.4.0, rating sorts v0.5.0): `OwnerType` anybody / friends / anybody-except = `all_owners` / `friends_of_viewer` / `all_owners` + `exclude_owners`; `DataType(s)` = `collection(s)`; `Tags` = `meta_filter_json {"tags":[...]}`; `CreatedAfter/Before`, `UpdatedAfter/Before` = the inclusive Unix-ms bounds; numeric meta ranges with `meta_range_json {"key":{"ge":n,"le":m}}`; `ResultOrderColumn` data id / size / name / created / updated = `sort`, `Rating0-15` = `rating:<slot>`, `RatingAverage0-15` = `rating_avg:<slot>`, `MinimalRatingFrequency` = `min_rating_count`. Not expressible: sort by data type (collection) and by referred count (MK8 never increments it, so `id` order is the same answer) |
 | RateObject / GetRating / rating slots with lock, min/max, initial value | `InitRating(id, writer, slot, policy)`, `RateObject(id, slot, rater, value)`, `GetRatings(ids, slots, rater)`, `ResetRatings`, `include_ratings` on `GetObjectByID` / `ListObjects` | **D4 BUILT** (title-storage v0.5.0): `rating_slots` + one `ratings` row per (object, slot, rater account); policy = `DataStoreRatingInitParam` (initial value, `RatingLockType` none/interval/period/permanent with `PeriodHour`/`PeriodDuration`, range only when `InternalFlag` UseRangeMin/Max, `Flag` modifiable / round-minus / disable-self-rating); `locked=true` = `DataStore::OperationNotAllowed`; deleting an object deletes its ratings; erasure removes an account's ratings (totals adjusted) and those on its objects. Mapping table: title-storage `docs/adapter-guide.md` |
 | persistence slots (`GetObjectInfoByPersistenceTarget`) | `GetObject(owner, collection "persist", name = slot)` | fits |
@@ -142,10 +143,10 @@ Super Mario Bros. 35.
 | L2 **DECIDED: policy** (nex v1.10.0) | leaderboards | allow `int64 sub` or a `string sub_key` so one account can hold several NEX unique ids on one board; or accept "one score per player per category" as policy for NEX (recommendation: accept, it is UpdateModeNormal's meaning) |
 | L3 **BUILT** (v0.3.0, nex v1.10.0) | leaderboards | optional `SubmitRequest.aggregation_override` ("latest") so DeleteOld is one atomic call instead of Delete + Submit |
 | D1 **BUILT** (title-storage v0.3.0, card #134) | title-storage | blob tier: `PrepareUpload(ref, owner, writer, collection, name, size, sha256, ..., post_form) -> {id, method, put_url, headers, form_fields, expires_unix_ms}`, `CompleteUpload(id, writer)`, `get_url` on every read of a blob-backed object (presigned, MinIO bucket `title-storage` behind it); body stays inline for small objects |
-| D2 | title-storage | `Visibility VISIBILITY_RECIPIENTS` + `repeated string recipients` on `PutObjectRequest`/`Object`, readable by owner + recipients (+ friends for NEX permission 4 via a second flag) |
+| D2 **BUILT** (title-storage v0.6.0, card #135) | title-storage | `Visibility VISIBILITY_RECIPIENTS` + `repeated string recipients` + `bool recipients_include_friends` on `PutObjectRequest`/`PrepareUploadRequest`/`Object`, readable by owner + recipients (+ the owner's friends with the flag, NEX permission 4); `ListObjectsRequest.received`; erasure removes the account from every list |
 | D3 **BUILT** (title-storage v0.4.0, card #136) | title-storage | `ListObjectsRequest`: `all_owners`, `exclude_owners`, `collections`, `created_after_ms/created_before_ms`, `updated_after_ms/updated_before_ms`, `meta_range_json` (numeric `ge`/`le` on meta keys); `sort = "rating:<slot>"` / `"rating_avg:<slot>"` and `min_rating_count` with D4 |
 | D4 **BUILT** (title-storage v0.5.0, card #137) | title-storage | `rating_slots` + `ratings` sibling tables: `InitRating(id, writer, slot, policy)`, `RateObject(id, slot, rater, value, policy) -> total, count, locked`, `GetRatings(ids, slots, rater)`, `ResetRatings(id, slots)`; erasure covers rater and owner sides |
-| D5 | title-storage | metadata-only update that keeps the body (inline or blob) and the ratings: `UpdateObject(id, writer, info?, meta_json?, collection?, ttl_seconds?, visibility?)`. `PutObject` over a blob-backed object drops its body today, so NEX `ChangeMeta` (`UpdateObjectMetaBinary`, `UpdateObjectPeriod`, `UpdateObjectDataType`) has no core call; changing the data type moves the object to another collection |
+| D5 **BUILT** (title-storage v0.7.0, card #146) | title-storage | `UpdateObjectMeta(network, id, writer, setter, info?, meta_json?, meta_merge_json, name?, collection?, visibility + recipients, expires_unix_ms?, condition)`: metadata only, keeps the body (inline or blob) and the ratings; changing the data type moves the object to another collection. `PutObject` is unchanged (a replacement; over a blob-backed object it drops the blob) |
 | M1-M5 | chat | a "title message" kind: `SendTitleMessage(title, network, from, to_account or to_room, subject, body bytes, lifetime_s, flags, parent_id)`, `ListTitleMessages(title, account, range)`, `DeleteTitleMessages(ids)`; not friendship-gated (the console's own block list applies), not shown in the social chat UI |
 
 Until those land, `datastore` and `messaging` stay local in every title, and the erasure
@@ -157,38 +158,39 @@ endpoint keeps covering them by rule (`docs/erasure.md`).
 | --- | --- | --- | --- |
 | Wii U | Mario Kart 8 (`openpak-mario-kart-8`, db `mk8wiiu`) | rankings | `NEX_CORE_STORAGE=rankings` in production since v1.9.0 |
 | Switch | (switch-nex) | rankings | already core-backed since switch-nex v0.12.0/v0.13.0 (card #63): MK8D, Splatoon 2, Mario Tennis Aces and every Ranking/Ranking2 title submit to leaderboards; no flag needed |
-| Switch | Super Mario Maker 2 (switch-nex) | datastore | blocked on D2 and D5 (D1, D3, D4 built) |
+| Switch | Super Mario Maker 2 (switch-nex) | datastore | core side ready (D1-D5 built); waits on the adapter |
 
-**DataStore after D1 (2026-11-05): no pilot can run on D1 alone** (and after D3 + D4, not without D2 and D5; see the MK8 list below). A title's DataStore hooks
+**DataStore after D5 (2026-11-05): every core gap is closed** (D1-D5 live in title-storage v0.7.0); what is left is the nex adapter itself (step 3 below). A title's DataStore hooks
 share one object store, so a title cannot keep searches or ratings over local tables while its
 objects live in the core; the whole hook set moves at once. What each DataStore title registers
 (title code under `titles/`), and therefore what it waits on:
 
 | Title | Hooks beyond upload/get/delete | Waits on |
 | --- | --- | --- |
-| Mario Kart 8 (`mk8wiiu`) | `GetObjectInfosByDataStoreSearchParam` (MKTV browsing, `searchQuery`), `RateObjectWithPassword` / `InitializeObjectRatingWithSlot` (`attachRatings` on every search and get), recipient lists (`RecipientIDs`) | D2, D5 (D3, D4 built) |
-| Mario Kart 7, Mario vs. Donkey Kong: Tipping Stars, Monster Hunter Generations Ultimate | the same common hook set: search, ratings, recipients | D2, D5 (D3, D4 built) |
-| Pokken Tournament | search, ratings, `verify_object_permission` with recipients | D2, D5 (D3, D4 built) |
-| Super Mario Maker (Wii U) | course queries sorted by stars/plays (`course_query.go`), ratings in 15 files, recipients | D2, D5 (D3 rating sort and D4 built) |
+| Mario Kart 8 (`mk8wiiu`) | `GetObjectInfosByDataStoreSearchParam` (MKTV browsing, `searchQuery`), `RateObjectWithPassword` / `InitializeObjectRatingWithSlot` (`attachRatings` on every search and get), recipient lists (`RecipientIDs`) | the adapter (D1-D5 built) |
+| Mario Kart 7, Mario vs. Donkey Kong: Tipping Stars, Monster Hunter Generations Ultimate | the same common hook set: search, ratings, recipients | the adapter (D1-D5 built) |
+| Pokken Tournament | search, ratings, `verify_object_permission` with recipients | the adapter (D1-D5 built) |
+| Super Mario Maker (Wii U) | course queries sorted by stars/plays (`course_query.go`), ratings in 15 files, recipients | the adapter (D1-D5 built) |
 | Super Smash Bros. for Wii U / 3DS replays | title protocol: `PreparePostReplay` presigns into S3, but the replay list is in memory and `GetNextReplay` returns a fixed fake replay | not a pilot: the replay server is unimplemented upstream; once written it needs D1 only (plus a `ListObjects` pick) |
-| Super Mario Maker 2 (switch-nex) | everything above | D2, D5 (D3, D4 built) |
+| Super Mario Maker 2 (switch-nex) | everything above | the adapter (D1-D5 built) |
 
 D2 (recipients) turns out to be needed by every common-DataStore title, not only by "specified
 people" uploads: each title stores `Permission.RecipientIDs` and `DelPermission.RecipientIDs` and
 returns them in every meta (Pokken also enforces them).
 
-**DataStore pilot = Mario Kart 8 (Wii U), state after title-storage v0.5.0 (2026-11-05).** D1, D3
-and D4 are live; `datastore` in `NEX_CORE_STORAGE` stays a reserved name and nothing was flipped.
-What the pilot still needs, in order:
+**DataStore pilot = Mario Kart 8 (Wii U), state after title-storage v0.7.0 (2026-11-05).** D1-D5
+are live; `datastore` in `NEX_CORE_STORAGE` stays a reserved name and nothing was flipped. What
+the pilot still needs, in order:
 
-1. **D2 recipients in title-storage** (next step, its own card): `VISIBILITY_RECIPIENTS` +
-   `recipients` on objects (and the delete-permission list), readable by owner + recipients (+
-   friends for NEX permission 4), so `Permission.RecipientIDs` / `DelPermission.RecipientIDs` and
-   `SearchTypeReceived` / `SendSpecified*` come from the core.
-2. **D5 metadata-only update in title-storage** (gap list above): MK8 registers
+1. ~~**D2 recipients in title-storage**~~ **BUILT** (v0.6.0, card #135): `Permission.RecipientIDs`
+   = `recipients` (+ `recipients_include_friends` for permission 4), `SearchTypeReceived` =
+   `received`; `DelPermission.RecipientIDs` stays in `meta_json` and the adapter checks it before
+   `DeleteObjects`. `SendSpecified*` searches are the owner's own objects (`owners = [self]`).
+2. ~~**D5 metadata-only update in title-storage**~~ **BUILT** (v0.7.0, card #146): MK8's
    `UpdateObjectMetaBinaryByDataIDWithPassword`, `UpdateObjectPeriodByDataIDWithPassword` and
-   `UpdateObjectDataTypeByDataIDWithPassword`; without D5 a `ChangeMeta` on an uploaded ghost or
-   MKTV video would drop its body.
+   `UpdateObjectDataTypeByDataIDWithPassword` are `UpdateObjectMeta` (`info` / `expires_unix_ms`
+   and `meta_merge_json` / `collection`), which keeps the uploaded ghost or MKTV video and its
+   ratings.
 3. **The nex adapter** (`internal/coredatastore`, the `datastore` flag): the whole MK8 hook set
    from `titles/mario-kart-8/datastore.go` and `search.go` onto the calls in the table above
    (PID <-> account through the Resolution cache; collection = data type; `meta_json` carries
