@@ -6,7 +6,7 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
-## Unreleased (planned v1.14.0)
+## v1.14.0 - 2026-11-05
 - **Terraria (Wii U): search through the core** (card openpak/prds#145, phase 2 step 3): `TERRARIA_CORE_SEARCH=1` (default off, needs the mirror)
   restricts the console's matchmaking search (AutoMatchmake and search-criteria calls) to the rooms the matchmaking core lists for the title and
   group (`SearchSessions`, `compat eq old-gen-1.2.4`, unique key `g:<id>`); a core error leaves the search unrestricted. Joins stay on the NEX tables and
