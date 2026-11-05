@@ -166,6 +166,17 @@ copy is kept beside it):
 Environment=NEX_CORE_STORAGE=rankings NEX_LEADERBOARDS_ADDR=openpak-leaderboards:20211 NEX_TITLE_STORAGE_ADDR=openpak-title-storage:20231
 ```
 
+Local rows written before a flip are not read any more, so move them first: copy them into
+`corestore.pending_*` (same columns) and the start-up drain files them in the core. For Mario
+Kart 8 on 2026-11-05 that was 0 scores and 1 common-data row:
+
+```sql
+INSERT INTO corestore.pending_common_data (owner_pid, unique_id, data)
+  SELECT pid, unique_id, data FROM mk8.ranking_common_data ON CONFLICT DO NOTHING;
+INSERT INTO corestore.pending_scores (owner_pid, unique_id, category, score, order_by, update_mode, groups, param)
+  SELECT pid, unique_id, category, score, order_by, 0, coalesce(groups, ''), param FROM mk8.ranking_scores;
+```
+
 Rollback: remove that line and restart the unit. Scores written while flipped stay in the core
 (the local tables were empty); nothing is lost, the title just stops seeing them.
 
