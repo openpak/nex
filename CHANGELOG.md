@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.12.0 - 2026-11-05
+- **Messages can live in the core** (card openpak/prds#138, #131 phase 8): `NEX_CORE_STORAGE=messaging` (default off) is built.
+  `internal/coremessaging` stores MessageDelivery/Messaging messages as chat v0.3.0 title messages (`SendTitleMessage`,
+  `ListTitleMessages`, `DeleteTitleMessages`; title = `NEX_TITLE` name, PID -> account through nn-account, gatherings as the
+  room `gathering:<id>`); instant messages are delivered and not stored. `Store.Hook` replaces the manager's `ProcessMessage`,
+  `Store.Install` the Messaging (0x17) read/delete handlers. Settings: `NEX_CHAT_ADDR`, key `NEX_CHAT_KEY` or `CHAT_INTERNAL_KEY`;
+  a missing one refuses to start. Wired for Monster Hunter 4 only (pilot); other titles need the three-line wiring
+  (`docs/core-backed-storage.md`).
+
 ## v1.11.2 - 2026-11-05
 - **Clean stop (card openpak/prds#131):** SIGTERM/SIGINT now run a bounded (5 s) graceful shutdown (`nexhost.ExitOnSignal`, `OnShutdown` hooks, login DB pool closed) and exit 0. Before, Go's default for an unhandled SIGTERM was exit status 2, so every stop or restart raised a false "unit failed" alert.
 

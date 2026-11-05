@@ -13,8 +13,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
+	chatpb "github.com/openpak/nex/internal/chatpb"
 	"github.com/openpak/nex/internal/coredatastore"
 	"github.com/openpak/nex/internal/coreid"
+	"github.com/openpak/nex/internal/coremessaging"
 	"github.com/openpak/nex/internal/coreranking"
 	lbpb "github.com/openpak/nex/internal/leaderboardspb"
 	tspb "github.com/openpak/nex/internal/titlestoragepb"
@@ -26,7 +28,7 @@ import (
 const (
 	CoreRankingsStore  = "rankings"
 	CoreDataStoreStore = "datastore"
-	CoreMessagingStore = "messaging" // not built yet: core gaps
+	CoreMessagingStore = "messaging"
 )
 
 // CoreStorage reports whether NEX_CORE_STORAGE (comma separated) names store.
@@ -142,4 +144,28 @@ func NewCoreDataStore(cfg Config, t CoreTitle, maxObjectBytes uint32, friends fu
 		log.Printf("[%s] core datastore on: title-storage, network %s", t.Key, t.Network)
 	}
 	return s, nil
+}
+
+// NewCoreMessaging builds the core-backed message store of a title (NEX_CORE_STORAGE=messaging):
+// stored messages are chat's title messages. It needs NEX_CHAT_ADDR (chat gRPC; key
+// NEX_CHAT_KEY or CHAT_INTERNAL_KEY) and nn-account (PID <-> account); a missing setting is an
+// error. Hook it on the title's MessagingManager before the common protocols' SetManager.
+func NewCoreMessaging(cfg Config, t CoreTitle) (*coremessaging.Store, error) {
+	conn, err := coreConn("NEX_CHAT_ADDR", "NEX_CHAT_KEY", "CHAT_INTERNAL_KEY")
+	if err != nil {
+		return nil, err
+	}
+	if cfg.AccountGRPCAddr == "" {
+		return nil, fmt.Errorf("core messaging: NEX_ACCOUNT_GRPC_ADDR is required (PID to account)")
+	}
+	res, err := coreid.DialResolution(cfg.AccountGRPCAddr, cfg.AccountGRPCKey, t.Network)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("[%s] core messaging on: chat title messages, network %s", t.Key, t.Network)
+	return &coremessaging.Store{
+		Cfg:  coremessaging.Config{Title: t.Key, Network: t.Network},
+		Chat: chatpb.NewChatClient(conn),
+		IDs:  &coreid.Cache{L: res},
+	}, nil
 }

@@ -25,12 +25,14 @@ NEX_CORE_STORAGE=rankings[,datastore][,messaging]   # per title container, defau
 | `NEX_LEADERBOARDS_KEY` | its internal key; falls back to `LEADERBOARDS_INTERNAL_KEY` (already in the shared `.env`) |
 | `NEX_TITLE_STORAGE_ADDR` | title-storage gRPC (`openpak-title-storage:20231`) |
 | `NEX_TITLE_STORAGE_KEY` | falls back to `TITLE_STORAGE_INTERNAL_KEY` |
+| `NEX_CHAT_ADDR` | chat gRPC (`openpak-chat:20131`), for `messaging` |
+| `NEX_CHAT_KEY` | falls back to `CHAT_INTERNAL_KEY` (already in the shared `.env`) |
 | `NEX_ACCOUNT_GRPC_ADDR`, `NEX_ACCOUNT_GRPC_KEY` | nn-account (PID <-> account), already set on every Wii U/3DS title |
 
 A flag that is on with a setting missing **refuses to start** (`NEX_CORE_STORAGE=rankings: ...`):
-a title never silently keeps local tables while the operator thinks it is core-backed. `rankings`
-and `datastore` are built (`datastore` since nex v1.11.0, wired for Mario Kart 8 only); `messaging`
-is a reserved name and does nothing until the chat gaps below are closed.
+a title never silently keeps local tables while the operator thinks it is core-backed. All three
+are built: `rankings`, `datastore` (since nex v1.11.0, wired for Mario Kart 8 only) and `messaging`
+(since nex v1.12.0, chat v0.3.0, wired for Monster Hunter 4 only).
 
 ## Identity and cache
 
@@ -187,7 +189,7 @@ ghost counts, thumbnails (the oldest public object referring to a highlight), ra
 (through `get_url`) from title-storage as an anonymous viewer, joining only the YouTube id from
 `mk8.mktv_videos`.
 
-### Messaging (0x17) and MessageDelivery (0x1B) -> chat: NOT BUILT, gaps
+### Messaging (0x17) and MessageDelivery (0x1B) -> chat: BUILT (chat v0.3.0, nex v1.12.0, `internal/coremessaging`; card openpak/prds#138)
 
 Titles: Animal Crossing: New Leaf, the Monster Hunter family (3U, 4, Stories, XX, GU), Pokemon
 X/Y/ORAS, Ice Station Z, RE: The Mercenaries 3D, Yo-kai Watch 2 and Blasters, Super Mario Maker,
@@ -202,6 +204,43 @@ Super Mario Bros. 35.
 | binary bodies, subject, sender name, lifetime (expiry), flags, parent id | `kind` + string `body` | **M5**: no binary kind, no expiry, no subject/flags/thread |
 | instant (delivered, not stored) messages | n/a | stays in the adapter (class P) |
 
+All five gaps are closed by chat's **title messages** (chat v0.3.0, `docs/protocol.md` "Title
+messages" in the chat repo): a separate `title_messages` table that the social chat never reads,
+scoped by `(title, network)`, to an account or a room, bytes bodies, expiry, threads.
+
+The adapter as built (`internal/coremessaging`, flag word `messaging`):
+
+| NEX call | Core call | Notes |
+| --- | --- | --- |
+| DeliverMessage / DeliverMessageMultiTarget (both protocols), not instant | `SendTitleMessage(title = NEX_TITLE name, network, from = sender PID's account, to_account = recipient PID's account` or `to_room = "gathering:<id>"`, subject, body, body_kind text/binary, lifetime_s = UILifeTime, flags = UIFlags, parent_id = UIParentID, sender_name = StrSender)` per recipient | installed as `MessagingManager.ProcessMessage` (`Store.Hook`, before `SetManager`); no account link or core down = NEX error, nothing kept locally |
+| the same, instant (flag bit 0) | none | delivered to the connected recipients (PIDs, or the gathering's participants) and not stored; the old `messaging.instant_*` tables were a log nothing read |
+| GetNumberOfMessages | `ListTitleMessages(headers_only, limit 1).total` | `Store.Install(protocol, manager)` replaces the 0x17 handlers |
+| GetMessagesHeaders(range) | `ListTitleMessages(offset, limit, headers_only)` | at most 100, as upstream |
+| RetrieveAllMessagesWithinRange(range) | `ListTitleMessages` then `DeleteTitleMessages(ids)` | reading consumes, as upstream's `read` flag |
+| RetrieveMessages(ids, bLeaveOnServer) | `ListTitleMessages(ids)`, then delete unless bLeaveOnServer | ids outside the caller's inbox never come back |
+| DeleteMessages(ids), DeleteAllMessages | `DeleteTitleMessages(ids)` / `(all)` | |
+| recipient check | the title's `ValidateMessageRecipient` (own PID, or a participant of the gathering) | unchanged |
+
+Blocks: chat refuses an account message when either account blocked the other in the core (the
+block list the consoles' own block lists are part of); friendship is not asked. Lifetime 0 means
+chat's cap (30 days); upstream's SQL read it as "already expired". Message ids are chat's ids
+(uint32 on the wire).
+
+Erasure: a flipped title's messages are chat's; chat's erase call deletes title messages sent by or
+addressed to the account (`title_messages_deleted` in its answer). `erase.go` keeps scrubbing the
+local `messaging.*` tables by rule for unflipped titles and anything written before a flip.
+
+Which titles use what (only Monster Hunter 3 Ultimate registers Messaging 0x17; the rest register
+MessageDelivery 0x1B through the common protocol, so the flip is `Hook` plus the env word):
+
+| Title | Protocols | State |
+| --- | --- | --- |
+| Monster Hunter 4 (`openpak-monster-hunter-4`, db `mh4`, 3ds) | 0x1B | **pilot, flipped** |
+| Monster Hunter XX, Monster Hunter Stories, Yo-kai Watch 2, Yo-kai Watch Blasters, Ice Station Z, RE: The Mercenaries 3D | 0x1B | wiring release (three lines, as MH4: `globals.CoreMessaging`, `nexhost.NewCoreMessaging` in `Run`, `Hook` after `NewMessagingManager`), then the env word |
+| Monster Hunter Generations Ultimate, Super Mario Bros. 35 (Host titles) | 0x1B | the same two calls in the title's own setup (`NewCoreMessaging`, `Hook` before `SetManager`) |
+| Monster Hunter 3 Ultimate | 0x17 + 0x1B | the same plus `Store.Install(messagingProtocol, manager)` after `commonmessaging.NewCommonProtocol` |
+| Super Mario Maker, Animal Crossing: New Leaf, Pokemon X/Y/ORAS, Tetris Axis | title code, or a manager with no messaging protocol registered | look first: nothing to move unless the title's own code stores messages |
+
 ## Gap list and proposed core API changes
 
 | Id | Core | Proposed change (additive unless noted) |
@@ -214,10 +253,10 @@ Super Mario Bros. 35.
 | D3 **BUILT** (title-storage v0.4.0, card #136) | title-storage | `ListObjectsRequest`: `all_owners`, `exclude_owners`, `collections`, `created_after_ms/created_before_ms`, `updated_after_ms/updated_before_ms`, `meta_range_json` (numeric `ge`/`le` on meta keys); `sort = "rating:<slot>"` / `"rating_avg:<slot>"` and `min_rating_count` with D4 |
 | D4 **BUILT** (title-storage v0.5.0, card #137) | title-storage | `rating_slots` + `ratings` sibling tables: `InitRating(id, writer, slot, policy)`, `RateObject(id, slot, rater, value, policy) -> total, count, locked`, `GetRatings(ids, slots, rater)`, `ResetRatings(id, slots)`; erasure covers rater and owner sides |
 | D5 **BUILT** (title-storage v0.7.0, card #146) | title-storage | `UpdateObjectMeta(network, id, writer, setter, info?, meta_json?, meta_merge_json, name?, collection?, visibility + recipients, expires_unix_ms?, condition)`: metadata only, keeps the body (inline or blob) and the ratings; changing the data type moves the object to another collection. `PutObject` is unchanged (a replacement; over a blob-backed object it drops the blob) |
-| M1-M5 | chat | a "title message" kind: `SendTitleMessage(title, network, from, to_account or to_room, subject, body bytes, lifetime_s, flags, parent_id)`, `ListTitleMessages(title, account, range)`, `DeleteTitleMessages(ids)`; not friendship-gated (the console's own block list applies), not shown in the social chat UI |
+| M1-M5 **BUILT** (chat v0.3.0, nex v1.12.0, card #138) | chat | a "title message" kind: `SendTitleMessage(title, network, from, to_account or to_room, subject, body bytes, lifetime_s, flags, parent_id)`, `ListTitleMessages(title, account, range)`, `DeleteTitleMessages(ids)`; not friendship-gated (the console's own block list applies), not shown in the social chat UI |
 
-Until a title is flipped, its DataStore stays local, and `messaging` stays local everywhere until
-M1-M5 land; the erasure endpoint keeps covering local tables by rule (`docs/erasure.md`).
+Until a title is flipped, its DataStore and its messages stay local; the erasure endpoint keeps
+covering local tables by rule (`docs/erasure.md`).
 
 ## Pilots
 
@@ -227,6 +266,21 @@ M1-M5 land; the erasure endpoint keeps covering local tables by rule (`docs/eras
 | Switch | (switch-nex) | rankings | already core-backed since switch-nex v0.12.0/v0.13.0 (card #63): MK8D, Splatoon 2, Mario Tennis Aces and every Ranking/Ranking2 title submit to leaderboards; no flag needed |
 | Wii U | Mario Kart 8 | datastore | `NEX_CORE_STORAGE=rankings,datastore` (nex v1.11.0, card openpak/prds#147) |
 | Switch | Super Mario Maker 2 (switch-nex) | datastore | core side ready (D1-D5 built); waits on a switch-nex adapter |
+| 3DS | Monster Hunter 4 (`openpak-monster-hunter-4`, db `mh4`) | messaging | `NEX_CORE_STORAGE=messaging` (nex v1.12.0, chat v0.3.0, card openpak/prds#138); before the flip `mh4.messaging.*` held 0 rows (messages, text, binary, instant) and chat 0 title messages |
+
+**Messaging pilot = Monster Hunter 4 (3DS), flipped 2026-11-05.** Its only messaging protocol is
+MessageDelivery (0x1B), so the flip moves every stored message it sends. The drop-in
+`~/.config/containers/systemd/openpak-monster-hunter-4.container.d/40-core-messaging.conf`:
+
+```
+[Container]
+Environment=NEX_CORE_STORAGE=messaging NEX_CHAT_ADDR=openpak-chat:20131
+```
+
+(the key is the shared `.env`'s `CHAT_INTERNAL_KEY`). Rollback: delete that drop-in,
+`systemctl --user daemon-reload` and restart `openpak-monster-hunter-4`. Messages stored while
+flipped stay in chat until they expire (30 days at most) and are covered by chat's erasure; the
+title goes back to its (empty) local tables. Remaining titles: the table above.
 
 **DataStore after D5 (2026-11-05): every core gap is closed** (D1-D5 live in title-storage v0.7.0) and the nex adapter is built (v1.11.0); another title moves with a wiring release (its DataStore registration takes `NEX_CORE_STORAGE=datastore` as MK8's does) and an env flip. A title's DataStore hooks
 share one object store, so a title cannot keep searches or ratings over local tables while its

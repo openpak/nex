@@ -9,6 +9,7 @@
 package mh4
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -37,6 +38,13 @@ func Run(cfg nexhost.Config) error {
 	setenv("PN_MH4_SECURE_SERVER_HOST", cfg.SecureHost)
 	setenv("PN_MH4_SECURE_SERVER_PORT", strconv.Itoa(cfg.SecurePort()))
 	initialize()
+	if nexhost.CoreStorage(nexhost.CoreMessagingStore) {
+		s, err := nexhost.NewCoreMessaging(cfg, nexhost.CoreTitle{Key: "monster-hunter-4", Name: "Monster Hunter 4", Network: "3ds"})
+		if err != nil {
+			return fmt.Errorf("NEX_CORE_STORAGE=messaging: %w", err)
+		}
+		globals.CoreMessaging = s
+	}
 	nexhost.ServeRankings(nexhost.ScoresRankings(globals.Postgres, nil))
 	run()
 	return nil

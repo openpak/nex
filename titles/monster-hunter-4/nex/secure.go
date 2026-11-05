@@ -54,6 +54,9 @@ func StartSecureServer() {
 
 	globals.MatchmakingManager = common_globals.NewMatchmakingManager(globals.SecureEndpoint, globals.Postgres)
 	globals.MessagingManager = common_globals.NewMessagingManager(globals.SecureEndpoint, globals.Postgres)
+	if globals.CoreMessaging != nil {
+		globals.CoreMessaging.Hook(globals.MessagingManager) // before SetManager, which keeps it
+	}
 
 	registerCommonSecureServerProtocols()
 

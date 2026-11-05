@@ -49,3 +49,23 @@ func TestCoreDataStoreRefusesMissingSettings(t *testing.T) {
 		t.Fatalf("want the nn-account error, got %v", err)
 	}
 }
+
+func TestCoreMessagingRefusesMissingSettings(t *testing.T) {
+	for _, v := range []string{"NEX_CHAT_ADDR", "NEX_CHAT_KEY", "CHAT_INTERNAL_KEY"} {
+		t.Setenv(v, "")
+	}
+	t.Setenv("NEX_CORE_STORAGE", "rankings, Messaging")
+	if !CoreStorage(CoreMessagingStore) {
+		t.Fatal("messaging flag not parsed")
+	}
+	_, err := NewCoreMessaging(Config{}, CoreTitle{Key: "t", Network: "3ds"})
+	if err == nil || !strings.Contains(err.Error(), "NEX_CHAT_ADDR") {
+		t.Fatalf("want a loud error, got %v", err)
+	}
+	t.Setenv("NEX_CHAT_ADDR", "127.0.0.1:1")
+	t.Setenv("CHAT_INTERNAL_KEY", "k")
+	_, err = NewCoreMessaging(Config{}, CoreTitle{Key: "t", Network: "3ds"})
+	if err == nil || !strings.Contains(err.Error(), "NEX_ACCOUNT_GRPC_ADDR") {
+		t.Fatalf("want the nn-account error, got %v", err)
+	}
+}
