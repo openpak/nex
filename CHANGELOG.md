@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.11.2 - 2026-11-05
+- **Clean stop (card openpak/prds#131):** SIGTERM/SIGINT now run a bounded (5 s) graceful shutdown (`nexhost.ExitOnSignal`, `OnShutdown` hooks, login DB pool closed) and exit 0. Before, Go's default for an unhandled SIGTERM was exit status 2, so every stop or restart raised a false "unit failed" alert.
+
 ## v1.11.1 — 2026-11-05
 - **Mario Kart 8 request logs:** its own PRUDP server now writes the same one line per RMC request as every Host title (`nexhost.LogRMC`: title,
   protocol, method, parameter size; never parameters), so DataStore calls on the core show in the logs; its read API (`MK8_API_ADDR`) logs one line

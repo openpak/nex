@@ -30,6 +30,7 @@ func main() {
 			log.Fatalf("unknown job %q; one of: pikmin-3-histgrm", os.Args[2])
 		}
 	}
+	nexhost.ExitOnSignal(os.Exit)
 	name := os.Getenv("NEX_TITLE")
 	title, ok := titles.All[name]
 	if !ok && name != "" && name != "nex" {
