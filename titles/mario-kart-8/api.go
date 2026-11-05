@@ -721,7 +721,11 @@ func (s *Server) startAPI() {
 			return client.GetObject(ctx, bucket, fmt.Sprintf("mk8/objects/%d.bin", id), minio.GetObjectOptions{})
 		}
 	}
-	srv := &http.Server{Addr: addr, Handler: newAPI(&pgAPI{db: s.db, mktvType: mktv}, bodies), ReadHeaderTimeout: 5 * time.Second}
+	var store apiStore = &pgAPI{db: s.db, mktvType: mktv}
+	if s.core != nil {
+		store = coreAPI{pgAPI: store.(*pgAPI), core: s.core}
+	}
+	srv := &http.Server{Addr: addr, Handler: newAPI(store, bodies), ReadHeaderTimeout: 5 * time.Second}
 	go func() {
 		log.Printf("[mario-kart-8] read API on %s", addr)
 		if err := srv.ListenAndServe(); err != nil {

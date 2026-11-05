@@ -46,6 +46,7 @@ One line is logged per erasure: `account erased account=<uuid> rows=<n> service=
 ## Not covered here
 
 - Scores of Switch Ranking titles served by `switch-nex` and anything in the core leaderboards: those services erase them.
+- A title with `NEX_CORE_STORAGE=rankings` keeps its scores in leaderboards and title-storage (both erase on `account_deleted`); only its `corestore.pending_*` rows (players with no link yet) are here, and the PID-column rule reaches them ([core-backed-storage.md](core-backed-storage.md)).
 - The rewards outbox (events naming the account) belongs to the rewards service.
 - MKTV highlights already uploaded to the OpenPak YouTube channel (`mk8.mktv_videos.youtube_id`): the row is deleted, the video on YouTube is not.
 - In-memory session state (live gatherings, `UserDataCache`): it ends with the connection, which `WatchBans` drops once the core refuses the account.

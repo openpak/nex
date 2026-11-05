@@ -316,3 +316,33 @@ func TestOwnDatabaseURLs(t *testing.T) {
 		t.Fatalf("DATABASE_URL: %v", got)
 	}
 }
+
+// A title flipped to core storage keeps only pending rows (no account link yet) in its own
+// database; erasure reaches them by the same PID-column rule.
+func TestScrubDatabaseCorePendingRows(t *testing.T) {
+	db := eraseDB(t)
+	for _, q := range []string{
+		`DROP SCHEMA IF EXISTS corestore CASCADE`,
+		`CREATE SCHEMA corestore`,
+		`CREATE TABLE corestore.pending_scores (id bigserial PRIMARY KEY, owner_pid numeric(20) NOT NULL, unique_id numeric(20) NOT NULL,
+		   category bigint NOT NULL, score bigint NOT NULL, order_by smallint NOT NULL, update_mode smallint NOT NULL,
+		   groups bytea NOT NULL DEFAULT '', param numeric(20) NOT NULL, created timestamptz NOT NULL DEFAULT now())`,
+		`CREATE TABLE corestore.pending_common_data (owner_pid numeric(20) NOT NULL, unique_id numeric(20) NOT NULL, data bytea NOT NULL,
+		   created timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (owner_pid, unique_id))`,
+	} {
+		eraseExec(t, db, q)
+	}
+	t.Cleanup(func() { db.Exec(`DROP SCHEMA IF EXISTS corestore CASCADE`) })
+	eraseExec(t, db, `INSERT INTO corestore.pending_scores (owner_pid, unique_id, category, score, order_by, update_mode, param)
+		VALUES ($1, 1, 1, 10, 0, 0, 0), ($2, 2, 1, 20, 0, 0, 0)`, pidA1, pidB)
+	eraseExec(t, db, `INSERT INTO corestore.pending_common_data (owner_pid, unique_id, data) VALUES ($1, 1, 'a'), ($2, 2, 'b')`, pidA1, pidB)
+	if _, err := scrubDatabase(context.Background(), db, "mario-kart-8", []string{pidA1}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if n := eraseCount(t, db, `SELECT (SELECT count(*) FROM corestore.pending_scores) + (SELECT count(*) FROM corestore.pending_common_data)`); n != 2 {
+		t.Fatalf("left %d rows, want only B's 2", n)
+	}
+	if n := eraseCount(t, db, `SELECT count(*) FROM corestore.pending_scores WHERE owner_pid = 1700000002`); n != 1 {
+		t.Fatal("B's pending score went too")
+	}
+}

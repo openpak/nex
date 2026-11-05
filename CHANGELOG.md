@@ -6,6 +6,23 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.9.0 — 2026-11-05
+- **Rankings can live in the core** (card openpak/prds#131, phase 8): per-title flag `NEX_CORE_STORAGE=rankings` (default off). The Ranking protocol's
+  eight storage hooks are served by `internal/coreranking`: scores in the leaderboards service (board = category, one score per player per category,
+  best kept, `UpdateModeDeleteOld` replaces; pid, unique id, param and groups ride in the entry's info), common data in title-storage (collection
+  `ranking_common`, public). Per-network titles (`cross_network` false), registered in both services at start. PIDs map to accounts through
+  nn-account's Resolution service (`internal/coreid`, 5 min cache, 30 s for "no link"). A score the core cannot take yet (no link, core down) waits in
+  `corestore.pending_*` in the title's database and is moved every ten minutes; nothing is dropped. A flag that is on with a setting missing refuses
+  to start. New settings: `NEX_LEADERBOARDS_ADDR`, `NEX_TITLE_STORAGE_ADDR` (keys default to the shared `LEADERBOARDS_INTERNAL_KEY` /
+  `TITLE_STORAGE_INTERNAL_KEY`). Design, gaps and rollout order: [docs/core-backed-storage.md](docs/core-backed-storage.md).
+- **Mario Kart 8 is the pilot:** with the flag on, its time trials, the rankings contract (`RANKINGS_ADDR`) and the MKTV read API's rankings,
+  player standings and course counts come from the core. Tournaments, ghosts and highlights stay local.
+- DataStore and messaging are not moved: title-storage and chat lack recipient lists, presigned bodies, rating locks, search ranges, group and
+  per-title messages (gap list in the design note).
+- Erasure reaches the pending tables by its PID-column rule (`TestScrubDatabaseCorePendingRows`).
+- Tests: fake leaderboards/title-storage for every ranking mode, group filter, 1224/1234 order, delete-old, common data join, contract source, empty
+  and unknown boards; Postgres-backed pending rows that drain once linked (`NEX_TEST_DSN`); cache TTLs.
+
 ## v1.8.4 — 2026-11-05
 - **Pikmin 3 histogram job no longer fails on a registered task:** nn-boss answers a duplicate RegisterTask with InvalidArgument and an `ALREADY_EXISTS:` message instead of codes.AlreadyExists, so every hourly run exited 1 after the first. Both forms now count as success. Test: `TestAlreadyRegistered`.
 

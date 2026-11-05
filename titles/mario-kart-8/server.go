@@ -38,6 +38,7 @@ import (
 
 	_ "github.com/lib/pq"
 	nexhost "github.com/openpak/nex"
+	"github.com/openpak/nex/internal/coreranking"
 )
 
 // gameServerID is Mario Kart 8's, the id nn-account hands out this server under and the one
@@ -65,6 +66,7 @@ type Server struct {
 
 	matchmaking *common_globals.MatchmakingManager
 	rankings    *rankingStore
+	core        *coreranking.Store // NEX_CORE_STORAGE=rankings: scores in the core, not in rankings
 	tournaments *tournamentStore
 }
 
@@ -106,6 +108,11 @@ func newServer(cfg nexhost.Config) (*Server, error) {
 	s := &Server{cfg: cfg, db: db, version: version}
 	if s.rankings, err = newRankingStore(db); err != nil {
 		return nil, err
+	}
+	if nexhost.CoreStorage(nexhost.CoreRankingsStore) {
+		if s.core, err = nexhost.NewCoreRankings(cfg, coreTitle, db); err != nil {
+			return nil, fmt.Errorf("NEX_CORE_STORAGE=rankings: %w", err)
+		}
 	}
 	if s.tournaments, err = newTournamentStore(db); err != nil {
 		return nil, err
@@ -231,14 +238,22 @@ func (s *Server) serveSecure() {
 
 	ranking := &mk8Ranking{Protocol: mk8ranking.NewProtocol(endpoint), s: s}
 	endpoint.RegisterServiceProtocol(ranking)
-	s.rankings.wire(common_ranking.NewCommonProtocol(ranking.Protocol), s.friendPIDs)
+	if s.core != nil {
+		s.core.Install(common_ranking.NewCommonProtocol(ranking.Protocol))
+	} else {
+		s.rankings.wire(common_ranking.NewCommonProtocol(ranking.Protocol), s.friendPIDs)
+	}
 
 	if err := registerDataStore(endpoint, s.db, s.friendPIDs); err != nil {
 		log.Fatalf("[mario-kart-8] datastore: %v", err)
 	}
 
 	s.startAPI()
-	nexhost.ServeRankings(nexhost.TimeTrialRankings(s.db, "mk8.ranking_scores", "score"))
+	if s.core != nil {
+		nexhost.ServeRankings(s.core)
+	} else {
+		nexhost.ServeRankings(nexhost.TimeTrialRankings(s.db, "mk8.ranking_scores", "score"))
+	}
 	s.startYouTube()
 	log.Printf("[mario-kart-8] secure on udp :%d (nex %s)", s.cfg.SecurePort(), s.cfg.Version)
 	server.Listen(s.cfg.SecurePort())
