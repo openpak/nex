@@ -6,7 +6,7 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
-## v1.15.0 - unreleased
+## v1.15.0 - 2026-11-06
 - **Terraria (Wii U): PS3 rooms in the Wii U's own search, flagged** (card openpak/prds#145, cross-play phase 1, listing only):
   `TERRARIA_CROSS_NETWORKS=np` (default empty, needs `TERRARIA_CORE_MIRROR=1`) turns each open core room of network `np` in group
   `old-gen-1.2.4` into a shadow MatchmakeSession in the title's own tables (the observed Wii U host template: game mode 1, attribs
