@@ -27,6 +27,9 @@ var UtilityManager *common_globals.UtilityManager
 // lists for this title and group; nil from it means no restriction.
 var CoreCandidates func() []uint32
 
+// IsCrossRoom, when set, reports whether a gathering id is a shadow of another network's room (cross-play listing).
+var IsCrossRoom func(gid uint32) bool
+
 var GRPCFriendsClientConnection *grpc.ClientConn
 var GRPCFriendsClient pbfriends.FriendsClient
 var GRPCFriendsCommonMetadata metadata.MD

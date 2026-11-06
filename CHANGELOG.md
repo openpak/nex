@@ -6,6 +6,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.15.1 - 2026-11-06
+- **Terraria (Wii U): cross-play always on** (owner rule, prds#145): PS3 rooms of group `old-gen-1.2.4` are listed by default whenever the
+  core mirror runs; `TERRARIA_CROSS_NETWORKS` is gone, `TERRARIA_CROSSPLAY_OFF=1` is an incident kill switch. A join into a PS3 room
+  (`JoinMatchmakeSession`, `JoinMatchmakeSessionEx`) is answered with RendezVous `SessionClosed`, logged as "cross-play join not yet
+  supported (relay pending)" and counted, until the relay exists.
+
 ## v1.15.0 - 2026-11-06
 - **Terraria (Wii U): PS3 rooms in the Wii U's own search, flagged** (card openpak/prds#145, cross-play phase 1, listing only):
   `TERRARIA_CROSS_NETWORKS=np` (default empty, needs `TERRARIA_CORE_MIRROR=1`) turns each open core room of network `np` in group

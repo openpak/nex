@@ -344,3 +344,15 @@ func (m *Mirror) SetShadows(s map[string]uint32) {
 	m.shadows = s
 	m.shadowMu.Unlock()
 }
+
+// IsShadow reports whether a gathering id stands for another network's room (a join into it cannot connect until the relay exists).
+func (m *Mirror) IsShadow(gid uint32) bool {
+	m.shadowMu.Lock()
+	defer m.shadowMu.Unlock()
+	for _, g := range m.shadows {
+		if g == gid {
+			return true
+		}
+	}
+	return false
+}

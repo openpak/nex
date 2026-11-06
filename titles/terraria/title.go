@@ -79,9 +79,10 @@ func startCoreMirror(cfg nexhost.Config) {
 		group = "old-gen-1.2.4"
 	}
 	spec := nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu",
-		// TERRARIA_CROSS_NETWORKS=np (needs the mirror; default empty): PS3 rooms of the same group appear in the Wii U's own
-		// search as shadow gatherings (prds#145 phase 1, listing only). Rollback: unset it; the shadows are dropped on the next pass.
-		Cross:  crossNetworks(os.Getenv("TERRARIA_CROSS_NETWORKS")),
+		// Cross-play is always on (owner rule, prds#145): PS3 rooms of the same group appear in the Wii U's own search as shadow
+		// gatherings. TERRARIA_CROSSPLAY_OFF=1 is an incident kill switch only; the shadows are dropped on the next pass.
+		// Moves into common/terraria with the rest of the Terraria policy.
+		Cross:  crossNetworks(),
 		Shadow: shadowTemplate,
 	}
 	m, err := nexhost.StartCoreMirror(cfg, globals.Postgres, spec)
@@ -89,6 +90,7 @@ func startCoreMirror(cfg nexhost.Config) {
 		log.Printf("[terraria] core mirror not started: %v", err)
 		return
 	}
+	globals.IsCrossRoom = m.IsShadow
 	// TERRARIA_CORE_SEARCH=1 (needs the mirror): the console's search sees only the rooms the core lists
 	// for this group. A core error leaves the search unrestricted. Rollback: unset it.
 	if os.Getenv("TERRARIA_CORE_SEARCH") == "1" {
@@ -106,15 +108,12 @@ func startCoreMirror(cfg nexhost.Config) {
 var shadowTemplate = nexhost.ShadowTemplate{GameMode: 1, Attribs: []uint32{0, 1, 0, 0, 0, 0}, SystemType: 2,
 	AppBuffer: []byte{1, 2, 3}, Policy: 98, Flags: 512, ProgressScore: 100}
 
-// crossNetworks parses "np" or "np,x360"; the title's own network and malformed names are dropped.
-func crossNetworks(v string) []string {
-	var out []string
-	for _, n := range strings.Split(v, ",") {
-		n = strings.TrimSpace(n)
-		if n == "" || n == "wiiu" || strings.Trim(n, "abcdefghijklmnopqrstuvwxyz0123456789") != "" {
-			continue
-		}
-		out = append(out, n)
+// crossNetworks are the other networks of the old-gen group whose rooms the Wii U lists: always the PS3 (np), unless the
+// incident kill switch TERRARIA_CROSSPLAY_OFF=1 is set.
+func crossNetworks() []string {
+	if os.Getenv("TERRARIA_CROSSPLAY_OFF") == "1" {
+		log.Printf("[terraria] cross-play listing OFF (kill switch TERRARIA_CROSSPLAY_OFF)")
+		return nil
 	}
-	return out
+	return []string{"np"}
 }
