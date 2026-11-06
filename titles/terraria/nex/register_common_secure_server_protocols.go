@@ -51,6 +51,7 @@ func registerCommonSecureServerProtocols() {
 
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 	refuseCrossJoins(matchmakeExtensionProtocol)
+	relaySessionURLs(matchMakingProtocol)
 
 	rankingProtocol := ranking.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(rankingProtocol)

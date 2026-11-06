@@ -125,14 +125,16 @@ func TestShadowGatherings(t *testing.T) {
 	if n != 1 {
 		t.Fatal("deleted shadow gathering not recreated")
 	}
-	// a console that joined the shadow is dropped again on the next pass; openness follows the core
-	db.Exec(`UPDATE matchmaking.gatherings SET participants=ARRAY[4242,100]::numeric(20)[] WHERE id=$1`, gid)
+	// a console that joined the shadow (through the relay) stays, the owner stays first; openness follows the core
+	db.Exec(`UPDATE matchmaking.gatherings SET participants=ARRAY[100]::numeric(20)[] WHERE id=$1`, gid)
 	core.found[0].Open = false
 	syncShadows(ctx, db, m, spec)
 	var parts int
 	db.QueryRow(`SELECT cardinality(g.participants), ms.open_participation FROM matchmaking.gatherings g JOIN matchmaking.matchmake_sessions ms ON ms.id=g.id WHERE g.id=$1`, gid).Scan(&parts, &open)
-	if parts != 1 || open {
-		t.Fatalf("after update: participants=%d open=%v", parts, open)
+	var first int64
+	db.QueryRow(`SELECT participants[1] FROM matchmaking.gatherings WHERE id=$1`, gid).Scan(&first)
+	if parts != 2 || first != 4242 || open {
+		t.Fatalf("after update: participants=%d first=%d open=%v", parts, first, open)
 	}
 	// the room is gone: shadow dropped; cross off: every shadow dropped
 	core.found = nil

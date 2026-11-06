@@ -30,6 +30,11 @@ var CoreCandidates func() []uint32
 // IsCrossRoom, when set, reports whether a gathering id is a shadow of another network's room (cross-play listing).
 var IsCrossRoom func(gid uint32) bool
 
+// RelayStation is the relay's PIA address ("ip:port", TERRARIA_RELAY_STATION). When set, a Wii U may join another network's
+// room: GetSessionURLs for it answers the relay's station URL, so the Wii U connects to the relay as if it were the host.
+// Unset: such joins are refused (relay pending).
+var RelayStation string
+
 var GRPCFriendsClientConnection *grpc.ClientConn
 var GRPCFriendsClient pbfriends.FriendsClient
 var GRPCFriendsCommonMetadata metadata.MD

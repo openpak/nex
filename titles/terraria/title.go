@@ -91,6 +91,9 @@ func startCoreMirror(cfg nexhost.Config) {
 		return
 	}
 	globals.IsCrossRoom = m.IsShadow
+	if globals.RelayStation = os.Getenv("TERRARIA_RELAY_STATION"); globals.RelayStation != "" {
+		log.Printf("[terraria] cross-play joins go through the relay at %s", globals.RelayStation)
+	}
 	// TERRARIA_CORE_SEARCH=1 (needs the mirror): the console's search sees only the rooms the core lists
 	// for this group. A core error leaves the search unrestricted. Rollback: unset it.
 	if os.Getenv("TERRARIA_CORE_SEARCH") == "1" {

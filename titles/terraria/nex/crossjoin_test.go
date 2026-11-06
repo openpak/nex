@@ -22,3 +22,23 @@ func TestCrossJoinRefusedAndCounted(t *testing.T) {
 		t.Fatalf("cross join: %v", e)
 	}
 }
+
+func TestCrossJoinAllowedWithRelay(t *testing.T) {
+	globals.Logger = plogger.NewLogger()
+	globals.IsCrossRoom = func(gid uint32) bool { return gid == 99 }
+	globals.RelayStation = "192.0.2.10:49200"
+	defer func() { globals.IsCrossRoom, globals.RelayStation = nil, "" }()
+	if e := crossJoinError(types.UInt32(99)); e != nil {
+		t.Fatal("a cross join must go through when the relay is configured")
+	}
+	u := relayStationURL(4242)
+	if a, _ := u.Address(); a != "192.0.2.10" {
+		t.Fatalf("address %q in %s", a, u.String())
+	}
+	if p, _ := u.PortNumber(); p != 49200 {
+		t.Fatalf("port %d", p)
+	}
+	if v, ok := u.ParamValue("PID"); !ok || v != "4242" {
+		t.Fatalf("PID %q", v)
+	}
+}

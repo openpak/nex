@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.16.0 - 2026-11-06
+- **Terraria (Wii U): cross joins through the relay** (prds#145): with `TERRARIA_RELAY_STATION=ip:port` a Wii U may join a PS3
+  room; `GetSessionURLs` for it answers the relay's station URL (PID = the room owner's Wii U PID), so the Wii U's PIA connects to
+  the relay as if it were the host. Unset: joins are refused as in v1.15.1. Shadow gatherings keep joined Wii U participants (owner first).
+
 ## v1.15.1 - 2026-11-06
 - **Terraria (Wii U): cross-play always on** (owner rule, prds#145): PS3 rooms of group `old-gen-1.2.4` are listed by default whenever the
   core mirror runs; `TERRARIA_CROSS_NETWORKS` is gone, `TERRARIA_CROSSPLAY_OFF=1` is an incident kill switch. A join into a PS3 room

@@ -236,11 +236,12 @@ func insertShadow(ctx context.Context, db *sql.DB, r coremirror.ForeignRoom, t S
 }
 
 // updateShadow follows the core: owner (after a migration), size and openness, and registers the row again (the title
-// unregisters every MatchmakeSession when it starts). Participants go back to the owner alone, so a console that joined a
-// shadow (it cannot connect yet) does not stay in it. found is false when the gathering row no longer exists.
+// unregisters every MatchmakeSession when it starts). Wii U participants that joined through the relay stay; the owner is
+// always first. found is false when the gathering row no longer exists.
 func updateShadow(ctx context.Context, db *sql.DB, gid uint32, r coremirror.ForeignRoom) (found bool, err error) {
 	res, err := db.ExecContext(ctx, `UPDATE matchmaking.gatherings SET owner_pid=$2, host_pid=$2, max_participants=$3,
-		participants=ARRAY[$2]::numeric(20)[], registered=true WHERE id=$1`, gid, r.OwnerPID, r.Max)
+		participants=CASE WHEN $2 = ANY(participants) THEN participants ELSE array_prepend($2::numeric(20), participants) END,
+		registered=true WHERE id=$1`, gid, r.OwnerPID, r.Max)
 	if err != nil {
 		return true, err
 	}
