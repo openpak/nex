@@ -50,6 +50,12 @@ type Mirror struct {
 	Console string // console tag as a searchable attribute, "wiiu"
 	TTL     uint32 // session ttl seconds (0 = core default)
 	Now     func() time.Time
+	// Cross are the other networks ("np") whose rooms of the same group are listed to this title's consoles as shadow
+	// gatherings (prds#145 phase 1, listing only). Empty: no cross-network listing.
+	Cross []string
+
+	shadowMu sync.Mutex
+	shadows  map[string]uint32 // core session id -> shadow gathering id
 
 	mu       sync.Mutex
 	known    map[uint64]*sessionState
@@ -261,17 +267,80 @@ func (m *Mirror) Candidates(ctx context.Context) []uint32 {
 			log.Printf("[%s] coremirror: search: %v", m.Title, err)
 			return nil
 		}
+		m.shadowMu.Lock()
 		for _, s := range resp.GetSessions() {
 			k := s.GetUniqueKey()
 			if len(k) > 2 && k[:2] == "g:" {
 				if n, err := strconv.ParseUint(k[2:], 10, 32); err == nil {
 					out = append(out, uint32(n))
 				}
+			} else if gid, ok := m.shadows[s.GetId()]; ok {
+				out = append(out, gid)
 			}
 		}
+		m.shadowMu.Unlock()
 		offset += uint32(len(resp.GetSessions()))
 		if len(resp.GetSessions()) == 0 || offset >= resp.GetHits() {
 			return out
 		}
 	}
+}
+
+// ForeignRoom is a room of another network in this title's group, as a shadow gathering needs it. OwnerPID is the owner's
+// PID in this title's namespace, resolved from the account core now (never stored as a name).
+type ForeignRoom struct {
+	Session  string
+	Network  string
+	OwnerPID uint64
+	Max      uint32
+	Members  uint32
+	Open     bool
+}
+
+// Foreign lists the open rooms of the Cross networks in this title's group whose owners have a PID in this namespace. A nil
+// result with an error means the core could not answer: the caller keeps its shadows as they are.
+func (m *Mirror) Foreign(ctx context.Context) ([]ForeignRoom, error) {
+	if len(m.Cross) == 0 {
+		return nil, nil
+	}
+	var out []ForeignRoom
+	var offset uint32
+	for {
+		resp, err := m.MM.SearchSessions(ctx, &mm.SearchSessionsRequest{
+			Title: m.title(), Kind: "room", Network: m.Network, Networks: m.Cross,
+			Filters: []*mm.Filter{{Attr: "compat", Op: "eq", StringValue: m.Compat, IsString: true}},
+			Offset:  offset, Limit: 100,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range resp.GetSessions() {
+			pid, err := m.IDs.PID(ctx, s.GetOwnerId())
+			if err != nil || pid == 0 || pid > 0xffffffff {
+				if err != nil && !errors.Is(err, coreid.ErrNoLink) {
+					log.Printf("[%s] coremirror: resolve owner of %s room %s: %v", m.Title, s.GetTitle().GetNetwork(), s.GetId(), err)
+				}
+				continue
+			}
+			var members uint32
+			for _, a := range s.GetAttrs() {
+				if a.GetName() == "$members" {
+					members = uint32(a.GetIntValue())
+				}
+			}
+			out = append(out, ForeignRoom{Session: s.GetId(), Network: s.GetTitle().GetNetwork(), OwnerPID: pid,
+				Max: s.GetMaxMembers(), Members: members, Open: s.GetOpen()})
+		}
+		offset += uint32(len(resp.GetSessions()))
+		if len(resp.GetSessions()) == 0 || offset >= resp.GetHits() {
+			return out, nil
+		}
+	}
+}
+
+// SetShadows records which shadow gathering stands for which foreign core session, so Candidates lets them through.
+func (m *Mirror) SetShadows(s map[string]uint32) {
+	m.shadowMu.Lock()
+	m.shadows = s
+	m.shadowMu.Unlock()
 }

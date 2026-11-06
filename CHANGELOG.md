@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.15.0 - unreleased
+- **Terraria (Wii U): PS3 rooms in the Wii U's own search, flagged** (card openpak/prds#145, cross-play phase 1, listing only):
+  `TERRARIA_CROSS_NETWORKS=np` (default empty, needs `TERRARIA_CORE_MIRROR=1`) turns each open core room of network `np` in group
+  `old-gen-1.2.4` into a shadow MatchmakeSession in the title's own tables (the observed Wii U host template: game mode 1, attribs
+  `[0,1,0,0,0,0]`, system type 2, friends-only policy 98), owned by the PS3 owner's Wii U PID resolved from the account core on every pass.
+  The console's own search and friends-only rule apply unchanged; `TERRARIA_CORE_SEARCH` lets shadows through. Shadows are ids only
+  (`openpak_crossplay.shadow_gatherings`), are never mirrored back to the core, re-register after a title restart, and are dropped when the
+  room ends or the flag is unset. A Wii U that joins one cannot connect yet (no relay; it is dropped from the shadow on the next pass).
+
 ## v1.14.0 - 2026-11-05
 - **Terraria (Wii U): search through the core** (card openpak/prds#145, phase 2 step 3): `TERRARIA_CORE_SEARCH=1` (default off, needs the mirror)
   restricts the console's matchmaking search (AutoMatchmake and search-criteria calls) to the rooms the matchmaking core lists for the title and

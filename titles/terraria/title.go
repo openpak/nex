@@ -12,9 +12,9 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 
 	nexhost "github.com/openpak/nex"
 	"github.com/openpak/nex/titles/terraria/globals"
@@ -78,7 +78,13 @@ func startCoreMirror(cfg nexhost.Config) {
 	if group == "" {
 		group = "old-gen-1.2.4"
 	}
-	m, err := nexhost.StartCoreMirror(cfg, globals.Postgres, nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu"})
+	spec := nexhost.MirrorSpec{Title: "terraria", Network: "wiiu", Compat: group, Console: "wiiu",
+		// TERRARIA_CROSS_NETWORKS=np (needs the mirror; default empty): PS3 rooms of the same group appear in the Wii U's own
+		// search as shadow gatherings (prds#145 phase 1, listing only). Rollback: unset it; the shadows are dropped on the next pass.
+		Cross:  crossNetworks(os.Getenv("TERRARIA_CROSS_NETWORKS")),
+		Shadow: shadowTemplate,
+	}
+	m, err := nexhost.StartCoreMirror(cfg, globals.Postgres, spec)
 	if err != nil {
 		log.Printf("[terraria] core mirror not started: %v", err)
 		return
@@ -93,4 +99,22 @@ func startCoreMirror(cfg nexhost.Config) {
 		}
 		log.Printf("[terraria] core search on: rooms come from the matchmaking core, group %s", group)
 	}
+}
+
+// shadowTemplate is the MatchmakeSession a real Wii U Terraria host creates (observed 2026-11-05, card #145): game mode 1, six
+// attributes [0,1,0,0,0,0], system type 2, application buffer 01 02 03, friends-only policy 98, flags 512, progress score 100.
+var shadowTemplate = nexhost.ShadowTemplate{GameMode: 1, Attribs: []uint32{0, 1, 0, 0, 0, 0}, SystemType: 2,
+	AppBuffer: []byte{1, 2, 3}, Policy: 98, Flags: 512, ProgressScore: 100}
+
+// crossNetworks parses "np" or "np,x360"; the title's own network and malformed names are dropped.
+func crossNetworks(v string) []string {
+	var out []string
+	for _, n := range strings.Split(v, ",") {
+		n = strings.TrimSpace(n)
+		if n == "" || n == "wiiu" || strings.Trim(n, "abcdefghijklmnopqrstuvwxyz0123456789") != "" {
+			continue
+		}
+		out = append(out, n)
+	}
+	return out
 }
