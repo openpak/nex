@@ -1,8 +1,11 @@
 package nex
 
 import (
+	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	common_globals "github.com/PretendoNetwork/nex-protocols-common-go/v2/globals"
+	nat_traversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	notifications_constants "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/constants"
 	notifications_types "github.com/PretendoNetwork/nex-protocols-go/v2/notifications/types"
 	"github.com/openpak/nex/titles/terraria/globals"
@@ -21,6 +24,46 @@ func ForeignJoin(gid, pid uint64) {
 	}
 	notify(gid, pid, owner, count, notifications_constants.ParticipationEventsParticipate)
 	globals.Logger.Infof("cross-play join: PID %d added to gathering %d (%d participants), host %d notified", pid, gid, count, owner)
+	if globals.RelayStation != "" {
+		initiateProbe(uint64(owner), relayStationURL(uint32(pid)))
+	}
+}
+
+// initiateProbe tells the host (NATTraversal InitiateProbe, as a joiner's RequestProbeInitiationExt would) to probe the relay's
+// station, so the host's PIA learns the joiner's address and accepts its connection.
+func initiateProbe(hostPID uint64, station types.StationURL) {
+	host := globals.SecureEndpoint.FindConnectionByPID(hostPID)
+	if host == nil {
+		globals.Logger.Warningf("cross-play: host %d not connected, no InitiateProbe", hostPID)
+		return
+	}
+	stream := nex.NewByteStreamOut(globals.SecureEndpoint.LibraryVersions(), globals.SecureEndpoint.ByteStreamSettings())
+	types.NewString(station.String()).WriteTo(stream)
+	req := nex.NewRMCRequest(globals.SecureEndpoint)
+	req.ProtocolID = nat_traversal.ProtocolID
+	req.MethodID = nat_traversal.MethodInitiateProbe
+	req.CallID = 0xFFFF0000 + uint32(hostPID&0xFFFF)
+	req.Parameters = stream.Bytes()
+	var pkt nex.PRUDPPacketInterface
+	server := globals.SecureEndpoint.Server
+	switch host.DefaultPRUDPVersion {
+	case 0:
+		pkt, _ = nex.NewPRUDPPacketV0(server, host, nil)
+	case 1:
+		pkt, _ = nex.NewPRUDPPacketV1(server, host, nil)
+	default:
+		pkt, _ = nex.NewPRUDPPacketLite(server, host, nil)
+	}
+	pkt.SetType(constants.DataPacket)
+	pkt.AddFlag(constants.PacketFlagNeedsAck)
+	pkt.AddFlag(constants.PacketFlagReliable)
+	pkt.SetSourceVirtualPortStreamType(host.StreamType)
+	pkt.SetSourceVirtualPortStreamID(globals.SecureEndpoint.StreamID)
+	pkt.SetDestinationVirtualPortStreamType(host.StreamType)
+	pkt.SetDestinationVirtualPortStreamID(host.StreamID)
+	pkt.SetPayload(req.Bytes())
+	server.Send(pkt)
+	globals.Logger.Infof("cross-play: InitiateProbe to host %d for %s", hostPID, station.String())
 }
 
 // ForeignLeave removes the player again and tells the host it disconnected.

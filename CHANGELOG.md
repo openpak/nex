@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.17.1 - 2026-11-06
+- Terraria cross-play join: the host also gets NATTraversal InitiateProbe for the relay station (PID = the joining player), as a NEX joiner's RequestProbeInitiationExt would cause, so its PIA learns where the joiner is.
+
 ## v1.17.0 - 2026-11-06
 - **Terraria (Wii U): players from other networks join Wii U rooms through the core** (prds#145): when a member from another network
   (a PS3 player through the relay) joins a mirrored Wii U room in the matchmaking core, the title adds that account's Wii U PID to the
