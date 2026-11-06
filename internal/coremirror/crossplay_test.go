@@ -2,6 +2,7 @@ package coremirror
 
 import (
 	"context"
+	"google.golang.org/grpc"
 	"strings"
 	"testing"
 
@@ -71,4 +72,60 @@ func TestMirrorAttrsCarryNoIdentity(t *testing.T) {
 			}
 		}
 	}
+}
+
+type foreignMM struct {
+	*fakeMM
+	members []*mm.Member
+}
+
+func (f *foreignMM) GetSession(context.Context, *mm.GetSessionRequest, ...grpc.CallOption) (*mm.SessionResponse, error) {
+	return &mm.SessionResponse{Session: &mm.Session{Members: f.members}}, nil
+}
+
+// A PS3 player who joined the Wii U room in the core (through the relay) becomes a participant once, and leaves once.
+func TestForeignMembersInjectedOnce(t *testing.T) {
+	f := &foreignMM{fakeMM: &fakeMM{}}
+	type ev struct{ gid, pid uint64 }
+	var joins, leaves []ev
+	both := idsBoth{acc: map[uint64]string{1: "acc-wiiu"}, pid: map[string]uint64{"acc-ps3": 77}}
+	m := &Mirror{MM: f, IDs: both, Title: "terraria", Network: "wiiu", Compat: "old-gen-1.2.4",
+		OnForeignJoin:  func(g, p uint64) { joins = append(joins, ev{g, p}) },
+		OnForeignLeave: func(g, p uint64) { leaves = append(leaves, ev{g, p}) }}
+	g := Gathering{ID: 5, Owner: 1, Participants: []uint64{1}, Max: 8, Open: true}
+	f.members = []*mm.Member{{AccountId: "acc-wiiu", Network: "wiiu"}, {AccountId: "acc-ps3", Network: "np"}}
+	m.Tick(context.Background(), []Gathering{g})
+	g.Participants = []uint64{1, 77} // the title added it
+	m.Tick(context.Background(), []Gathering{g})
+	if len(joins) != 1 || joins[0] != (ev{5, 77}) {
+		t.Fatalf("joins %v", joins)
+	}
+	for _, j := range f.joins {
+		if j.AccountId == "acc-ps3" {
+			t.Fatal("an injected PID must not be mirrored back as a wiiu member")
+		}
+	}
+	f.members = f.members[:1]
+	m.Tick(context.Background(), []Gathering{g})
+	if len(leaves) != 1 || leaves[0] != (ev{5, 77}) {
+		t.Fatalf("leaves %v", leaves)
+	}
+}
+
+type idsBoth struct {
+	acc map[uint64]string
+	pid map[string]uint64
+}
+
+func (i idsBoth) Account(_ context.Context, p uint64) (string, error) {
+	if a, ok := i.acc[p]; ok {
+		return a, nil
+	}
+	return "", coreid.ErrNoLink
+}
+func (i idsBoth) PID(_ context.Context, a string) (uint64, error) {
+	if p, ok := i.pid[a]; ok {
+		return p, nil
+	}
+	return 0, coreid.ErrNoLink
 }

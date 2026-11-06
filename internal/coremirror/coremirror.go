@@ -57,6 +57,13 @@ type Mirror struct {
 	shadowMu sync.Mutex
 	shadows  map[string]uint32 // core session id -> shadow gathering id
 
+	// OnForeignJoin is called once for every member of a mirrored room that joined it in the core from another network (a PS3
+	// player through the relay), with that member's PID in this namespace; the title adds the PID to the gathering and notifies
+	// the host, as if the player had joined over NEX. OnForeignLeave undoes it. Nil: foreign members are ignored.
+	OnForeignJoin  func(gid, pid uint64)
+	OnForeignLeave func(gid, pid uint64)
+	foreign        map[uint64]map[uint64]bool // gathering -> injected PIDs
+
 	mu       sync.Mutex
 	known    map[uint64]*sessionState
 	lastBeat map[string]time.Time
@@ -191,7 +198,7 @@ func (m *Mirror) sync(ctx context.Context, g Gathering) {
 	}
 	want := map[string]uint64{owner: ownerPID}
 	for _, pid := range g.Participants {
-		if pid == ownerPID {
+		if pid == ownerPID || m.foreign[g.ID][pid] {
 			continue
 		}
 		if a, ok := m.account(ctx, pid); ok {
@@ -222,6 +229,49 @@ func (m *Mirror) sync(ctx context.Context, g Gathering) {
 			continue
 		}
 		delete(st.members, a)
+	}
+	m.syncForeign(ctx, g.ID, st.id)
+}
+
+// syncForeign brings members that joined the room in the core from another network into the gathering (and out again).
+func (m *Mirror) syncForeign(ctx context.Context, gid uint64, session string) {
+	if m.OnForeignJoin == nil {
+		return
+	}
+	resp, err := m.MM.GetSession(ctx, &mm.GetSessionRequest{SessionId: session})
+	if err != nil {
+		return
+	}
+	if m.foreign == nil {
+		m.foreign = map[uint64]map[uint64]bool{}
+	}
+	if m.foreign[gid] == nil {
+		m.foreign[gid] = map[uint64]bool{}
+	}
+	now := map[uint64]bool{}
+	for _, mem := range resp.GetSession().GetMembers() {
+		if mem.GetNetwork() == m.Network || mem.GetNetwork() == "" {
+			continue
+		}
+		pid, err := m.IDs.PID(ctx, mem.GetAccountId())
+		if err != nil || pid == 0 || pid > 0xffffffff {
+			continue
+		}
+		now[pid] = true
+		if !m.foreign[gid][pid] {
+			m.foreign[gid][pid] = true
+			log.Printf("[%s] coremirror: %s member joins gathering %d as PID %d (cross-play)", m.Title, mem.GetNetwork(), gid, pid)
+			m.OnForeignJoin(gid, pid)
+		}
+	}
+	for pid := range m.foreign[gid] {
+		if !now[pid] {
+			delete(m.foreign[gid], pid)
+			log.Printf("[%s] coremirror: cross-play member PID %d left gathering %d", m.Title, pid, gid)
+			if m.OnForeignLeave != nil {
+				m.OnForeignLeave(gid, pid)
+			}
+		}
 	}
 }
 

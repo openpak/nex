@@ -6,6 +6,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.17.0 - 2026-11-06
+- **Terraria (Wii U): players from other networks join Wii U rooms through the core** (prds#145): when a member from another network
+  (a PS3 player through the relay) joins a mirrored Wii U room in the matchmaking core, the title adds that account's Wii U PID to the
+  gathering and sends the host the NEX participation event (Participate; Disconnect when it leaves), so the host's PIA accepts the
+  relay's station under that PID. Injected PIDs are never mirrored back as Wii U members.
+
 ## v1.16.0 - 2026-11-06
 - **Terraria (Wii U): cross joins through the relay** (prds#145): with `TERRARIA_RELAY_STATION=ip:port` a Wii U may join a PS3
   room; `GetSessionURLs` for it answers the relay's station URL (PID = the room owner's Wii U PID), so the Wii U's PIA connects to

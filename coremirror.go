@@ -26,6 +26,9 @@ type MirrorSpec struct {
 	// gatherings built from Shadow (prds#145 phase 1, listing only; joins cannot connect until the relay exists). Empty = off.
 	Cross  []string
 	Shadow ShadowTemplate
+	// OnForeignJoin / OnForeignLeave: see coremirror.Mirror (a member from another network joined the room in the core).
+	OnForeignJoin  func(gid, pid uint64)
+	OnForeignLeave func(gid, pid uint64)
 }
 
 // ShadowTemplate is the MatchmakeSession a title's own consoles create, copied into every shadow gathering so the console's
@@ -60,7 +63,8 @@ func StartCoreMirror(cfg Config, db *sql.DB, spec MirrorSpec) (*coremirror.Mirro
 		return nil, err
 	}
 	m := &coremirror.Mirror{MM: mm.NewMatchmakingClient(conn), IDs: &coreid.Cache{L: res},
-		Title: spec.Title, Network: spec.Network, Compat: spec.Compat, Console: spec.Console, Cross: spec.Cross}
+		Title: spec.Title, Network: spec.Network, Compat: spec.Compat, Console: spec.Console, Cross: spec.Cross,
+		OnForeignJoin: spec.OnForeignJoin, OnForeignLeave: spec.OnForeignLeave}
 	if _, err := db.Exec(shadowSchema); err != nil {
 		return nil, fmt.Errorf("core mirror: shadow table: %w", err)
 	}

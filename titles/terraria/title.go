@@ -18,6 +18,7 @@ import (
 
 	nexhost "github.com/openpak/nex"
 	"github.com/openpak/nex/titles/terraria/globals"
+	terrarianex "github.com/openpak/nex/titles/terraria/nex"
 )
 
 // Title is this game's entry in the shared NEX host.
@@ -84,6 +85,9 @@ func startCoreMirror(cfg nexhost.Config) {
 		// Moves into common/terraria with the rest of the Terraria policy.
 		Cross:  crossNetworks(),
 		Shadow: shadowTemplate,
+		// A PS3 player joining this Wii U room through the relay: a NEX participant, and the host is told (prds#145).
+		OnForeignJoin:  terrarianex.ForeignJoin,
+		OnForeignLeave: terrarianex.ForeignLeave,
 	}
 	m, err := nexhost.StartCoreMirror(cfg, globals.Postgres, spec)
 	if err != nil {
