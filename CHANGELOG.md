@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.17.2 - 2026-11-07
+- Terraria cross-play: shadow gatherings and cross-play joiners get a join message row; Pretendo's GetDetailedParticipants lists only participants with one, so the Wii U never learned the shadow's host.
+
 ## v1.17.1 - 2026-11-06
 - Terraria cross-play join: the host also gets NATTraversal InitiateProbe for the relay station (PID = the joining player), as a NEX joiner's RequestProbeInitiationExt would cause, so its PIA learns where the joiner is.
 

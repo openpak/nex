@@ -232,6 +232,11 @@ func insertShadow(ctx context.Context, db *sql.DB, r coremirror.ForeignRoom, t S
 		gid, t.GameMode, pq.Array(attribs), r.Open, t.SystemType, t.AppBuffer, t.ProgressScore, key); err != nil {
 		return 0, err
 	}
+	// GetDetailedParticipants lists only participants with a join message; without it the Wii U never learns the host.
+	if _, err := tx.ExecContext(ctx, `INSERT INTO matchmaking.join_messages (gathering_id, pid, message) VALUES ($1, $2, '') ON CONFLICT DO NOTHING`,
+		gid, r.OwnerPID); err != nil {
+		return 0, err
+	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO openpak_crossplay.shadow_gatherings (core_session, gathering_id, network) VALUES ($1, $2, $3)`,
 		r.Session, gid, r.Network); err != nil {
 		return 0, err
@@ -252,6 +257,10 @@ func updateShadow(ctx context.Context, db *sql.DB, gid uint32, r coremirror.Fore
 	if n, _ := res.RowsAffected(); n == 0 {
 		return false, nil
 	}
+	if _, err := db.ExecContext(ctx, `INSERT INTO matchmaking.join_messages (gathering_id, pid, message) VALUES ($1, $2, '') ON CONFLICT DO NOTHING`,
+		gid, r.OwnerPID); err != nil {
+		return true, err
+	}
 	_, err = db.ExecContext(ctx, `UPDATE matchmaking.matchmake_sessions SET open_participation=$2 WHERE id=$1`, gid, r.Open)
 	return true, err
 }
@@ -263,6 +272,7 @@ func deleteShadow(ctx context.Context, db *sql.DB, sid string, gid uint32) error
 	}
 	defer tx.Rollback()
 	for _, q := range []string{
+		`DELETE FROM matchmaking.join_messages WHERE gathering_id=$1`,
 		`DELETE FROM matchmaking.matchmake_sessions WHERE id=$1`,
 		`DELETE FROM matchmaking.gatherings WHERE id=$1`,
 	} {

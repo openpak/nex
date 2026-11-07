@@ -22,6 +22,9 @@ func ForeignJoin(gid, pid uint64) {
 		globals.Logger.Errorf("cross-play join: gathering %d: %v", gid, err)
 		return
 	}
+	if _, err := globals.Postgres.Exec(`INSERT INTO matchmaking.join_messages (gathering_id, pid, message) VALUES ($1, $2, '') ON CONFLICT DO NOTHING`, int64(gid), int64(pid)); err != nil {
+		globals.Logger.Errorf("cross-play join: join message: %v", err)
+	}
 	notify(gid, pid, owner, count, notifications_constants.ParticipationEventsParticipate)
 	globals.Logger.Infof("cross-play join: PID %d added to gathering %d (%d participants), host %d notified", pid, gid, count, owner)
 	if globals.RelayStation != "" {

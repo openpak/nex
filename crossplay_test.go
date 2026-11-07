@@ -38,6 +38,7 @@ CREATE TABLE matchmaking.gatherings (id bigserial PRIMARY KEY, owner_pid numeric
 	max_participants integer, participation_policy bigint, policy_argument bigint, flags bigint, state bigint, description text,
 	registered boolean NOT NULL DEFAULT true, type text NOT NULL DEFAULT '', started_time timestamp,
 	participants numeric(20)[] NOT NULL DEFAULT array[]::numeric(20)[]);
+CREATE TABLE matchmaking.join_messages (gathering_id bigint, pid numeric(20), message text, PRIMARY KEY (gathering_id, pid));
 CREATE TABLE matchmaking.matchmake_sessions (id bigserial PRIMARY KEY, game_mode bigint, attribs bigint[], open_participation boolean,
 	matchmake_system_type bigint, application_buffer bytea, flags bigint, state bigint, progress_score smallint, session_key bytea,
 	option_zero bigint, matchmake_param bytea, user_password text, refer_gid bigint, user_password_enabled boolean,
@@ -82,6 +83,11 @@ func TestShadowGatherings(t *testing.T) {
 		WHERE s.core_session='ps3-room'`).Scan(&gid, &owner, &policy, &open)
 	if err != nil || owner != 4242 || policy != 98 || !open {
 		t.Fatalf("shadow: %v owner=%d policy=%d open=%v", err, owner, policy, open)
+	}
+	var jm int
+	db.QueryRow(`SELECT count(*) FROM matchmaking.join_messages WHERE gathering_id=$1 AND pid=4242`, gid).Scan(&jm)
+	if jm != 1 {
+		t.Fatal("the shadow owner needs a join message, or GetDetailedParticipants leaves the host out")
 	}
 	var n int
 	db.QueryRow(`SELECT count(*) FROM openpak_crossplay.shadow_gatherings`).Scan(&n)
