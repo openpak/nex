@@ -14,6 +14,7 @@ import (
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
+	matchmakingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
 	"github.com/openpak/nex/titles/terraria/globals"
 )
@@ -95,6 +96,30 @@ func refuseCrossJoins(p *matchmakeextension.Protocol) {
 				return nil, e
 			}
 			return join(err, packet, callID, gid, msg, dontCare, count)
+		}
+	}
+	// AutoMatchmakeWithGatheringIDPostpone is the remaining join-by-id path: refuse when any named
+	// gathering is a cross room.
+	if join := p.AutoMatchmakeWithGatheringIDPostpone; join != nil {
+		p.AutoMatchmakeWithGatheringIDPostpone = func(err error, packet nex.PacketInterface, callID uint32, gids types.List[types.UInt32], gathering matchmakingtypes.GatheringHolder, msg types.String) (*nex.RMCMessage, *nex.Error) {
+			if err == nil {
+				for _, gid := range gids {
+					if e := crossJoinError(gid, pidOf(packet)); e != nil {
+						return nil, e
+					}
+				}
+			}
+			return join(err, packet, callID, gids, gathering, msg)
+		}
+	}
+	// Terraria actually joins this way (method 0x27, real Wii U 2026-11-07): without the wrap the
+	// join fell through to the stock handler and GetSessionURLs failed with "Host client not found".
+	if join := p.JoinMatchmakeSessionWithParam; join != nil {
+		p.JoinMatchmakeSessionWithParam = func(err error, packet nex.PacketInterface, callID uint32, param matchmakingtypes.JoinMatchmakeSessionParam) (*nex.RMCMessage, *nex.Error) {
+			if e := crossJoinError(param.GID, pidOf(packet)); err == nil && e != nil {
+				return nil, e
+			}
+			return join(err, packet, callID, param)
 		}
 	}
 }

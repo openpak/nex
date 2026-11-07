@@ -6,6 +6,10 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.18.0 - 2026-11-07
+- Terraria cross-play: a Wii U join into another console's room registers the relay leg with the Terraria service (`TERRARIA_RELAY_URL`) and is refused if it cannot (prds#145).
+- Terraria cross-play: the join guard now also wraps `JoinMatchmakeSessionWithParam` (0x27, the method Terraria actually joins with) and `AutoMatchmakeWithGatheringIDPostpone`. Before, a Wii U joining a PS3 room fell through to the stock handler and failed in GetSessionURLs with "Host client not found", shown on the console as 118-0502 instead of a clean refusal (real Wii U, 2026-11-07).
+
 ## v1.17.2 - 2026-11-07
 - Terraria cross-play: shadow gatherings and cross-play joiners get a join message row; Pretendo's GetDetailedParticipants lists only participants with one, so the Wii U never learned the shadow's host.
 
