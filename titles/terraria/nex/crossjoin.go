@@ -1,9 +1,15 @@
 package nex
 
 import (
+	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -18,11 +24,16 @@ var CrossJoinsRefused atomic.Int64
 
 // crossJoinError answers a join into a shadow gathering with RendezVous SessionClosed (participation closed), the closest
 // result the game already shows as "could not join"; nil for every other gathering.
-func crossJoinError(gid types.UInt32) *nex.Error {
+func crossJoinError(gid types.UInt32, joinerPID uint32) *nex.Error {
 	if globals.IsCrossRoom == nil || !globals.IsCrossRoom(uint32(gid)) {
 		return nil
 	}
 	if globals.RelayStation != "" {
+		if err := registerLeg(uint32(gid), joinerPID); err != nil {
+			n := CrossJoinsRefused.Add(1)
+			globals.Logger.Warningf("cross-play join: relay leg not registered (%v): gathering %d, refused %d since start", err, uint32(gid), n)
+			return nex.NewError(nex.ResultCodes.RendezVous.SessionClosed, "cross-play relay unavailable")
+		}
 		globals.Logger.Infof("cross-play join through the relay %s: gathering %d", globals.RelayStation, uint32(gid))
 		return nil
 	}
@@ -72,7 +83,7 @@ func relaySessionURLs(p *matchmaking.Protocol) {
 func refuseCrossJoins(p *matchmakeextension.Protocol) {
 	if join := p.JoinMatchmakeSession; join != nil {
 		p.JoinMatchmakeSession = func(err error, packet nex.PacketInterface, callID uint32, gid types.UInt32, msg types.String) (*nex.RMCMessage, *nex.Error) {
-			if e := crossJoinError(gid); err == nil && e != nil {
+			if e := crossJoinError(gid, pidOf(packet)); err == nil && e != nil {
 				return nil, e
 			}
 			return join(err, packet, callID, gid, msg)
@@ -80,10 +91,53 @@ func refuseCrossJoins(p *matchmakeextension.Protocol) {
 	}
 	if join := p.JoinMatchmakeSessionEx; join != nil {
 		p.JoinMatchmakeSessionEx = func(err error, packet nex.PacketInterface, callID uint32, gid types.UInt32, msg types.String, dontCare types.Bool, count types.UInt16) (*nex.RMCMessage, *nex.Error) {
-			if e := crossJoinError(gid); err == nil && e != nil {
+			if e := crossJoinError(gid, pidOf(packet)); err == nil && e != nil {
 				return nil, e
 			}
 			return join(err, packet, callID, gid, msg, dontCare, count)
 		}
 	}
+}
+
+func pidOf(packet nex.PacketInterface) uint32 {
+	if c, ok := packet.Sender().(*nex.PRUDPConnection); ok {
+		return uint32(c.PID())
+	}
+	return 0
+}
+
+// relayHTTP is the client for the Terraria service's internal API.
+var relayHTTP = &http.Client{Timeout: 3 * time.Second}
+
+// registerLeg tells the Terraria service (TERRARIA_RELAY_URL, bearer TERRARIA_INTERNAL_KEY) that a Wii U is about to join a cross
+// room through it: the shadow's session key (PIA keys come from it), the host PID the relay stands in for, the core session.
+// Without a service URL (a test probe set only TERRARIA_RELAY_STATION) nothing is registered.
+func registerLeg(gid, joinerPID uint32) error {
+	url := os.Getenv("TERRARIA_RELAY_URL")
+	if url == "" {
+		return nil
+	}
+	var key []byte
+	var owner int64
+	var core string
+	err := globals.Postgres.QueryRow(`SELECT ms.session_key, g.owner_pid, s.core_session FROM matchmaking.gatherings g
+		JOIN matchmaking.matchmake_sessions ms ON ms.id = g.id JOIN openpak_crossplay.shadow_gatherings s ON s.gathering_id = g.id
+		WHERE g.id = $1`, int64(gid)).Scan(&key, &owner, &core)
+	if err != nil {
+		return fmt.Errorf("shadow %d: %w", gid, err)
+	}
+	body, _ := json.Marshal(map[string]any{"core_session": core, "gathering": gid, "host_pid": owner, "joiner_pid": joinerPID,
+		"session_key": hex.EncodeToString(key)})
+	req, _ := http.NewRequest("POST", strings.TrimRight(url, "/")+"/internal/legs", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("TERRARIA_INTERNAL_KEY"))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := relayHTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("relay answered %d", resp.StatusCode)
+	}
+	return nil
 }
