@@ -120,9 +120,11 @@ func ensureWorld() (uint32, []byte, error) {
 // constant id (the same shape the Terraria relay uses).
 func worldStationURL() types.StationURL {
 	host, port, _ := strings.Cut(os.Getenv("MINECRAFT_SERVICE_STATION"), ":")
+	// natm=1;natf=1: endpoint independent mapping and filtering (the service is an open public host); a real host publishes its
+	// measured NAT types, and unknown (0) makes a joiner treat the host as unreachable.
 	// RVCID is the connection id a real host's registered URL carries (nex-protocols-common sets PID and RVCID on every station);
 	// the PIA host answers as RVCID 1 (common/minecraft internal/pia5 Host).
-	return types.NewStationURL(types.String(fmt.Sprintf("prudp:/address=%s;port=%s;PID=%d;RVCID=1;sid=15;stream=10;type=3;natm=0;natf=0;upnp=0;pmp=0;probeinit=0", host, port, worldPID())))
+	return types.NewStationURL(types.String(fmt.Sprintf("prudp:/address=%s;port=%s;PID=%d;RVCID=1;sid=15;stream=10;type=3;natm=1;natf=1;upnp=0;pmp=0;probeinit=0", host, port, worldPID())))
 }
 
 // worldSessionURLs wraps GetSessionURLs: the world answers the service's station, everything else the common handler.
