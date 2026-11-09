@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.7 - 2026-11-09
+- Minecraft: Wii U Edition: after a joiner asks for the world host's probes, the server sends the joiner `InitiateProbe` with the
+  world's station URL, the call a console host's own `RequestProbeInitiationExt` back would cause. A joiner behind a port-restricted
+  NAT only hears the host after it has probed the host itself (prds#162).
+
 ## v1.19.6 - 2026-11-09
 - Minecraft: Wii U Edition: the joiner's `RequestProbeInitiationExt` targets and station are logged (prds#162).
 

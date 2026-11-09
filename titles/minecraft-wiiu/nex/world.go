@@ -14,10 +14,12 @@ import (
 	"time"
 
 	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2/constants"
 	"github.com/PretendoNetwork/nex-go/v2/types"
 	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	matchmakingtypes "github.com/PretendoNetwork/nex-protocols-go/v2/match-making/types"
 	matchmakeextension "github.com/PretendoNetwork/nex-protocols-go/v2/matchmake-extension"
+	nattraversal "github.com/PretendoNetwork/nex-protocols-go/v2/nat-traversal"
 	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 
 	"github.com/PretendoNetwork/nex-protocols-common-go/v2/matchmake-extension/database"
@@ -191,7 +193,7 @@ func worldBrowse(err error, packet nex.PacketInterface, callID uint32, _ matchma
 // worldProbe answers a joiner's RequestProbeInitiationExt for the world: a console host probes the joiner's public address when it
 // is told to, and the Wii U game waits for that (it gives up after about 15 s). The host here is the service, so it is asked over
 // HTTP. Targets that are not the world host are left to the common handler (which relays to a live connection).
-func worldProbe(targets types.List[types.String], stationToProbe types.String) {
+func worldProbe(packet nex.PacketInterface, targets types.List[types.String], stationToProbe types.String) {
 	if !worldEnabled() {
 		return
 	}
@@ -218,6 +220,45 @@ func worldProbe(targets types.List[types.String], stationToProbe types.String) {
 		}
 		resp.Body.Close()
 		globals.Logger.Infof("minecraft: the joiner at %s:%d asked for probes: service answered %d", addr, port, resp.StatusCode)
+		worldInitiateProbe(packet.Sender().(*nex.PRUDPConnection))
 		return
 	}
 }
+
+// worldInitiateProbe tells the joiner to probe the world's host, which a console host does by calling RequestProbeInitiationExt back
+// as soon as it is told to probe a joiner (2026-11-07 capture: the joiner's two requests at 12:39:51.96, the host's two at 52.02, the
+// joiner probes the host at 52.27). A joiner behind a port-restricted NAT drops the host's probes until it has sent to the host
+// itself, so without this call the join times out (106-0334).
+func worldInitiateProbe(joiner *nex.PRUDPConnection) {
+	endpoint := joiner.Endpoint().(*nex.PRUDPEndPoint)
+	server := endpoint.Server
+	out := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
+	worldStationURL().WriteTo(out)
+	req := nex.NewRMCRequest(endpoint)
+	req.ProtocolID = nattraversal.ProtocolID
+	req.MethodID = nattraversal.MethodInitiateProbe
+	req.CallID = 0xFFFF0000 + uint32(initiateProbeCalls.Add(1)&0xFFFF)
+	req.Parameters = out.Bytes()
+
+	var p nex.PRUDPPacketInterface
+	switch joiner.DefaultPRUDPVersion {
+	case 0:
+		p, _ = nex.NewPRUDPPacketV0(server, joiner, nil)
+	case 1:
+		p, _ = nex.NewPRUDPPacketV1(server, joiner, nil)
+	default:
+		p, _ = nex.NewPRUDPPacketLite(server, joiner, nil)
+	}
+	p.SetType(constants.DataPacket)
+	p.AddFlag(constants.PacketFlagNeedsAck)
+	p.AddFlag(constants.PacketFlagReliable)
+	p.SetSourceVirtualPortStreamType(joiner.StreamType)
+	p.SetSourceVirtualPortStreamID(endpoint.StreamID)
+	p.SetDestinationVirtualPortStreamType(joiner.StreamType)
+	p.SetDestinationVirtualPortStreamID(joiner.StreamID)
+	p.SetPayload(req.Bytes())
+	server.Send(p)
+	globals.Logger.Infof("minecraft: InitiateProbe(world host) -> joiner PID %d", joiner.PID())
+}
+
+var initiateProbeCalls atomic.Uint32

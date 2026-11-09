@@ -154,8 +154,8 @@ func registerCommonSecureServerProtocols() {
 	natTraversalProtocol := nattraversal.NewProtocol()
 	globals.SecureEndpoint.RegisterServiceProtocol(natTraversalProtocol)
 	commonNatTraversal := commonnattraversal.NewCommonProtocol(natTraversalProtocol)
-	commonNatTraversal.OnAfterRequestProbeInitiationExt = func(_ nex.PacketInterface, targets types.List[types.String], station types.String) {
-		worldProbe(targets, station)
+	commonNatTraversal.OnAfterRequestProbeInitiationExt = func(packet nex.PacketInterface, targets types.List[types.String], station types.String) {
+		worldProbe(packet, targets, station)
 	}
 
 	matchMakingProtocol := matchmaking.NewProtocol()
