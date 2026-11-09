@@ -8,6 +8,20 @@ covering `*.s.n.srv.nintendo.net` (`NEX_TLS_CERT`/`NEX_TLS_KEY`). Two-listener t
 publish `+1` on the host, because the secure station URL names that port directly. See
 [`ports.md`](https://docs.openpak.org/contributors/ports/).
 
+### Host network (since 2026-11-09, prds#166)
+
+Wii U/3DS title containers run `Network=host`, not `PublishPort=…/udp` on `openpak.network`.
+Rootless Podman's published-port forwarder handed every packet to the title from the container's
+own address, so a session recorded joiners as `10.89.x.x` and NAT traversal probed nothing
+(Minecraft Wii U 118-0502/0521). Under host networking the title binds its UDP ports itself and
+sees the console's address. The shared `.env` names (`openpak-postgres`, `openpak-nn-friends`, …)
+resolve to `127.0.0.1` through the `40-hostnet.conf` drop-in, where each service or
+`openpak-hostnet-bridge` publishes the same port. Healthz moves to `NEX_HTTP_ADDR=127.0.0.1:<base+2>`
+(or a free port when a Switch title already holds base+2). Recipe, rollback and the bridge:
+connectivity `deploy/hostnet/README.md`. Titles other services call by name (Mario Kart 7/8 rankings
+APIs, Super Mario Maker 22584, MHGU behind Traefik) need those callers moved to
+`host.containers.internal:<port>` first.
+
 ## Per-title settings
 
 A Switch title typically wants:
