@@ -34,7 +34,14 @@ func cleanupSearchMatchmakeSessionHandler(matchmakeSession *matchmakingtypes.Mat
 	}
 }
 
-func CreateReportDBRecord(_ types.PID, _ types.UInt32, _ types.QBuffer) error {
+// CreateReportDBRecord is the console's SendReport: nothing is stored, the report is logged (a joiner reports why a join failed;
+// card openpak/prds#162).
+func CreateReportDBRecord(pid types.PID, id types.UInt32, data types.QBuffer) error {
+	b := []byte(data)
+	if len(b) > 256 {
+		b = b[:256]
+	}
+	globals.Logger.Infof("minecraft: SendReport pid=%d id=%d len=%d data=%x", uint64(pid), uint32(id), len(data), b)
 	return nil
 }
 

@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.1 - 2026-11-09
+- Minecraft: Wii U Edition: the console's `SendReport` (why a join failed) is logged (pid, report id, first 256 bytes), nothing stored (prds#162).
+
 ## v1.19.0 - 2026-11-09
 - **Minecraft: Wii U Edition: the service world** (prds#162): with `MINECRAFT_SERVICE_URL` (+ `MINECRAFT_INTERNAL_KEY`, `MINECRAFT_SERVICE_STATION`) the title keeps one persistent gathering owned by a service PID (`MINECRAFT_WORLD_PID`, default 2000000001), registers its PIA leg and session key with the common/minecraft service every minute, answers `GetSessionURLs` for it with the service's station, lets every player join it and lists it in `BrowseMatchmakeSession` (public matchmaking between players stays off). Unset: nothing changes.
 
