@@ -75,6 +75,9 @@ func stubBrowseMatchmakeSession(err error, packet nex.PacketInterface, callID ui
 }
 
 func gameSpecificCanJoinMatchmakeSession(manager *commonglobals.MatchmakingManager, pid types.PID, session matchmakingtypes.MatchmakeSession) *nex.Error {
+	if isWorld(uint32(session.ID)) {
+		return nil // the service world is open to every player
+	}
 	if !session.OpenParticipation {
 		return nex.NewError(nex.ResultCodes.RendezVous.PermissionDenied, "Gathering is not open to new participants")
 	}
@@ -163,6 +166,9 @@ func registerCommonSecureServerProtocols() {
 		globals.Logger.Warning("Public minigames are disabled for safety reasons.")
 		globals.Logger.Warning("To enable public matches, set PN_MINECRAFT_ALLOW_PUBLIC_MATCHMAKING=1.")
 		matchmakeExtensionProtocol.SetHandlerBrowseMatchmakeSession(stubBrowseMatchmakeSession)
+		if worldEnabled() {
+			matchmakeExtensionProtocol.SetHandlerBrowseMatchmakeSession(worldBrowse)
+		}
 
 		// * Make sure any unused MM protocols aren't able to show sessions
 		matchmakeExtensionProtocol.SetHandlerAutoMatchmakePostpone(nil)
@@ -178,4 +184,7 @@ func registerCommonSecureServerProtocols() {
 		matchMakingProtocol.SetHandlerFindInvitations(nil)
 		matchMakingProtocol.SetHandlerFindBySQLQuery(nil)
 	}
+
+	worldSessionURLs(matchMakingProtocol)
+	StartWorld()
 }
