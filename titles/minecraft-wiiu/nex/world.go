@@ -196,6 +196,7 @@ func worldProbe(targets types.List[types.String], stationToProbe types.String) {
 		return
 	}
 	for _, t := range targets {
+		globals.Logger.Infof("minecraft: RequestProbeInitiationExt target=%s station=%s", string(t), string(stationToProbe))
 		if id, ok := types.NewStationURL(t).RVConnectionID(); !ok || id != worldRVCID {
 			continue
 		}
