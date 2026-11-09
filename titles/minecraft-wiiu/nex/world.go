@@ -65,6 +65,9 @@ func syncWorld() error {
 		return err
 	}
 	worldGID.Store(gid)
+	// ponytail: nothing tells NEX when a console leaves the PIA world, so its participant list only grows; the service tracks the
+	// players, so the list is cleared every minute (max 8 would otherwise close the world after eight joins)
+	globals.Postgres.Exec(`UPDATE matchmaking.gatherings SET participants = '{}' WHERE id = $1`, int64(gid))
 	body, _ := json.Marshal(map[string]any{"gathering": gid, "host_pid": worldPID(), "session_key": hex.EncodeToString(key)})
 	req, _ := http.NewRequest("POST", strings.TrimRight(os.Getenv("MINECRAFT_SERVICE_URL"), "/")+"/internal/legs", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("MINECRAFT_INTERNAL_KEY"))

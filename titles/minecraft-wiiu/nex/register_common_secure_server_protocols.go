@@ -83,7 +83,12 @@ func stubBrowseMatchmakeSession(err error, packet nex.PacketInterface, callID ui
 
 func gameSpecificCanJoinMatchmakeSession(manager *commonglobals.MatchmakingManager, pid types.PID, session matchmakingtypes.MatchmakeSession) *nex.Error {
 	if isWorld(uint32(session.ID)) {
-		return nil // the service world is open to every player
+		// open to every player, and a player whose game ended without a NEX leave (a failed join, a closed emulator) must be able to
+		// come back: the common join answers AlreadyParticipatedGathering while the pid is still listed
+		if _, err := globals.Postgres.Exec(`UPDATE matchmaking.gatherings SET participants = array_remove(participants, $2::numeric) WHERE id = $1`, int64(session.ID), int64(pid)); err != nil {
+			globals.Logger.Errorf("minecraft: world rejoin: %v", err)
+		}
+		return nil
 	}
 	if !session.OpenParticipation {
 		return nex.NewError(nex.ResultCodes.RendezVous.PermissionDenied, "Gathering is not open to new participants")

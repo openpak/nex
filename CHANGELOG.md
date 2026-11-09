@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.4 - 2026-11-09
+- Minecraft: Wii U Edition: the world can be rejoined. A player whose game ended without a NEX leave stayed listed as a participant and got `AlreadyParticipatedGathering` on the next join; the join now removes the pid first and the participant list of the world is cleared every minute (prds#162).
+
 ## v1.19.3 - 2026-11-09
 - Minecraft: Wii U Edition: the world's station URL declares an open host (`natm=1;natf=1`) instead of unknown NAT types (prds#162).
 
