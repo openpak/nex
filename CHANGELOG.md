@@ -6,6 +6,9 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.5 - 2026-11-09
+- Minecraft: Wii U Edition: the joiner's `RequestProbeInitiationExt` for the world host is forwarded to the service (`POST /internal/probe`), which probes the joiner as a console host does; without it the game waits 15 s and aborts the join. The world's station URL carries RVCID 0xFFF0 (was 1) so the request cannot be relayed to a live connection (prds#162).
+
 ## v1.19.4 - 2026-11-09
 - Minecraft: Wii U Edition: the world can be rejoined. A player whose game ended without a NEX leave stayed listed as a participant and got `AlreadyParticipatedGathering` on the next join; the join now removes the pid first and the participant list of the world is cleared every minute (prds#162).
 

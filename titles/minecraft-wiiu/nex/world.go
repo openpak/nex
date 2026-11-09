@@ -30,6 +30,9 @@ import (
 // defaultWorldPID is the PID the service stands in for (no account has it: accounts are below 2^31 - 1 000 000 000).
 const defaultWorldPID = 2000000001
 
+// worldRVCID is the service host's RendezVous connection id (common/minecraft pia5.HostRVCID).
+const worldRVCID = 0xFFF0
+
 var worldGID atomic.Uint32
 
 func worldPID() uint32 {
@@ -126,8 +129,9 @@ func worldStationURL() types.StationURL {
 	// natm=1;natf=1: endpoint independent mapping and filtering (the service is an open public host); a real host publishes its
 	// measured NAT types, and unknown (0) makes a joiner treat the host as unreachable.
 	// RVCID is the connection id a real host's registered URL carries (nex-protocols-common sets PID and RVCID on every station);
-	// the PIA host answers as RVCID 1 (common/minecraft internal/pia5 Host).
-	return types.NewStationURL(types.String(fmt.Sprintf("prudp:/address=%s;port=%s;PID=%d;RVCID=1;sid=15;stream=10;type=3;natm=1;natf=1;upnp=0;pmp=0;probeinit=0", host, port, worldPID())))
+	// the PIA host answers as RVCID 1 (common/minecraft internal/pia5 HostRVCID); a value no live NEX connection has, because RequestProbeInitiationExt is relayed
+	// to the connection with that id.
+	return types.NewStationURL(types.String(fmt.Sprintf("prudp:/address=%s;port=%s;PID=%d;RVCID=%d;sid=15;stream=10;type=3;natm=1;natf=1;upnp=0;pmp=0;probeinit=0", host, port, worldPID(), worldRVCID)))
 }
 
 // worldSessionURLs wraps GetSessionURLs: the world answers the service's station, everything else the common handler.
@@ -182,4 +186,37 @@ func worldBrowse(err error, packet nex.PacketInterface, callID uint32, _ matchma
 	res.MethodID = matchmakeextension.MethodBrowseMatchmakeSession
 	res.CallID = callID
 	return res, nil
+}
+
+// worldProbe answers a joiner's RequestProbeInitiationExt for the world: a console host probes the joiner's public address when it
+// is told to, and the Wii U game waits for that (it gives up after about 15 s). The host here is the service, so it is asked over
+// HTTP. Targets that are not the world host are left to the common handler (which relays to a live connection).
+func worldProbe(targets types.List[types.String], stationToProbe types.String) {
+	if !worldEnabled() {
+		return
+	}
+	for _, t := range targets {
+		if id, ok := types.NewStationURL(t).RVConnectionID(); !ok || id != worldRVCID {
+			continue
+		}
+		to := types.NewStationURL(stationToProbe)
+		addr, ok1 := to.Address()
+		port, ok2 := to.PortNumber()
+		if !ok1 || !ok2 {
+			globals.Logger.Warningf("minecraft: probe request without an address: %s", string(stationToProbe))
+			return
+		}
+		body, _ := json.Marshal(map[string]any{"gathering": worldGID.Load(), "address": addr, "port": port})
+		req, _ := http.NewRequest("POST", strings.TrimRight(os.Getenv("MINECRAFT_SERVICE_URL"), "/")+"/internal/probe", bytes.NewReader(body))
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("MINECRAFT_INTERNAL_KEY"))
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(req)
+		if err != nil {
+			globals.Logger.Errorf("minecraft: probe request: %v", err)
+			return
+		}
+		resp.Body.Close()
+		globals.Logger.Infof("minecraft: the joiner at %s:%d asked for probes: service answered %d", addr, port, resp.StatusCode)
+		return
+	}
 }
