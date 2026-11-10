@@ -6,6 +6,11 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.8 - 2026-11-10
+- Minecraft: Wii U Edition: the world gathering keeps its host PID in the participant list (the minute reset no longer empties it).
+  A joiner learns the participants only from the 3001 recap NEX sends it at join time (gathering flag 0x800), and its PIA connect
+  job drops a host that is not among them before the connection request: real Wii U 2026-11-10 20:46, 118-0502 (prds#162).
+
 ## v1.19.7 - 2026-11-09
 - Minecraft: Wii U Edition: after a joiner asks for the world host's probes, the server sends the joiner `InitiateProbe` with the
   world's station URL, the call a console host's own `RequestProbeInitiationExt` back would cause. A joiner behind a port-restricted

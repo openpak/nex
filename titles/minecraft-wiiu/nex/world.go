@@ -71,8 +71,11 @@ func syncWorld() error {
 	}
 	worldGID.Store(gid)
 	// ponytail: nothing tells NEX when a console leaves the PIA world, so its participant list only grows; the service tracks the
-	// players, so the list is cleared every minute (max 8 would otherwise close the world after eight joins)
-	globals.Postgres.Exec(`UPDATE matchmaking.gatherings SET participants = '{}' WHERE id = $1`, int64(gid))
+	// players, so the list is reset every minute (max 8 would otherwise close the world after eight joins). The reset keeps the
+	// world host: a joiner learns the participants only from the 3001 recap that flag 0x800 sends it at join time, and its PIA
+	// connect job refuses a host that is not among them (NexMatchMeshLayerController::IsParticipated, rpx 0x035d5d40; real Wii U
+	// 2026-11-10 20:46, 118-0502).
+	globals.Postgres.Exec(`UPDATE matchmaking.gatherings SET participants = ARRAY[$2::numeric] WHERE id = $1`, int64(gid), int64(worldPID()))
 	body, _ := json.Marshal(map[string]any{"gathering": gid, "host_pid": worldPID(), "session_key": hex.EncodeToString(key)})
 	req, _ := http.NewRequest("POST", strings.TrimRight(os.Getenv("MINECRAFT_SERVICE_URL"), "/")+"/internal/legs", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("MINECRAFT_INTERNAL_KEY"))
@@ -107,8 +110,8 @@ func ensureWorld() (uint32, []byte, error) {
 	}
 	defer tx.Rollback()
 	if err := tx.QueryRow(`INSERT INTO matchmaking.gatherings (owner_pid, host_pid, min_participants, max_participants, participation_policy, policy_argument,
-		flags, state, description, registered, type, started_time, participants) VALUES ($1,$1,0,8,95,0,2560,0,'',true,'MatchmakeSession',now(),'{}') RETURNING id`,
-		int64(worldPID())).Scan(&gid); err != nil {
+		flags, state, description, registered, type, started_time, participants) VALUES ($1,$1,0,8,95,0,2560,0,'',true,'MatchmakeSession',now(),ARRAY[$2::numeric]) RETURNING id`,
+		int64(worldPID()), int64(worldPID())).Scan(&gid); err != nil {
 		return 0, nil, err
 	}
 	// attribute 0 carries the public-game marker (low 24 bits 0x30881) so the game lists it as an open game
