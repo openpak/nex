@@ -6,6 +6,13 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.9 - 2026-11-10
+- Minecraft: Wii U Edition: internal routes for the cross-play bridge (prds#177) on the title's health listener, bearer
+  `MINECRAFT_INTERNAL_KEY`: `GET /internal/minecraft/gatherings` (console-hosted gatherings whose host is online, with host PID
+  and station URLs), `POST /internal/minecraft/join` (adds a PID to a gathering's participants, sends the host the 3001
+  participation event and InitiateProbe with the joiner's station URL, returns the session key) and `POST /internal/minecraft/leave`.
+  `nexhost.HealthMux` lets a Run-shaped title add routes to the health listener.
+
 ## v1.19.8 - 2026-11-10
 - Minecraft: Wii U Edition: the world gathering keeps its host PID in the participant list (the minute reset no longer empties it).
   A joiner learns the participants only from the 3001 recap NEX sends it at join time (gathering flag 0x800), and its PIA connect

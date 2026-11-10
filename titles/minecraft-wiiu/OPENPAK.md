@@ -16,6 +16,9 @@ Runs as `NEX_TITLE=minecraft-wiiu` in the shared `ghcr.io/openpak/nex` image, on
 | `SecureHost` | `PN_MINECRAFT_SECURE_SERVER_HOST` |
 | `strconv.Itoa(SecurePort())` | `PN_MINECRAFT_SECURE_SERVER_PORT` |
 
+Internal routes (prds#177, `nex/bridge.go`) on the same health listener, bearer `MINECRAFT_INTERNAL_KEY`: list console-hosted
+gatherings, join or leave one as a PID with no NEX connection (the cross-play bridge, common/minecraft `joinconsole`).
+
 Health: upstream's UDP health check (`PN_MINECRAFT_HEALTH_CHECK_PORT`) stays off; nexd answers `/healthz` on the block's `+2` port.
 
 Pass-through variables (set them in the container environment as upstream documents): `PN_MINECRAFT_ALLOW_PUBLIC_MATCHMAKING`

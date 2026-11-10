@@ -179,9 +179,10 @@ func FromEnvWith(base Config) Config {
 
 // ServeHealth answers GET /healthz on addr for a Run-shaped title, so "is it up" is an HTTP
 // question for every title regardless of who owns the PRUDP listeners. It returns as soon as
-// the listener is bound; the server runs for the life of the process.
+// the listener is bound; the server runs for the life of the process. A Run-shaped title adds its
+// own internal routes to HealthMux (they are served on the same listener).
 func ServeHealth(addr, title string) error {
-	mux := http.NewServeMux()
+	mux := HealthMux
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprintf(w, "ok %s\n", title)
 	})
@@ -193,6 +194,9 @@ func ServeHealth(addr, title string) error {
 	go func() { _ = http.Serve(ln, mux) }()
 	return nil
 }
+
+// HealthMux is the mux ServeHealth serves.
+var HealthMux = http.NewServeMux()
 
 func atoiOr(s string, fallback int) int {
 	if n, err := strconv.Atoi(s); err == nil {

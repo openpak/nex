@@ -223,20 +223,21 @@ func worldProbe(packet nex.PacketInterface, targets types.List[types.String], st
 		}
 		resp.Body.Close()
 		globals.Logger.Infof("minecraft: the joiner at %s:%d asked for probes: service answered %d", addr, port, resp.StatusCode)
-		worldInitiateProbe(packet.Sender().(*nex.PRUDPConnection))
+		initiateProbe(packet.Sender().(*nex.PRUDPConnection), worldStationURL())
 		return
 	}
 }
 
-// worldInitiateProbe tells the joiner to probe the world's host, which a console host does by calling RequestProbeInitiationExt back
+// initiateProbe tells the joiner to probe the world's host, which a console host does by calling RequestProbeInitiationExt back
 // as soon as it is told to probe a joiner (2026-11-07 capture: the joiner's two requests at 12:39:51.96, the host's two at 52.02, the
 // joiner probes the host at 52.27). A joiner behind a port-restricted NAT drops the host's probes until it has sent to the host
 // itself, so without this call the join times out (106-0334).
-func worldInitiateProbe(joiner *nex.PRUDPConnection) {
+// The bridge (bridge.go) uses the same call to tell a console host to probe a bridged joiner.
+func initiateProbe(joiner *nex.PRUDPConnection, station types.StationURL) {
 	endpoint := joiner.Endpoint().(*nex.PRUDPEndPoint)
 	server := endpoint.Server
 	out := nex.NewByteStreamOut(endpoint.LibraryVersions(), endpoint.ByteStreamSettings())
-	worldStationURL().WriteTo(out)
+	station.WriteTo(out)
 	req := nex.NewRMCRequest(endpoint)
 	req.ProtocolID = nattraversal.ProtocolID
 	req.MethodID = nattraversal.MethodInitiateProbe
@@ -261,7 +262,7 @@ func worldInitiateProbe(joiner *nex.PRUDPConnection) {
 	p.SetDestinationVirtualPortStreamID(joiner.StreamID)
 	p.SetPayload(req.Bytes())
 	server.Send(p)
-	globals.Logger.Infof("minecraft: InitiateProbe(world host) -> joiner PID %d", joiner.PID())
+	globals.Logger.Infof("minecraft: InitiateProbe(%s) -> PID %d", station.URL(), joiner.PID())
 }
 
 var initiateProbeCalls atomic.Uint32

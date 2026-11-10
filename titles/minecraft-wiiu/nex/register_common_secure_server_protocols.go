@@ -202,4 +202,5 @@ func registerCommonSecureServerProtocols() {
 
 	worldSessionURLs(matchMakingProtocol)
 	StartWorld()
+	StartBridge()
 }
