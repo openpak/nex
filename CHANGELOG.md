@@ -6,6 +6,13 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.11 - 2026-11-11
+- Minecraft: Wii U Edition (prds#177): `FindBySingleID` (the call a friend's presence makes the game send before it lists a game) is logged
+  for every gathering (`minecraft FindBySingleID: pid gathering answered`) and kept in the joins feed as `find` for bridged ones. After the first real-console test
+  nothing showed whether the console had asked. `GET /internal/minecraft/gatherings` also returns a console gathering's `game_mode`,
+  `matchmake_system_type`, `attribs`, `participation_policy` and `flags`, and each distinct row is logged once (`minecraft console gathering N row:`), so a bridged
+  gathering can be compared with a real host's (the bridged attribute 0 `{2177,…}` is still a guess).
+
 ## v1.19.10 - 2026-11-11
 - Minecraft: Wii U Edition: the bridge's sink half (prds#177, common/minecraft docs/session-mapping.md). `PUT/DELETE /internal/minecraft/bridged/{game}`
   keep a gathering owned by the hosting player's Wii U PID for a game hosted on another console (description `openpak-bridge:<game>`, so it is

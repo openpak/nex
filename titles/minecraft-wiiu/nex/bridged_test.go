@@ -1,11 +1,16 @@
 package nex
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/PretendoNetwork/nex-go/v2"
+	"github.com/PretendoNetwork/nex-go/v2/types"
+	matchmaking "github.com/PretendoNetwork/nex-protocols-go/v2/match-making"
 	"github.com/PretendoNetwork/plogger-go"
 	"github.com/openpak/nex/titles/minecraft-wiiu/globals"
 )
@@ -75,5 +80,26 @@ func TestBridgedPutRefusesBadInput(t *testing.T) {
 	}
 	if validGameID("a/b") || validGameID("") || !validGameID("ps3:3f2a-1") {
 		t.Fatal("game id check")
+	}
+}
+
+// FindBySingleID, the call a friend's presence makes the game send, passes through the wrapper untouched (a request that failed to parse never
+// reaches the database lookup), and the gatherings route now carries a real host's other rows (attribs, game mode, system type, policy, flags).
+func TestBridgedFindPassesThroughAndRowFields(t *testing.T) {
+	quietLogger()
+	p := matchmaking.NewProtocol()
+	want := &nex.RMCMessage{CallID: 7}
+	p.FindBySingleID = func(err error, _ nex.PacketInterface, callID uint32, _ types.UInt32) (*nex.RMCMessage, *nex.Error) {
+		return want, nil
+	}
+	bridgedFind(p)
+	if res, nerr := p.FindBySingleID(errors.New("bad"), nil, 7, 9); res != want || nerr != nil {
+		t.Fatalf("wrapper changed the answer: %v %v", res, nerr)
+	}
+	b, _ := json.Marshal(bridgeGathering{Attribs: "{198785}", GameMode: 15, SystemType: 1, Policy: 95, Flags: 2560})
+	for _, k := range []string{`"attribs":"{198785}"`, `"game_mode":15`, `"matchmake_system_type":1`, `"participation_policy":95`, `"flags":2560`} {
+		if !strings.Contains(string(b), k) {
+			t.Fatalf("%s missing from %s", k, b)
+		}
 	}
 }

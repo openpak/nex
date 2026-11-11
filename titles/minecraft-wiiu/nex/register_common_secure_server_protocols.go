@@ -202,6 +202,7 @@ func registerCommonSecureServerProtocols() {
 
 	worldSessionURLs(matchMakingProtocol)
 	bridgedSessionURLs(matchMakingProtocol)
+	bridgedFind(matchMakingProtocol)
 	StartWorld()
 	StartBridge()
 }

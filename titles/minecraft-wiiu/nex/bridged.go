@@ -307,3 +307,30 @@ func recordBridgedProbe(packet nex.PacketInterface, targets types.List[types.Str
 	}
 	return found
 }
+
+// bridgedFind wraps FindBySingleID, the call the game makes for a friend's presence (groupId = the gathering) before it lists the game: every
+// call is logged (who asked, which gathering, whether it was answered), and for a bridged gathering it is also kept in the joins feed
+// ("find"), so a console that never asks shows as a missing event, not as silence.
+func bridgedFind(p *matchmaking.Protocol) {
+	get := p.FindBySingleID
+	if get == nil {
+		return
+	}
+	p.FindBySingleID = func(err error, packet nex.PacketInterface, callID uint32, id types.UInt32) (*nex.RMCMessage, *nex.Error) {
+		res, nerr := get(err, packet, callID, id)
+		if err == nil {
+			pid := uint32(packet.Sender().(*nex.PRUDPConnection).PID())
+			game := bridgedGame(uint32(id))
+			ev := joinEvent{Game: game, Kind: "find", PID: pid, Data: map[string]string{"gathering": strconv.FormatUint(uint64(id), 10)}}
+			if nerr != nil {
+				ev.Err = nerr.Message
+			}
+			if game != "" {
+				recordJoin(ev)
+			} else {
+				globals.Logger.Infof("minecraft FindBySingleID: pid=%d gathering=%d answered=%t", pid, uint32(id), nerr == nil)
+			}
+		}
+		return res, nerr
+	}
+}

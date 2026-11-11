@@ -19,10 +19,12 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	pb "github.com/PretendoNetwork/grpc/go/account/v2"
@@ -69,6 +71,22 @@ type bridgeGathering struct {
 	MaxParticipants int    `json:"max_participants"`
 	Open            bool   `json:"open"`
 	Buffer          string `json:"application_buffer"` // hex
+	// the rest of a real host's rows, so a bridged gathering can be made to match a real one (prds#177): read from the route, logged once
+	GameMode   int    `json:"game_mode"`
+	SystemType int    `json:"matchmake_system_type"`
+	Attribs    string `json:"attribs"`
+	Policy     int    `json:"participation_policy"`
+	Flags      int64  `json:"flags"`
+}
+
+var seenRows sync.Map // gathering id + row -> logged
+
+// logRow logs a console-hosted gathering's rows once per distinct content (no session key, no names beyond the buffer the game wrote).
+func logRow(g bridgeGathering) {
+	row := fmt.Sprintf("game_mode=%d system_type=%d attribs=%s policy=%d flags=%d open=%t max=%d owner=%d buffer=%s", g.GameMode, g.SystemType, g.Attribs, g.Policy, g.Flags, g.Open, g.MaxParticipants, g.OwnerPID, g.Buffer)
+	if _, seen := seenRows.LoadOrStore(fmt.Sprint(g.Gathering, row), true); !seen {
+		globals.Logger.Infof("minecraft console gathering %d row: %s", g.Gathering, row)
+	}
 }
 
 func hostStations(pid uint64) []string {
@@ -85,7 +103,7 @@ func hostStations(pid uint64) []string {
 
 func bridgeGatherings(w http.ResponseWriter, r *http.Request) {
 	// bridged gatherings (bridged.go) are other consoles' games listed here: never reported back as console-hosted
-	rows, err := globals.Postgres.QueryContext(r.Context(), `SELECT g.id, g.owner_pid, g.host_pid, g.participants, g.max_participants, s.open_participation, s.application_buffer
+	rows, err := globals.Postgres.QueryContext(r.Context(), `SELECT g.id, g.owner_pid, g.host_pid, g.participants, g.max_participants, s.open_participation, s.application_buffer, s.game_mode, s.matchmake_system_type, s.attribs::text, g.participation_policy, g.flags
 		FROM matchmaking.gatherings g JOIN matchmaking.matchmake_sessions s ON s.id = g.id
 		WHERE g.registered AND g.type = 'MatchmakeSession' AND g.owner_pid <> $1 AND g.description NOT LIKE $2 ORDER BY g.id DESC LIMIT 50`, int64(worldPID()), bridgeMarker+"%")
 	if err != nil {
@@ -97,12 +115,13 @@ func bridgeGatherings(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var g bridgeGathering
 		var buf []byte
-		if err := rows.Scan(&g.Gathering, &g.OwnerPID, &g.HostPID, pqextended.Array(&g.Participants), &g.MaxParticipants, &g.Open, &buf); err != nil {
+		if err := rows.Scan(&g.Gathering, &g.OwnerPID, &g.HostPID, pqextended.Array(&g.Participants), &g.MaxParticipants, &g.Open, &buf, &g.GameMode, &g.SystemType, &g.Attribs, &g.Policy, &g.Flags); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		g.Buffer = hex.EncodeToString(buf)
 		if g.Stations = hostStations(g.HostPID); g.Stations != nil { // the host is online: its gathering is joinable
+			logRow(g)
 			out = append(out, g)
 		}
 	}
