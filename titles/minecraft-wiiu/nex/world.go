@@ -197,6 +197,7 @@ func worldBrowse(err error, packet nex.PacketInterface, callID uint32, _ matchma
 // is told to, and the Wii U game waits for that (it gives up after about 15 s). The host here is the service, so it is asked over
 // HTTP. Targets that are not the world host are left to the common handler (which relays to a live connection).
 func worldProbe(packet nex.PacketInterface, targets types.List[types.String], stationToProbe types.String) {
+	recordBridgedProbe(packet, targets, stationToProbe)
 	if !worldEnabled() {
 		return
 	}

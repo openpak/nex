@@ -44,6 +44,7 @@ func StartBridge() {
 	nexhost.HealthMux.HandleFunc("GET /internal/minecraft/gatherings", bridgeAuth(bridgeGatherings))
 	nexhost.HealthMux.HandleFunc("POST /internal/minecraft/join", bridgeAuth(bridgeJoin))
 	nexhost.HealthMux.HandleFunc("POST /internal/minecraft/leave", bridgeAuth(bridgeLeave))
+	mountBridged()
 }
 
 func bridgeAuth(h http.HandlerFunc) http.HandlerFunc {
@@ -64,6 +65,10 @@ type bridgeGathering struct {
 	HostPID      uint64   `json:"host_pid"`
 	Participants []uint64 `json:"participants"`
 	Stations     []string `json:"stations"`
+	// what the session directory needs to advertise the game elsewhere (prds#177): the game's own data and limits
+	MaxParticipants int    `json:"max_participants"`
+	Open            bool   `json:"open"`
+	Buffer          string `json:"application_buffer"` // hex
 }
 
 func hostStations(pid uint64) []string {
@@ -79,8 +84,10 @@ func hostStations(pid uint64) []string {
 }
 
 func bridgeGatherings(w http.ResponseWriter, r *http.Request) {
-	rows, err := globals.Postgres.QueryContext(r.Context(), `SELECT id, owner_pid, host_pid, participants FROM matchmaking.gatherings
-		WHERE registered AND type = 'MatchmakeSession' AND owner_pid <> $1 ORDER BY id DESC LIMIT 50`, int64(worldPID()))
+	// bridged gatherings (bridged.go) are other consoles' games listed here: never reported back as console-hosted
+	rows, err := globals.Postgres.QueryContext(r.Context(), `SELECT g.id, g.owner_pid, g.host_pid, g.participants, g.max_participants, s.open_participation, s.application_buffer
+		FROM matchmaking.gatherings g JOIN matchmaking.matchmake_sessions s ON s.id = g.id
+		WHERE g.registered AND g.type = 'MatchmakeSession' AND g.owner_pid <> $1 AND g.description NOT LIKE $2 ORDER BY g.id DESC LIMIT 50`, int64(worldPID()), bridgeMarker+"%")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,10 +96,12 @@ func bridgeGatherings(w http.ResponseWriter, r *http.Request) {
 	out := []bridgeGathering{}
 	for rows.Next() {
 		var g bridgeGathering
-		if err := rows.Scan(&g.Gathering, &g.OwnerPID, &g.HostPID, pqextended.Array(&g.Participants)); err != nil {
+		var buf []byte
+		if err := rows.Scan(&g.Gathering, &g.OwnerPID, &g.HostPID, pqextended.Array(&g.Participants), &g.MaxParticipants, &g.Open, &buf); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		g.Buffer = hex.EncodeToString(buf)
 		if g.Stations = hostStations(g.HostPID); g.Stations != nil { // the host is online: its gathering is joinable
 			out = append(out, g)
 		}

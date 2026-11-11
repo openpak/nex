@@ -6,6 +6,14 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.10 - 2026-11-11
+- Minecraft: Wii U Edition: the bridge's sink half (prds#177, common/minecraft docs/session-mapping.md). `PUT/DELETE /internal/minecraft/bridged/{game}`
+  keep a gathering owned by the hosting player's Wii U PID for a game hosted on another console (description `openpak-bridge:<game>`, so it is
+  never reported back as console-hosted); a Wii U friend joins it through the normal JoinMatchmakeSession, and GetSessionURLs answers the bridge's
+  station for the host (RVCID 0xFFF2). `GET /internal/minecraft/joins?after=N` returns, in full, the joins, the station URLs handed out and the
+  probe requests (with the joiner's station) that Wii Us sent for bridged gatherings (also logged). `GET /internal/minecraft/gatherings` now
+  carries `max_participants`, `open` and `application_buffer` (hex) and leaves bridged gatherings out.
+
 ## v1.19.9 - 2026-11-10
 - Minecraft: Wii U Edition: internal routes for the cross-play bridge (prds#177) on the title's health listener, bearer
   `MINECRAFT_INTERNAL_KEY`: `GET /internal/minecraft/gatherings` (console-hosted gatherings whose host is online, with host PID

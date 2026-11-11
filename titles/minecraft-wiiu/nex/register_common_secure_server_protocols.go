@@ -172,7 +172,7 @@ func registerCommonSecureServerProtocols() {
 	globals.SecureEndpoint.RegisterServiceProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol := commonmatchmakeextension.NewCommonProtocol(matchmakeExtensionProtocol)
 	commonMatchmakeExtensionProtocol.SetManager(globals.MatchmakingManager)
-	commonMatchmakeExtensionProtocol.CanJoinMatchmakeSession = gameSpecificCanJoinMatchmakeSession
+	commonMatchmakeExtensionProtocol.CanJoinMatchmakeSession = canJoinBridged(gameSpecificCanJoinMatchmakeSession)
 
 	globals.MatchmakingManager.GetUserFriendPIDs = globals.GetUserFriendPIDs
 
@@ -201,6 +201,7 @@ func registerCommonSecureServerProtocols() {
 	}
 
 	worldSessionURLs(matchMakingProtocol)
+	bridgedSessionURLs(matchMakingProtocol)
 	StartWorld()
 	StartBridge()
 }
