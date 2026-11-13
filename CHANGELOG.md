@@ -6,6 +6,12 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.13 - 2026-11-13
+
+- Minecraft Wii U (prds#177): a joiner's RequestProbeInitiationExt for a bridged host now does what it does for the world: the service
+  is asked to probe the joiner from the gathering's leg and the joiner is told to probe the bridge's station. Before, the request was only
+  logged, nobody answered the joiner, and the first real bridged session (Wii U into a PS3-hosted world, 2026-11-13) ended in 118-0521.
+
 ## v1.19.12 - 2026-11-13
 - Minecraft: Wii U Edition (prds#177): a Wii U that joins a bridged gathering (a game a player hosts on another console) now makes nex register
   the gathering's PIA leg with common/minecraft (`POST /internal/legs`, the world's route, with `game` = the directory id, `joiner_pid` and

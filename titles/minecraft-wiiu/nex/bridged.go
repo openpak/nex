@@ -313,6 +313,7 @@ func recordBridgedProbe(packet nex.PacketInterface, targets types.List[types.Str
 		gid, game := bridgedByHost(uint64(host))
 		pid := uint32(packet.Sender().(*nex.PRUDPConnection).PID())
 		recordJoin(joinEvent{Game: game, Kind: "probe", PID: pid, Data: map[string]string{"gathering": strconv.FormatUint(uint64(gid), 10), "target": string(t), "station": string(station)}})
+		bridgedProbe(packet.Sender().(*nex.PRUDPConnection), gid, uint64(host), station)
 		found = true
 	}
 	return found
@@ -377,4 +378,30 @@ func postLeg(base, bearer string, spec map[string]any) error {
 		return fmt.Errorf("service answered %d %s", resp.StatusCode, bytes.TrimSpace(b[:n]))
 	}
 	return nil
+}
+
+// bridgedProbe does for a bridged host what worldProbe does for the world: the service is asked to probe the joiner's public
+// address from the gathering's leg, and the joiner is told to probe the bridge's station. Without it nobody answers the joiner and
+// it gives up with 118-0521 (real Wii U, 2026-11-13 17:19: the PS3 leg was up, the Wii U leg never got a packet).
+func bridgedProbe(joiner *nex.PRUDPConnection, gid uint32, hostPID uint64, stationToProbe types.String) {
+	to := types.NewStationURL(stationToProbe)
+	addr, ok1 := to.Address()
+	port, ok2 := to.PortNumber()
+	hostStation, ok3 := bridgedStationURL(hostPID)
+	if !ok1 || !ok2 || !ok3 || gid == 0 {
+		globals.Logger.Warningf("minecraft bridged probe: no address in %s or no bridged station (gathering %d)", string(stationToProbe), gid)
+		return
+	}
+	body, _ := json.Marshal(map[string]any{"gathering": gid, "address": addr, "port": port})
+	req, _ := http.NewRequest("POST", strings.TrimRight(os.Getenv("MINECRAFT_SERVICE_URL"), "/")+"/internal/probe", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("MINECRAFT_INTERNAL_KEY"))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(req)
+	if err != nil {
+		globals.Logger.Errorf("minecraft bridged probe: %v", err)
+		return
+	}
+	resp.Body.Close()
+	globals.Logger.Infof("minecraft bridged probe: gathering %d, joiner at %s:%d, service answered %d", gid, addr, port, resp.StatusCode)
+	initiateProbe(joiner, hostStation)
 }
