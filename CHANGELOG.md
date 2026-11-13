@@ -6,6 +6,15 @@ of truth; this file is the readable summary.
 Note: the early history below is the upstream project (Pretendo nex-go and title servers);
 OpenPak work starts at the port/fork commit.
 
+## v1.19.12 - 2026-11-13
+- Minecraft: Wii U Edition (prds#177): a Wii U that joins a bridged gathering (a game a player hosts on another console) now makes nex register
+  the gathering's PIA leg with common/minecraft (`POST /internal/legs`, the world's route, with `game` = the directory id, `joiner_pid` and
+  the gathering's own session key, which the console encrypts its PIA packets with). The service starts the far leg at once: for a
+  PS3-hosted game it joins the real room as the joining player and relays the console's game stream. The push runs outside the join reply
+  (the console's NAT traversal has 15 s) and is logged on failure (`minecraft bridged leg for ... : ...`); the key is never logged. No new env:
+  it uses MINECRAFT_SERVICE_URL and MINECRAFT_INTERNAL_KEY, as the world's leg does. Test: the request is the leg route with game, joiner and key; a
+  refusal is an error.
+
 ## v1.19.11 - 2026-11-11
 - Minecraft: Wii U Edition (prds#177): `FindBySingleID` (the call a friend's presence makes the game send before it lists a game) is logged
   for every gathering (`minecraft FindBySingleID: pid gathering answered`) and kept in the joins feed as `find` for bridged ones. After the first real-console test

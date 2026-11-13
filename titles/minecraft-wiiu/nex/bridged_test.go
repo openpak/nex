@@ -103,3 +103,33 @@ func TestBridgedFindPassesThroughAndRowFields(t *testing.T) {
 		}
 	}
 }
+
+// The leg nex pushes for a Wii U that joined a bridged gathering is the route the world uses, with the game and the joiner; a refusal of the
+// service (the game is gone, the bridge is off) is an error nex logs, not a panic.
+func TestPostLeg(t *testing.T) {
+	var got map[string]any
+	var auth string
+	code := 200
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth = r.Header.Get("Authorization")
+		if r.URL.Path != "/internal/legs" || r.Method != "POST" {
+			t.Errorf("%s %s", r.Method, r.URL.Path)
+		}
+		json.NewDecoder(r.Body).Decode(&got)
+		if code != 200 {
+			http.Error(w, "bridged leg ps3:r1: no bridge configured", code)
+		}
+	}))
+	defer srv.Close()
+	spec := map[string]any{"gathering": 12, "host_pid": 1630024257, "joiner_pid": 1570020199, "session_key": "00ff", "game": "ps3:r1"}
+	if err := postLeg(srv.URL+"/", "k", spec); err != nil {
+		t.Fatal(err)
+	}
+	if auth != "Bearer k" || got["game"] != "ps3:r1" || got["joiner_pid"] != float64(1570020199) || got["gathering"] != float64(12) || got["session_key"] != "00ff" {
+		t.Fatalf("auth %q body %v", auth, got)
+	}
+	code = 400
+	if err := postLeg(srv.URL, "k", spec); err == nil || !strings.Contains(err.Error(), "400") {
+		t.Fatalf("refusal: %v", err)
+	}
+}

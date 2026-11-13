@@ -15,6 +15,7 @@ package nex
 // a separate piece); every step is logged and kept in the joins feed for the directory.
 
 import (
+	"bytes"
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
@@ -241,6 +242,15 @@ func canJoinBridged(inner func(*commonglobals.MatchmakingManager, types.PID, mat
 	return func(m *commonglobals.MatchmakingManager, pid types.PID, s matchmakingtypes.MatchmakeSession) *nex.Error {
 		nerr := inner(m, pid, s)
 		if game := bridgedGame(uint32(s.ID)); game != "" {
+			if nerr == nil {
+				// the Wii U is in: the service starts the far leg now (it needs seconds) and answers the console's PIA session once it
+				// arrives. Not in this goroutine: the join reply is waiting, and the console's NAT traversal has 15 s.
+				go func(gid uint32, owner uint32) {
+					if err := pushBridgedLeg(gid, game, owner, uint32(pid)); err != nil {
+						globals.Logger.Errorf("minecraft bridged leg for %s (gathering %d, PID %d): %v", game, gid, uint32(pid), err)
+					}
+				}(uint32(s.ID), uint32(s.OwnerPID))
+			}
 			e := joinEvent{Game: game, Kind: "join", PID: uint32(pid), Data: map[string]string{"gathering": strconv.FormatUint(uint64(s.ID), 10), "host_pid": strconv.FormatUint(uint64(s.OwnerPID), 10)}}
 			if nerr != nil {
 				e.Err = nerr.Message
@@ -333,4 +343,38 @@ func bridgedFind(p *matchmaking.Protocol) {
 		}
 		return res, nerr
 	}
+}
+
+// pushBridgedLeg registers the gathering's PIA leg with the service for a Wii U that joined it (POST /internal/legs, the route the world's
+// leg uses, with the game's directory id and the joiner's PID): the session key is the gathering's own, which the console encrypts its PIA
+// packets with, and "game" makes the leg a bridged one (common/minecraft internal/relay Bridge). The key is never logged.
+func pushBridgedLeg(gid uint32, game string, hostPID, joinerPID uint32) error {
+	base := os.Getenv("MINECRAFT_SERVICE_URL")
+	if base == "" {
+		return fmt.Errorf("MINECRAFT_SERVICE_URL is not set")
+	}
+	var key []byte
+	if err := globals.Postgres.QueryRow(`SELECT session_key FROM matchmaking.matchmake_sessions WHERE id = $1`, int64(gid)).Scan(&key); err != nil || len(key) < 16 {
+		return fmt.Errorf("no session key for the gathering: %v", err)
+	}
+	return postLeg(base, os.Getenv("MINECRAFT_INTERNAL_KEY"), map[string]any{"gathering": gid, "host_pid": hostPID, "joiner_pid": joinerPID,
+		"session_key": hex.EncodeToString(key), "game": game})
+}
+
+func postLeg(base, bearer string, spec map[string]any) error {
+	body, _ := json.Marshal(spec)
+	req, _ := http.NewRequest("POST", strings.TrimRight(base, "/")+"/internal/legs", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+bearer)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		b := make([]byte, 200)
+		n, _ := resp.Body.Read(b)
+		return fmt.Errorf("service answered %d %s", resp.StatusCode, bytes.TrimSpace(b[:n]))
+	}
+	return nil
 }
